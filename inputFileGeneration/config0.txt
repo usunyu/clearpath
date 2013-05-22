@@ -1,0 +1,6 @@
+root>GeneratedFile
+NumOfArterialSensors>4575
+NumOfHighwaySensors>2032
+data server>geodb.usc.edu:1521/geodbs
+username>clearp
+password>clearp
