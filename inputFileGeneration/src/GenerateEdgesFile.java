@@ -100,6 +100,7 @@ public class GenerateEdgesFile {
 		userName = config.getUser();
 		password = config.getPassword();
 		
+		//Test
 		input_mod(); //important
 		
 		
