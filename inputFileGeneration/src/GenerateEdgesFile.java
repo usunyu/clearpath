@@ -92,28 +92,56 @@ public class GenerateEdgesFile {
 		userName = config.getUser();
 		password = config.getPassword();
 
-		// CSV: link_id, func_class, st_name, geom.sdo_point.y(ref), geom.sdo_point.x(ref), 
+		// Edges_G_12345.csv: link_id, func_class, st_name,
+		// geom.sdo_point.y(ref), geom.sdo_point.x(ref),
 		// geom.sdo_point.y(nref), geom.sdo_point.x(nref)
 		input_mod(); // important
 
-		// CSV: link_id, func_class, st_name, geom.sdo_point.y(ref), geom.sdo_point.x(ref), zlevel(ref),
+		// Edges_G_12345_with_zlevels.csv: link_id, func_class, st_name,
+		// geom.sdo_point.y(ref), geom.sdo_point.x(ref), zlevel(ref),
 		// geom.sdo_point.y(nref), geom.sdo_point.x(nref), zlevel(nref)
 		input_mod_add_zlevles();
 
+		// Edges_G_12345_final.csv: link_id, func_class, st_name,
+		// geom.sdo_point.y(ref), node_id(ref), node_id(nref),
+		// geom.sdo_point.x(ref), geom.sdo_point.y(nref), geom.sdo_point.x(nref)
+
+		// Nodes_G_12345.csv: node_id, geom.sdo_point.y, geom.sdo_point.x
 		create_nodesFile();
 
+		// Edges_G_12345_final.csv -> Edges.csv
 		changeFileName();
 
+		// Edges_withSpeedCat_12345.csv: link_id, func_class, st_name,
+		// node_id(ref), node_id(nref), geom.sdo_point.y(ref),
+		// geom.sdo_point.x(ref), geom.sdo_point.y(nref),
+		// geom.sdo_point.x(nref), speed_cat
 		AddSpeedCatToInputFile();
 
+		// Edges_G_12345_final_extraStnames.csv: link_id, func_class,
+		// st_name(set), node_id(ref), node_id(nref), geom.sdo_point.y(ref),
+		// geom.sdo_point.x(ref), geom.sdo_point.y(nref), geom.sdo_point.x(nref)
 		AddExtraStreetNameToInputFile();
 
+		// Edges_G_12345_final_extraStnames.csv -> Edges.csv
 		changeFileName2();
 
+		// Edges_withDA.csv: link_id, func_class, st_name(set), node_id(ref),
+		// node_id(nref), geom.sdo_point.y(ref),
+		// geom.sdo_point.x(ref), geom.sdo_point.y(nref),
+		// geom.sdo_point.x(nref), direction_access
 		addDirectionAccessToInputFile();
 
+		// links_old(HashMap<String, LinkInfo>):
+		// LinkIdIndex(link_id+node_id(ref)+node_id(nref)):
+		// LinkInfo(LinkIdIndex, func_class, st_name(set), node_id(ref),
+		// node_id(nref), pairs, count)
 		readFileInMemory();
+
+		// map(HashMap<String, String>): st_name: direction
 		getHwyDirections();
+
+		// highway_link_direction_G.csv: LinkIdIndex, direction
 		assignLinkDirectionsToFile();
 
 	}
@@ -845,6 +873,7 @@ public class GenerateEdgesFile {
 	private static void readFileInMemory_all() {
 
 		try {
+			// should modify FILE_LINK
 			FileInputStream fstream = new FileInputStream(FILE_LINK);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -1511,7 +1540,7 @@ public class GenerateEdgesFile {
 				double lati2 = link.getNodes()[1].getLati();
 				double longi2 = link.getNodes()[1].getLongi();
 
-				// choose name
+				// choose name, special?
 				String[] names = link.getSt_name().split(";");
 
 				int find_mark1 = 0;
@@ -1568,6 +1597,7 @@ public class GenerateEdgesFile {
 					}
 				}
 
+				// special?
 				if (st_name.contains("101")) {
 					if (lati1 > lati2 && longi1 > longi2 && direction == 1)
 						direction = 0;
@@ -1628,6 +1658,7 @@ public class GenerateEdgesFile {
 				// System.out.println(nodes[0]+","+nodes[2].substring(1)+","+nodes[3].substring(1)+","+index2);
 
 				int i = 5, count = 0;
+				// double lati, double longi
 				PairInfo[] pairs = new PairInfo[10];
 				while (i < nodes.length) {
 					double lati = Double.parseDouble(nodes[i]);
@@ -1636,6 +1667,7 @@ public class GenerateEdgesFile {
 					count++;
 					i = i + 2;
 				}
+				// in which condition?
 				if (links_old.get(index2) != null)
 					System.out.println(links_old.get(index2)
 							+ "Duplicate LinkIds");
@@ -2113,7 +2145,8 @@ public class GenerateEdgesFile {
 
 			// String sql =
 			// "SELECT    dc.link_id, dc.func_class,dc.Dir_Travel, dc.st_name, dc.Speed_Cat, dc.geom  FROM streets_dca1_new dc, zlevels_new z1, zlevels_new z2 where  z1.node_id !=0 and z2.node_id !=0 and Ref_In_Id = z1.node_id and nRef_In_Id = z2.node_id order by dc.link_id   ";
-			// Selesct the link_id with same zlevels
+			// Selesct the link_id which has zlevels info
+			// can eliminate different zlevel here!
 			String sql_o = "SELECT distinct dc.link_id FROM streets_dca1_new dc, zlevels_new z1, zlevels_new z2 where  z1.node_id !=0 and z2.node_id !=0 and Ref_In_Id = z1.node_id and nRef_In_Id = z2.node_id order by dc.link_id   ";
 
 			PreparedStatement pstatement_o = con.prepareStatement(sql_o,
