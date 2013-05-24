@@ -81,20 +81,33 @@ public class CreateCSVForHighwaysFinal1to5 {
 
 		System.out.println("Reading From Edge File");
 
+		// from Edges.csv
+		// links(HashMap<String, LinkInfo>):
+		// LinkIdIndex(link_id+node_id(ref)+node_id(nref)):
+		// LinkInfo(LinkIdIndex, func_class, st_name, node_id(ref),
+		// node_id(nref), pairs, count)
 		readFileInMemory_new();
 		// readFileInMemory();
 		// readFileinMemory_new();
 		// readFileinMemory_new2();
 
+		// System.out.println("size = "+link)
+		// links_with_sensors(LinkInfo[1100000]): link has sensors
+		// check(ArrayList<Integer>): total sensors
 		GetLinkWithSensors();
 		System.out.println("Getting Link Directions");
-		getLinkDirections();
 
+		// from highway_link_direction_G.csv
+		// LinkDirection(HashMap<String, Integer>): link_id, direction
+		getLinkDirections();
 		System.out.println("Getting Sensors close to Links");
 
+		// links(HashMap<String, LinkInfo>): add sensors
 		fillAdjList_Sensor();
 		GetLinkWithSensors();
 
+		// sensorsGrid[index1][index2]: link_id
+		// sensorsGridDir[index1][index2]: direction
 		getGridDetailsFromFile();
 
 		// loadSensorRoadInfo();
@@ -567,6 +580,7 @@ public class CreateCSVForHighwaysFinal1to5 {
 						// distance[k] = rs.getDouble(4);
 						// k++;
 						count++;
+						// most 3 sensors ?
 						if (count == 3)
 							break;
 						// }
@@ -624,59 +638,17 @@ public class CreateCSVForHighwaysFinal1to5 {
 									int numElem2 = sensorsGrid[k1][j1].size();
 
 									// links.remove(link.getLinkId());
-									for (int i1 = 0; i1 < numElem2; i1++) { /*
-																			 * String
-																			 * sql
-																			 * =
-																			 * "SELECT onstreet,fromstreet  FROM highway_congestion_config where link_id ="
-																			 * +
-																			 * sensorsGrid
-																			 * [
-																			 * k1
-																			 * ]
-																			 * [
-																			 * j1
-																			 * ]
-																			 * .
-																			 * get
-																			 * (
-																			 * i1
-																			 * )
-																			 * ;
-																			 * PreparedStatement
-																			 * f
-																			 * =
-																			 * con
-																			 * .
-																			 * prepareStatement
-																			 * (
-																			 * sql
-																			 * ,
-																			 * ResultSet
-																			 * .
-																			 * TYPE_SCROLL_INSENSITIVE
-																			 * ,
-																			 * ResultSet
-																			 * .
-																			 * CONCUR_READ_ONLY
-																			 * )
-																			 * ;
-																			 * ResultSet
-																			 * rs
-																			 * =
-																			 * f
-																			 * .
-																			 * executeQuery
-																			 * (
-																			 * )
-																			 * ;
-																			 * rs
-																			 * .
-																			 * first
-																			 * (
-																			 * )
-																			 * ;
-																			 */
+									for (int i1 = 0; i1 < numElem2; i1++) {
+										/*
+										 * String sql =
+										 * "SELECT onstreet,fromstreet  FROM highway_congestion_config where link_id ="
+										 * + sensorsGrid [ k1 ] [ j1 ] . get (
+										 * i1 ) ; PreparedStatement f = con .
+										 * prepareStatement ( sql , ResultSet .
+										 * TYPE_SCROLL_INSENSITIVE , ResultSet .
+										 * CONCUR_READ_ONLY ) ; ResultSet rs = f
+										 * . executeQuery ( ) ; rs . first ( ) ;
+										 */
 										if (LinkDirection.get(link.getLinkId()) == sensorsGridDir[k1][j1]
 												.get(i1)) {
 											link.sensors
@@ -705,59 +677,17 @@ public class CreateCSVForHighwaysFinal1to5 {
 									// System.out.println("Sensors found for this link with sensor count="+
 									// sensorsGrid[idx1][idx2].size());
 									int numElem2 = sensorsGrid[k1][j1].size();
-									for (int i1 = 0; i1 < numElem2; i1++) { /*
-																			 * String
-																			 * sql
-																			 * =
-																			 * "SELECT onstreet,fromstreet  FROM highway_congestion_config where link_id ="
-																			 * +
-																			 * sensorsGrid
-																			 * [
-																			 * k1
-																			 * ]
-																			 * [
-																			 * j1
-																			 * ]
-																			 * .
-																			 * get
-																			 * (
-																			 * i1
-																			 * )
-																			 * ;
-																			 * PreparedStatement
-																			 * f
-																			 * =
-																			 * con
-																			 * .
-																			 * prepareStatement
-																			 * (
-																			 * sql
-																			 * ,
-																			 * ResultSet
-																			 * .
-																			 * TYPE_SCROLL_INSENSITIVE
-																			 * ,
-																			 * ResultSet
-																			 * .
-																			 * CONCUR_READ_ONLY
-																			 * )
-																			 * ;
-																			 * ResultSet
-																			 * rs
-																			 * =
-																			 * f
-																			 * .
-																			 * executeQuery
-																			 * (
-																			 * )
-																			 * ;
-																			 * rs
-																			 * .
-																			 * first
-																			 * (
-																			 * )
-																			 * ;
-																			 */
+									for (int i1 = 0; i1 < numElem2; i1++) {
+										/*
+										 * String sql =
+										 * "SELECT onstreet,fromstreet  FROM highway_congestion_config where link_id ="
+										 * + sensorsGrid [ k1 ] [ j1 ] . get (
+										 * i1 ) ; PreparedStatement f = con .
+										 * prepareStatement ( sql , ResultSet .
+										 * TYPE_SCROLL_INSENSITIVE , ResultSet .
+										 * CONCUR_READ_ONLY ) ; ResultSet rs = f
+										 * . executeQuery ( ) ; rs . first ( ) ;
+										 */
 										if (LinkDirection.get(link.getLinkId()) == sensorsGridDir[k1][j1]
 												.get(i1)) {
 											link.sensors
