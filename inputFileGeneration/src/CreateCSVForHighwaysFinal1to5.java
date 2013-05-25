@@ -112,14 +112,19 @@ public class CreateCSVForHighwaysFinal1to5 {
 
 		// loadSensorRoadInfo();
 		// Any Direction
+		// links(HashMap<String, LinkInfo>): add close sensors
 		findNearbySensorsToFillRemainingLinks();
 		GetLinkWithSensors();
 
+		// links(HashMap<String, LinkInfo>): set -1 for no sensors
 		add_ZeroSensorToRemainingLinks();
 		GetLinkWithSensors();
 		// System.out.println("After Any Grid Same Direction");
 
 		// printFactorCount();
+		// Highway_Sensor_Close.csv
+		// link_id, node_id(ref)+node_id(nref), sensor_id
+		// check(ArrayList<Integer>): total sensors
 		writeLinksToFile();
 
 		// writeLinksToFile_new();
@@ -627,10 +632,8 @@ public class CreateCSVForHighwaysFinal1to5 {
 
 						int idx1 = getIndex1(link.getNodes()[0].getLati());
 						int idx2 = getIndex2(link.getNodes()[0].getLongi());
-						for (int k1 = Math.max(0, idx1 - factor); k1 < Math
-								.min(499, idx1 + factor); k1++) {
-							for (int j1 = Math.max(0, idx2 - factor); j1 < Math
-									.min(499, idx2 + factor); j1++) {
+						for (int k1 = Math.max(0, idx1 - factor); k1 < Math.min(499, idx1 + factor); k1++) {
+							for (int j1 = Math.max(0, idx2 - factor); j1 < Math.min(499, idx2 + factor); j1++) {
 
 								if (sensorsGrid[k1][j1] != null) {
 									// System.out.println("Sensors found for this link with sensor count="+
@@ -649,11 +652,8 @@ public class CreateCSVForHighwaysFinal1to5 {
 										 * CONCUR_READ_ONLY ) ; ResultSet rs = f
 										 * . executeQuery ( ) ; rs . first ( ) ;
 										 */
-										if (LinkDirection.get(link.getLinkId()) == sensorsGridDir[k1][j1]
-												.get(i1)) {
-											link.sensors
-													.add(sensorsGrid[k1][j1]
-															.get(i1));
+										if (LinkDirection.get(link.getLinkId()) == sensorsGridDir[k1][j1].get(i1)) {
+											link.sensors.add(sensorsGrid[k1][j1].get(i1));
 											factor_count[factor]++;
 										}
 										// rs.close();
@@ -668,10 +668,8 @@ public class CreateCSVForHighwaysFinal1to5 {
 						idx1 = getIndex1(link.getNodes()[1].getLati());
 						idx2 = getIndex2(link.getNodes()[1].getLongi());
 
-						for (int k1 = Math.max(0, idx1 - factor); k1 < Math
-								.min(499, idx1 + factor); k1++) {
-							for (int j1 = Math.max(0, idx2 - factor); j1 < Math
-									.min(499, idx2 + factor); j1++) {
+						for (int k1 = Math.max(0, idx1 - factor); k1 < Math.min(499, idx1 + factor); k1++) {
+							for (int j1 = Math.max(0, idx2 - factor); j1 < Math.min(499, idx2 + factor); j1++) {
 								// END Lat,Long
 								if (sensorsGrid[k1][j1] != null) {
 									// System.out.println("Sensors found for this link with sensor count="+
@@ -688,11 +686,8 @@ public class CreateCSVForHighwaysFinal1to5 {
 										 * CONCUR_READ_ONLY ) ; ResultSet rs = f
 										 * . executeQuery ( ) ; rs . first ( ) ;
 										 */
-										if (LinkDirection.get(link.getLinkId()) == sensorsGridDir[k1][j1]
-												.get(i1)) {
-											link.sensors
-													.add(sensorsGrid[k1][j1]
-															.get(i1));
+										if (LinkDirection.get(link.getLinkId()) == sensorsGridDir[k1][j1].get(i1)) {
+											link.sensors.add(sensorsGrid[k1][j1].get(i1));
 											factor_count[factor]++;
 										}
 										// f.close();
@@ -765,8 +760,7 @@ public class CreateCSVForHighwaysFinal1to5 {
 			LinkInfo link = links.get(iter.next());
 			if (!(link.sensors.isEmpty())) {
 				links_with_sensors[count] = link;
-				out.write(String.valueOf(link.getLinkId()).substring(0, 8)
-						+ ",");
+				out.write(String.valueOf(link.getLinkId()).substring(0, 8) + ",");
 				out.write(String.valueOf(link.getLinkId()).substring(8) + ",");
 				count++;
 				for (int j = 0; j < link.sensors.size(); j++) {

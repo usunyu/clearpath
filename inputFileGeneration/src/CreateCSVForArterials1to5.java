@@ -105,6 +105,7 @@ public class CreateCSVForArterials1to5 {
 
 		// Arterial_Sensor_Close.csv:
 		// link_id, node_id(ref)+node_id(nref), sensor_id
+		// check(ArrayList<Integer>): total sensors
 		writeLinksToFile();
 
 		// wirteNewFile();

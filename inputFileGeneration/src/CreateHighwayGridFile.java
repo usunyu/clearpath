@@ -415,23 +415,12 @@ public class CreateHighwayGridFile {
 							+ longstep;
 					// ?
 					String geomQuery = "MDSYS.SDO_GEOMETRY(2003,8307,NULL,SDO_ELEM_INFO_ARRAY(1,1003,3),SDO_ORDINATE_ARRAY("
-							+ longi1
-							+ ","
-							+ lati1
-							+ ","
-							+ longi2
-							+ ","
-							+ lati2
-							+ "))";
+							+ longi1 + "," + lati1 + "," + longi2 + "," + lati2 + "))";
 					String sql = "select link_id from highway_congestion_config where "
-							+ "SDO_relate(start_lat_long,"
-							+ geomQuery
-							+ ",'mask=inside')='TRUE'";
+							+ "SDO_relate(start_lat_long," + geomQuery + ",'mask=inside')='TRUE'";
 					// System.out.println(sql);
 
-					PreparedStatement f = con.prepareStatement(sql,
-							ResultSet.TYPE_SCROLL_INSENSITIVE,
-							ResultSet.CONCUR_READ_ONLY);
+					PreparedStatement f = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 					ResultSet rs = f.executeQuery();
 
 					// sensorsGrid[index1][index2]= new ArrayList<Integer>();
