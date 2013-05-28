@@ -84,7 +84,8 @@ public class CreateListForArterials1to5New {
 		// speedcat(HashMap<Integer, Double>):
 		getSpeedcatInfo();
 		// from Edges_withSpeedCat_12345.csv
-		// 
+		// links_funcAndspeedcat(HashMap<String, String>):
+		// LinkIdIndex: FuncClass, SpeedCat
 		getlinksFuncAndSpeedcatInfo();
 
 		// add ends
@@ -97,14 +98,18 @@ public class CreateListForArterials1to5New {
 				public void run() {
 					try {
 						System.out.println("Getting Speeds for " + days[index]);
+						// speeds(HashMap<Integer, Double[]>) (local)
+						// LinkIds: speed
+						// links_speed(HashMap<Integer, HashMap<Integer, Double[]>>):
+						// day, speeds
 						getArterialSensorAverages(index, days[index]);
-						System.out.println("Creating patterns for "
-								+ days[index]);
+						System.out.println("Creating patterns for " + days[index]);
+						// AverageEdgeSpeed_day.txt:
+						// LinkIdIndex, distance, 
 						createPatterns_new(index, days[index]);
 
 					} catch (SQLException ex) {
-						Logger.getLogger(CreateListForArterials.class.getName())
-								.log(Level.SEVERE, null, ex);
+						Logger.getLogger(CreateListForArterials.class.getName()).log(Level.SEVERE, null, ex);
 					}
 				}
 			};
@@ -134,8 +139,7 @@ public class CreateListForArterials1to5New {
 		double penalty = 1.;
 		if ((k >= 3 && k <= 12) || (k >= 43 && k <= 52)) {
 			penalty *= 0.5;
-			if (links_funcAndspeedcat.get(link.getLinkId()).split(",")[0]
-					.equals("4")) {
+			if (links_funcAndspeedcat.get(link.getLinkId()).split(",")[0].equals("4")) {
 				penalty += 0.1;
 			}
 
@@ -143,9 +147,7 @@ public class CreateListForArterials1to5New {
 
 		penalty *= 0.85;
 
-		return penalty
-				* speedcat.get(Integer.parseInt(links_funcAndspeedcat.get(
-						link.getLinkId()).split(",")[1]));
+		return penalty * speedcat.get(Integer.parseInt(links_funcAndspeedcat.get(link.getLinkId()).split(",")[1]));
 
 	}
 
@@ -165,13 +167,11 @@ public class CreateListForArterials1to5New {
 					String st_name = nodes[2];
 					String st_node = nodes[3];
 					String end_node = nodes[4];
-					String index = st_node.substring(1) + ""
-							+ end_node.substring(1);
+					String index = st_node.substring(1) + "" + end_node.substring(1);
 					String LinkIdIndex = LinkId + "" + index;
 					String index2 = LinkIdIndex;
 
-					links_funcAndspeedcat
-							.put(index2, nodes[1] + "," + nodes[9]);
+					links_funcAndspeedcat.put(index2, nodes[1] + "," + nodes[9]);
 				}
 			}
 			in.close();
@@ -198,16 +198,13 @@ public class CreateListForArterials1to5New {
 		BufferedWriter out = null;
 		try {
 
-			fstream = new FileWriter("H:\\Jiayunge\\AverageEdgeSpeed_" + day
-					+ ".txt");
+			fstream = new FileWriter("H:\\Jiayunge\\AverageEdgeSpeed_" + day + ".txt");
 			out = new BufferedWriter(fstream);
 
 			while (i < links_with_sensor_count) {
 
 				if (i % 200 == 0) {
-					System.out
-							.println(((double) i / links_with_sensor_count * 100.0)
-									+ "% of Links Completed " + day);
+					System.out.println(((double) i / links_with_sensor_count * 100.0) + "% of Links Completed " + day);
 				}
 
 				// System.out.println(day+": "+i);
@@ -233,23 +230,17 @@ public class CreateListForArterials1to5New {
 					for (j = 0; j < count; j++) {
 						try {
 
-							if (links_speed.get(index).containsKey(
-									link.sensors.get(j)))
-								avg += links_speed.get(index).get(
-										link.sensors.get(j))[k];
+							if (links_speed.get(index).containsKey(link.sensors.get(j)))
+								avg += links_speed.get(index).get(link.sensors.get(j))[k];
 
 						} catch (Exception e) {
 							System.out.println("error");
-							System.out.println("index = " + index + " k= " + k
-									+ " sensorid = " + link.sensors.get(j));
+							System.out.println("index = " + index + " k= " + k + " sensorid = " + link.sensors.get(j));
 							if (links_speed.get(index).get(link.sensors.get(j)) == null)
 								System.out.println("error");
 							else {
 								for (int g = 0; g < 60; g++)
-									System.out.println(g
-											+ ": "
-											+ links_speed.get(index).get(
-													link.sensors.get(j))[k]);
+									System.out.println(g + ": " + links_speed.get(index).get(link.sensors.get(j))[k]);
 							}
 						}
 
@@ -266,6 +257,7 @@ public class CreateListForArterials1to5New {
 						// out.write("\n");
 						out.write(avg + ",");
 					} else {
+						// 
 						double sudu = approximation(link, k);
 						if (sudu > 0.) {
 							// out.write(k + "," + sudu + "," + distance / sudu
@@ -482,8 +474,7 @@ public class CreateListForArterials1to5New {
 		PairInfo[] pairs = link.getNodes();
 		double distance = 0.0;
 		for (int i = 0; i < link.getPairCount() - 1; i++) {
-			distance += DistanceCalculator.CalculationByDistance(pairs[i],
-					pairs[i + 1]);
+			distance += DistanceCalculator.CalculationByDistance(pairs[i], pairs[i + 1]);
 		}
 		return distance;
 	}
@@ -491,10 +482,10 @@ public class CreateListForArterials1to5New {
 	private static void getArterialSensorAverages(int index, String day)
 			throws SQLException {
 
+		// sensor id
 		String sql = "select link_id from arterial_congestion_config";
 		Connection con = getConnection();
-		PreparedStatement f = con.prepareStatement(sql,
-				ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement f = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		ResultSet rs = f.executeQuery();
 
 		int sensorhitcount = 0;
@@ -509,8 +500,7 @@ public class CreateListForArterials1to5New {
 		f.close();
 		con.close();
 		int c2 = 0, c3 = 0;
-		System.out
-				.println(count + " Sensors Successfully Imported from Config");
+		System.out.println(count + " Sensors Successfully Imported from Config");
 		con = getConnection();
 		HashMap<Integer, Double[]> speeds = new HashMap<Integer, Double[]>();
 		for (int i = 0; i < count; i++) {
@@ -521,7 +511,7 @@ public class CreateListForArterials1to5New {
 			}
 
 			// System.out.println("the currecnt linkid id : "+LinkIds[i] );
-
+			// only May?
 			if (day.equals("All"))
 				sql = "select avg(speed) from arterial_averages3_full where link_id="
 						+ LinkIds[i] + " group by time order by time";
@@ -537,6 +527,7 @@ public class CreateListForArterials1to5New {
 			Double speed[] = new Double[60];
 
 			if (!rs.next()) {
+				// no result
 				for (int t = 0; t < 60;)
 					speed[t++] = 0.;
 			} else {
