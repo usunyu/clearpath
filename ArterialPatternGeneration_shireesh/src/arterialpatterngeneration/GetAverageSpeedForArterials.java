@@ -56,7 +56,7 @@ public class GetAverageSpeedForArterials {
 			out = new BufferedWriter(fstream);
 			// MOD(TO_CHAR(t2.date_and_time, 'J'), 7) + 1 NOT IN (6, 7) and
 			// Only May?
-			String sql = "SELECT avg(t2.SPEED) FROM arterial_Averages3_full3 T2 where month = 'May' GROUP BY  TIME ORDER BY TIME";
+			String sql = "SELECT avg(t2.SPEED) FROM arterial_Averages3_full3 T2 where month = 'May' GROUP BY TIME ORDER BY TIME";
 			System.out.println(sql);
 			Connection con = getConnection();
 			PreparedStatement f = con.prepareStatement(sql,
