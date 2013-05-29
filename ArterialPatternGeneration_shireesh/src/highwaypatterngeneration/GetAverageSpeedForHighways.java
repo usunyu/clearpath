@@ -22,6 +22,7 @@ public class GetAverageSpeedForHighways {
 	static String userName = "clearp";
 	static String password = "clearp";
 	static Connection connHome = null;
+	static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
 
 	public static void main(String[] args) throws SQLException,
 			NumberFormatException, IOException {
@@ -50,7 +51,7 @@ public class GetAverageSpeedForHighways {
 		try {
 
 			System.out.println("Getting Averages now");
-			fstream = new FileWriter("H:\\Jiayunge\\AverageSpeeds_Highways.txt");
+			fstream = new FileWriter(root + "/AverageSpeeds_Highways.txt");
 			out = new BufferedWriter(fstream);
 			// MOD(TO_CHAR(t2.date_and_time, 'J'), 7) + 1 NOT IN (6, 7) and
 			String sql = "SELECT avg(t2.SPEED) FROM highway_Averages3_full3 T2 where month = 'May' GROUP BY  TIME ORDER BY TIME";

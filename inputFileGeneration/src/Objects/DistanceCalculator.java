@@ -39,7 +39,7 @@ public class DistanceCalculator {
 		double longitudeDifference = (endNode.getLongi() - startNode.getLongi())
 				* Math.PI / 180.;// (coordinate2.Longitude -
 									// coordinate1.Longitude).ToRadian();
-		// ?
+					
 		double y = Math.sin(longitudeDifference) * Math.cos(latitude2);
 		double x = Math.cos(latitude1) * Math.sin(latitude2)
 				- Math.sin(latitude1) * Math.cos(latitude2)

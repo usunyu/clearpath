@@ -95,7 +95,7 @@ public class CreateCSVForArterials1to5 {
 
 		// links(HashMap<String, LinkInfo>): add sensors
 		AddSensorsToEdges_FirstRound();// 1
-		GetLinkWithSensors();
+		// GetLinkWithSensors();
 		// twice?
 		GetLinkWithSensors();
 

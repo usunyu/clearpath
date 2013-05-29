@@ -588,10 +588,7 @@ public class GenerateEdgesFile {
 										- htime);
 								FibonacciHeapNode<Node> new_node2 = new FibonacciHeapNode<Node>(
 										node2);
-								priorityQ.insert(new_node2, c[key]); // arrival
-																		// time
-																		// =
-																		// c[i]
+								priorityQ.insert(new_node2, c[key]); // arrival time = c[i]
 								priorityQMap1.put(key, node2);
 								priorityQMap2.put(node2, new_node2);
 							}
@@ -1597,7 +1594,6 @@ public class GenerateEdgesFile {
 					}
 				}
 
-				// special?
 				if (st_name.contains("101")) {
 					if (lati1 > lati2 && longi1 > longi2 && direction == 1)
 						direction = 0;

@@ -51,7 +51,8 @@ public class CreateListForHighways1to5New {
 	static ArrayList<Integer> check = new ArrayList<Integer>();
 	private static int links_with_sensor_count;
 	// private static String FILE_LINK ="H:\\clearp\\links_all.csv";
-	private static String FILE_LINK = "H:\\Jiayunge\\Edges_G_12345_final_extraStnames.csv";
+	private static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
+	private static String FILE_LINK = "Edges_G_12345_final_extraStnames.csv";
 	// "H:\\clearp\\links_all.csv";
 	private static String[] days = { "Monday", "Tuesday", "Wednesday",
 			"Thursday", "Friday", "Saturday", "Sunday" };
@@ -70,15 +71,24 @@ public class CreateListForHighways1to5New {
 			NumberFormatException, IOException {
 
 		// from Edges_G_12345_final_extraStnames.csv
-		// 
+		// links(HashMap<String, LinkInfo>):
+		// LinkIdIndex: LinkInfo(LinkIdIndex, FuncClass, st_name, st_node, end_node, pairs, count)
 		readFileInMemory();
 
+		// from Highway_Sensor_close.csv
+		// links: add sensor
 		readEdgeSensors();
 		// add
+		// from highway_link_direction_G.csv
+		// LinkDirection(HashMap<String, Integer>): LinkIdIndex, direction
 		getLinkDirections();
+		// from grid_highway.txt
+		// sensorsGrid[index1][index2]: link_id
+		// sensorsGridDir[index1][index2]: direction
 		getGridDetailsFromFile();
 
 		// add ends
+		// links_with_sensors: from links which has sensor(s)
 		GetLinkWithSensors();
 
 		for (int i = 0; i < days.length; i++) {
@@ -88,13 +98,17 @@ public class CreateListForHighways1to5New {
 				public void run() {
 					try {
 						System.out.println("Getting Speeds for " + days[index]);
+						// sensors_stNames(HashMap<Integer, String>):
+						// sensor_id: onstreet, fromstreet
+						// links_speed(HashMap<Integer, HashMap<Integer, Double[]>>):
+						// day: speeds
 						getHighwaySensorAverages(index, days[index]);
-						System.out.println("Creating patterns for "
-								+ days[index]);
+						System.out.println("Creating patterns for " + days[index]);
+						// HighwayEdgeSpeed_day.txt
+						// LinkIdIndex, distance, avg
 						createPatterns_new(index, days[index]);
 					} catch (SQLException ex) {
-						Logger.getLogger(CreateListForHighways.class.getName())
-								.log(Level.SEVERE, null, ex);
+						Logger.getLogger(CreateListForHighways.class.getName()).log(Level.SEVERE, null, ex);
 					}
 				}
 			};
@@ -120,17 +134,14 @@ public class CreateListForHighways1to5New {
 
 			System.out.println("Creating Patterns now");
 
-			fstream = new FileWriter("H:\\Jiayunge\\HighwayEdgeSpeed_" + day
-					+ ".txt");
+			fstream = new FileWriter(root + "/HighwayEdgeSpeed_" + day + ".txt");
 
 			out = new BufferedWriter(fstream);
 
 			while (i < links_with_sensor_count) {
 
 				if (i % 200 == 0) {
-					System.out
-							.println(((double) i / links_with_sensor_count * 100.0)
-									+ "% of Links Completed");
+					System.out.println(((double) i / links_with_sensor_count * 100.0) + "% of Links Completed");
 				}
 
 				LinkInfo link = links_with_sensors[i];
@@ -149,10 +160,8 @@ public class CreateListForHighways1to5New {
 					double avg = 0.0;
 					int count_valid = 0;
 					for (j = 0; j < count; j++) {
-						if (links_speed.get(index).containsKey(
-								link.sensors.get(j)))
-							avg += links_speed.get(index).get(
-									link.sensors.get(j))[k];
+						if (links_speed.get(index).containsKey(link.sensors.get(j)))
+							avg += links_speed.get(index).get(link.sensors.get(j))[k];
 						if (links_speed.get(index).get(link.sensors.get(j))[k] > 0.)
 							count_valid++;
 					}
@@ -166,7 +175,7 @@ public class CreateListForHighways1to5New {
 
 						out.write(avg + ",");
 					} else {
-
+						// how approximation ?
 						double temp_speed = approximation(link, index, k);
 						if (temp_speed > 0.) {
 							// out.write(k + "," + temp_speed + "," + distance /
@@ -203,8 +212,7 @@ public class CreateListForHighways1to5New {
 		try {
 			System.out.println("Reading Edge Sensors---" + links.size());
 
-			FileInputStream fstream = new FileInputStream(
-					"H:\\Jiayunge\\Highway_Sensor_close.csv");
+			FileInputStream fstream = new FileInputStream(root + "/Highway_Sensor_close.csv");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -239,8 +247,7 @@ public class CreateListForHighways1to5New {
 	}
 
 	private static void writeLinksToFile() throws IOException {
-		FileWriter fstream = new FileWriter(
-				"H:\\Jiayunge\\Highway_Sensor_Close.csv");
+		FileWriter fstream = new FileWriter(root + "/Highway_Sensor_Close.csv");
 		out = new BufferedWriter(fstream);
 		int i = 0, count = 0;
 		Set<String> keys = links.keySet();
@@ -285,7 +292,7 @@ public class CreateListForHighways1to5New {
 	private static void readFileInMemory() {
 
 		try {
-			FileInputStream fstream = new FileInputStream(FILE_LINK);
+			FileInputStream fstream = new FileInputStream(root + "/" + FILE_LINK);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -342,7 +349,6 @@ public class CreateListForHighways1to5New {
 						check.add(link.sensors.get(j));
 					}
 				}
-
 			}
 			i++;
 		}
@@ -361,15 +367,13 @@ public class CreateListForHighways1to5New {
 			while (i < links_with_sensor_count) {
 
 				if (i % 200 == 0) {
-					System.out
-							.println(((double) i / links_with_sensor_count * 100.0)
+					System.out.println(((double) i / links_with_sensor_count * 100.0)
 									+ "% of Links Completed");
 				}
 
 				LinkInfo link = links_with_sensors[i];
 				// System.out.println(i + " " + link.toString());
-				fstream = new FileWriter("C:\\Users\\jiayunge\\Output_" + day
-						+ "\\" + link.getLinkId() + ".txt");
+				fstream = new FileWriter(root + "/Output_" + day + "/" + link.getLinkId() + ".txt");
 
 				out = new BufferedWriter(fstream);
 
@@ -430,24 +434,22 @@ public class CreateListForHighways1to5New {
 
 		String sql = "select link_id,onstreet, fromstreet from highway_congestion_config";
 		Connection con = getConnection();
-		PreparedStatement f = con.prepareStatement(sql,
-				ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement f = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		ResultSet rs = f.executeQuery();
 
 		int count = 0;
 		System.out.println("Getting Sensors from Config");
 		while (rs.next()) {
+			// sensor id
 			LinkIds[count] = rs.getInt(1);
 			count++;
-			sensors_stNames.put(rs.getInt(1),
-					rs.getString(2) + "," + rs.getString(3));
+			sensors_stNames.put(rs.getInt(1), rs.getString(2) + "," + rs.getString(3));
 		}
 		rs.close();
 		f.close();
 		con.close();
 		int c2 = 0, c3 = 0;
-		System.out
-				.println(count + " Sensors Successfully Imported from Config");
+		System.out.println(count + " Sensors Successfully Imported from Config");
 		con = getConnection();
 
 		HashMap<Integer, Double[]> speeds = new HashMap<Integer, Double[]>();
@@ -506,42 +508,31 @@ public class CreateListForHighways1to5New {
 
 				int idx1 = getIndex1(link.getNodes()[0].getLati());
 				int idx2 = getIndex2(link.getNodes()[0].getLongi());
-				for (int k1 = Math.max(0, idx1 - factor); k1 < Math.min(499,
-						idx1 + factor); k1++) {
-					for (int j1 = Math.max(0, idx2 - factor); j1 < Math.min(
-							499, idx2 + factor); j1++) {
+				for (int k1 = Math.max(0, idx1 - factor); k1 < Math.min(499, idx1 + factor); k1++) {
+					for (int j1 = Math.max(0, idx2 - factor); j1 < Math.min(499, idx2 + factor); j1++) {
 
 						if (sensorsGrid[k1][j1] != null) {
 							int numElem2 = sensorsGrid[k1][j1].size();
 
 							for (int i1 = 0; i1 < numElem2; i1++) {
 
-								if (LinkDirection.get(link.getLinkId()) == sensorsGridDir[k1][j1]
-										.get(i1)
+								if (LinkDirection.get(link.getLinkId()) == sensorsGridDir[k1][j1].get(i1)
 										&& (links_speed.get(index).get(
 												sensorsGrid[k1][j1].get(i1))[k] > 0.)) {
-									String[] nodes = link.getSt_name().split(
-											";");
+									String[] nodes = link.getSt_name().split(";");
 
 									int hit = 0;
 									for (int s = 0; s < nodes.length; s++) {
 										if (sensors_stNames.get(
-												sensorsGrid[k1][j1].get(i1))
-												.split(",")[0].equals(nodes[s]))
+												sensorsGrid[k1][j1].get(i1)).split(",")[0].equals(nodes[s]))
 											hit = 1;
-										if (sensors_stNames.get(
-												sensorsGrid[k1][j1].get(i1))
-												.split(",")[1].equals(nodes[s]))
+										if (sensors_stNames.get(sensorsGrid[k1][j1].get(i1)).split(",")[1].equals(nodes[s]))
 											hit = 1;
 									}
 
 									if (hit == 1) {
-										if (!available_sensors
-												.contains(sensorsGrid[k1][j1]
-														.get(i1)))
-											available_sensors
-													.add(sensorsGrid[k1][j1]
-															.get(i1));
+										if (!available_sensors.contains(sensorsGrid[k1][j1].get(i1)))
+											available_sensors.add(sensorsGrid[k1][j1].get(i1));
 										find_mark = 1;
 									}
 									// link.sensors.add(sensorsGrid[k1][j1].get(i1));
@@ -549,9 +540,7 @@ public class CreateListForHighways1to5New {
 								}
 								// rs.close();
 								// f.close();
-
 							}
-
 						}
 					}
 				}
@@ -561,8 +550,7 @@ public class CreateListForHighways1to5New {
 
 				for (int k1 = Math.max(0, idx1 - factor); k1 < Math.min(499,
 						idx1 + factor); k1++) {
-					for (int j1 = Math.max(0, idx2 - factor); j1 < Math.min(
-							499, idx2 + factor); j1++) {
+					for (int j1 = Math.max(0, idx2 - factor); j1 < Math.min(499, idx2 + factor); j1++) {
 						// END Lat,Long
 						if (sensorsGrid[k1][j1] != null) {
 							// System.out.println("Sensors found for this link with sensor count="+
@@ -570,39 +558,25 @@ public class CreateListForHighways1to5New {
 							int numElem2 = sensorsGrid[k1][j1].size();
 							for (int i1 = 0; i1 < numElem2; i1++) {
 
-								if (LinkDirection.get(link.getLinkId()) == sensorsGridDir[k1][j1]
-										.get(i1)
-										&& (links_speed.get(index).get(
-												sensorsGrid[k1][j1].get(i1))[k] > 0.)) {
-									String[] nodes = link.getSt_name().split(
-											";");
+								if (LinkDirection.get(link.getLinkId()) == sensorsGridDir[k1][j1].get(i1)
+										&& (links_speed.get(index).get(sensorsGrid[k1][j1].get(i1))[k] > 0.)) {
+									String[] nodes = link.getSt_name().split(";");
 
 									int hit = 0;
 									for (int s = 0; s < nodes.length; s++) {
-										if (sensors_stNames.get(
-												sensorsGrid[k1][j1].get(i1))
-												.split(",")[0].equals(nodes[s]))
+										if (sensors_stNames.get(sensorsGrid[k1][j1].get(i1)).split(",")[0].equals(nodes[s]))
 											hit = 1;
-										if (sensors_stNames.get(
-												sensorsGrid[k1][j1].get(i1))
-												.split(",")[1].equals(nodes[s]))
+										if (sensors_stNames.get(sensorsGrid[k1][j1].get(i1)).split(",")[1].equals(nodes[s]))
 											hit = 1;
 									}
 
 									if (hit == 1) {
-										if (!available_sensors
-												.contains(sensorsGrid[k1][j1]
-														.get(i1)))
-											available_sensors
-													.add(sensorsGrid[k1][j1]
-															.get(i1));
+										if (!available_sensors.contains(sensorsGrid[k1][j1].get(i1)))
+											available_sensors.add(sensorsGrid[k1][j1].get(i1));
 										find_mark = 1;
 									}
-
 								}
-
 							}
-
 						}
 					}
 				}
@@ -692,8 +666,7 @@ public class CreateListForHighways1to5New {
 
 	private static void getLinkDirections() throws SQLException {
 		try {
-			FileInputStream fstream = new FileInputStream(
-					"H:\\Jiayunge\\highway_link_direction_G.csv");
+			FileInputStream fstream = new FileInputStream(root + "/highway_link_direction_G.csv");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -716,8 +689,7 @@ public class CreateListForHighways1to5New {
 
 	private static void getGridDetailsFromFile() {
 		try {
-			FileInputStream fstream = new FileInputStream(
-					"H:\\Jiayunge\\grid_highway.txt");
+			FileInputStream fstream = new FileInputStream(root + "/grid_highway.txt");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -735,8 +707,7 @@ public class CreateListForHighways1to5New {
 					flag = true;
 					// System.out.println(index1+" "+index2+" "+nodes[i]);
 					sensorsGrid[index1][index2].add(Integer.parseInt(nodes[i]));
-					sensorsGridDir[index1][index2].add(Integer
-							.parseInt(nodes[i + 1]));
+					sensorsGridDir[index1][index2].add(Integer.parseInt(nodes[i + 1]));
 					i = i + 2;
 				}
 				if (flag)

@@ -58,7 +58,8 @@ public class CreateListForArterials1to5New {
 	static ArrayList<Integer> check = new ArrayList<Integer>();
 	private static int links_with_sensor_count;
 	// private static String FILE_LINK ="H:\\clearp_arterial\\links_all_2.csv";
-	private static String FILE_LINK = "H:\\Jiayunge\\Edges.csv";
+	private static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
+	private static String FILE_LINK = "Edges.csv";
 	// "H:\\clearp\\links_all.csv";
 	private static String[] days = { "Monday", "Tuesday", "Wednesday",
 			"Thursday", "Friday", "Saturday", "Sunday" };
@@ -153,8 +154,7 @@ public class CreateListForArterials1to5New {
 
 	public static void getlinksFuncAndSpeedcatInfo() {
 		try {
-			FileInputStream fstream = new FileInputStream(
-					"H:\\Jiayunge\\Edges_withSpeedCat_12345.csv");
+			FileInputStream fstream = new FileInputStream(root + "/Edges_withSpeedCat_12345.csv");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -198,7 +198,7 @@ public class CreateListForArterials1to5New {
 		BufferedWriter out = null;
 		try {
 
-			fstream = new FileWriter("H:\\Jiayunge\\AverageEdgeSpeed_" + day + ".txt");
+			fstream = new FileWriter(root + "/AverageEdgeSpeed_" + day + ".txt");
 			out = new BufferedWriter(fstream);
 
 			while (i < links_with_sensor_count) {
@@ -292,8 +292,7 @@ public class CreateListForArterials1to5New {
 			System.out.println("Reading Edge Sensors");
 
 			int count = 0;
-			FileInputStream fstream = new FileInputStream(
-					"H:\\Jiayunge\\Arterial_Sensor_close.csv");
+			FileInputStream fstream = new FileInputStream(root + "/Arterial_Sensor_close.csv");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -343,7 +342,7 @@ public class CreateListForArterials1to5New {
 	private static void readFileInMemory() {
 
 		try {
-			FileInputStream fstream = new FileInputStream(FILE_LINK);
+			FileInputStream fstream = new FileInputStream(root + "/" + FILE_LINK);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -424,8 +423,7 @@ public class CreateListForArterials1to5New {
 
 				LinkInfo link = links_with_sensors[i];
 				// System.out.println(i + " " + link.toString());
-				fstream = new FileWriter("H:\\Jiayunge\\Output_" + day + "\\"
-						+ link.getLinkId() + ".txt");
+				fstream = new FileWriter(root + "/Output_" + day + "/" + link.getLinkId() + ".txt");
 				out = new BufferedWriter(fstream);
 
 				double distance = getDistance(link);

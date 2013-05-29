@@ -413,7 +413,6 @@ public class CreateHighwayGridFile {
 					out.write(index1 + "," + index2);
 					double lati1 = i, lati2 = i - latstep, longi1 = j, longi2 = j
 							+ longstep;
-					// ?
 					String geomQuery = "MDSYS.SDO_GEOMETRY(2003,8307,NULL,SDO_ELEM_INFO_ARRAY(1,1003,3),SDO_ORDINATE_ARRAY("
 							+ longi1 + "," + lati1 + "," + longi2 + "," + lati2 + "))";
 					String sql = "select link_id from highway_congestion_config where "
