@@ -2133,8 +2133,7 @@ public class GenerateEdgesFile {
 			double MinLat = 33.59831;
 			double MaxLat = 34.33519;
 
-			FileWriter fstream_out = new FileWriter(config.getRoot()
-					+ "/Edges_G_12345.csv");
+			FileWriter fstream_out = new FileWriter(config.getRoot() + "/Edges_G_12345.csv");
 			BufferedWriter out = new BufferedWriter(fstream_out);
 
 			Connection con = getConnection();
@@ -2143,7 +2142,7 @@ public class GenerateEdgesFile {
 			// "SELECT    dc.link_id, dc.func_class,dc.Dir_Travel, dc.st_name, dc.Speed_Cat, dc.geom  FROM streets_dca1_new dc, zlevels_new z1, zlevels_new z2 where  z1.node_id !=0 and z2.node_id !=0 and Ref_In_Id = z1.node_id and nRef_In_Id = z2.node_id order by dc.link_id   ";
 			// Selesct the link_id which has zlevels info
 			// can eliminate different zlevel here!
-			String sql_o = "SELECT distinct dc.link_id FROM streets_dca1_new dc, zlevels_new z1, zlevels_new z2 where  z1.node_id !=0 and z2.node_id !=0 and Ref_In_Id = z1.node_id and nRef_In_Id = z2.node_id order by dc.link_id   ";
+			String sql_o = "SELECT distinct dc.link_id FROM streets_dca1_new dc, zlevels_new z1, zlevels_new z2 where z1.node_id !=0 and z2.node_id !=0 and Ref_In_Id = z1.node_id and nRef_In_Id = z2.node_id order by dc.link_id";
 
 			PreparedStatement pstatement_o = con.prepareStatement(sql_o,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
