@@ -72,7 +72,7 @@ public class RoadPatternGeneration {
 				double distance = DistanceCalculator.CalculationByDistance(link.getNodes()[0], link.getNodes()[1]);
 				int[] intervals = patternInfo.getIntervals();
 				for(int j = 0; j < 60 && j < intervals.length; j++) {
-					double speed = (double)Math.round(distance / intervals[j] * 1000000 * 100) / 100;
+					double speed = (double)Math.round(distance / intervals[j] * 60 * 60 * 1000 * 100) / 100;
 					System.out.print(UtilClass.getStartTime(j) + "-" + UtilClass.getEndTime(j) + 
 						":" + speed + ", ");
 					out.write(UtilClass.getStartTime(j) + "-" + UtilClass.getEndTime(j) + 

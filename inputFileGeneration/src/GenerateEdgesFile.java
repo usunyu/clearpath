@@ -103,7 +103,7 @@ public class GenerateEdgesFile {
 		input_mod_add_zlevles();
 
 		// Edges_G_12345_final.csv: link_id, func_class, st_name,
-		// geom.sdo_point.y(ref), node_id(ref), node_id(nref),
+		// node_id(ref), node_id(nref), geom.sdo_point.y(ref),
 		// geom.sdo_point.x(ref), geom.sdo_point.y(nref), geom.sdo_point.x(nref)
 
 		// Nodes_G_12345.csv: node_id, geom.sdo_point.y, geom.sdo_point.x
@@ -204,15 +204,13 @@ public class GenerateEdgesFile {
 
 	public static void addDirectionAccessToInputFile() {
 		try {
-			FileInputStream fstream = new FileInputStream(config.getRoot()
-					+ "/Edges.csv");
+			FileInputStream fstream = new FileInputStream(config.getRoot() + "/Edges.csv");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
 			String strLine;
 
-			FileWriter fstream_out = new FileWriter(config.getRoot()
-					+ "/Edges_withDA.csv");
+			FileWriter fstream_out = new FileWriter(config.getRoot() + "/Edges_withDA.csv");
 			BufferedWriter out = new BufferedWriter(fstream_out);
 
 			String[] buffer = new String[2];
@@ -225,8 +223,7 @@ public class GenerateEdgesFile {
 				if (counter == 2) {
 					String[] nodes1 = buffer[0].split(",");
 					String[] nodes2 = buffer[1].split(",");
-					if (nodes1[3].equals(nodes2[4])
-							&& nodes1[4].equals(nodes2[3])) {
+					if (nodes1[3].equals(nodes2[4]) && nodes1[4].equals(nodes2[3])) {
 						out.write(buffer[0] + "," + "2\n");
 						out.write(buffer[1] + "," + "2\n");
 						counter = 0;
@@ -246,6 +243,7 @@ public class GenerateEdgesFile {
 			if (outputcount != realcount)
 				out.write(buffer[0] + ",1\n");
 
+			br.close();
 			out.close();
 			fstream_out.close();
 			System.out.println("finished!!!!");
@@ -1227,14 +1225,12 @@ public class GenerateEdgesFile {
 		try {
 			Connection con = getConnection();
 
-			FileInputStream fstream = new FileInputStream(config.getRoot()
-					+ "/Edges.csv");
+			FileInputStream fstream = new FileInputStream(config.getRoot() + "/Edges.csv");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 
-			FileWriter fstream_out = new FileWriter(config.getRoot()
-					+ "/Edges_withSpeedCat_12345.csv");
+			FileWriter fstream_out = new FileWriter(config.getRoot() + "/Edges_withSpeedCat_12345.csv");
 			out = new BufferedWriter(fstream_out);
 			int count = 0;
 			while ((strLine = br.readLine()) != null) {
@@ -1243,9 +1239,7 @@ public class GenerateEdgesFile {
 				String link_id = nodes[0];
 				String sql = "select speed_cat from streets_dca1_new where link_id = "
 						+ link_id;
-				PreparedStatement f = con.prepareStatement(sql,
-						ResultSet.TYPE_SCROLL_INSENSITIVE,
-						ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement f = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				ResultSet rs = f.executeQuery();
 
 				rs.first();
@@ -1256,6 +1250,7 @@ public class GenerateEdgesFile {
 				f.close();
 			}
 
+			br.close();
 			out.close();
 			System.out.println("finished!!!");
 
@@ -1324,14 +1319,12 @@ public class GenerateEdgesFile {
 		try {
 			Connection con = getConnection();
 
-			FileInputStream fstream = new FileInputStream(config.getRoot()
-					+ "/Edges.csv");
+			FileInputStream fstream = new FileInputStream(config.getRoot() + "/Edges.csv");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 
-			FileWriter fstream_out = new FileWriter(config.getRoot()
-					+ "/Edges_G_12345_final_extraStnames.csv");
+			FileWriter fstream_out = new FileWriter(config.getRoot() + "/Edges_G_12345_final_extraStnames.csv");
 			out = new BufferedWriter(fstream_out);
 			int count = 0;
 			while ((strLine = br.readLine()) != null) {
@@ -1340,9 +1333,7 @@ public class GenerateEdgesFile {
 				String link_id = nodes[0];
 				String sql = "select st_name from streets_dca1_new where link_id = "
 						+ link_id;
-				PreparedStatement f = con.prepareStatement(sql,
-						ResultSet.TYPE_SCROLL_INSENSITIVE,
-						ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement f = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				ResultSet rs = f.executeQuery();
 				int row_count = 0;
 				while (rs.next())
@@ -1368,6 +1359,7 @@ public class GenerateEdgesFile {
 			}
 
 			out.close();
+			br.close();
 			System.out.println("ok!!!");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1515,10 +1507,9 @@ public class GenerateEdgesFile {
 			Set<String> keys = links_old.keySet();
 			Iterator<String> iter = keys.iterator();
 			System.out.println(keys.size());
-			Connection con = getConnection();
+//			Connection con = getConnection();
 			int i = 0, count = 0;
-			FileWriter fstream = new FileWriter(config.getRoot()
-					+ "/highway_link_direction_G.csv");
+			FileWriter fstream = new FileWriter(config.getRoot() + "/highway_link_direction_G.csv");
 			out = new BufferedWriter(fstream);
 
 			while (i < keys.size()) {
@@ -1537,7 +1528,7 @@ public class GenerateEdgesFile {
 				double lati2 = link.getNodes()[1].getLati();
 				double longi2 = link.getNodes()[1].getLongi();
 
-				// choose name, special?
+				// choose name, special
 				String[] names = link.getSt_name().split(";");
 
 				int find_mark1 = 0;
@@ -1889,17 +1880,14 @@ public class GenerateEdgesFile {
 
 	public static void create_nodesFile() {
 		try {
-			FileInputStream fstream = new FileInputStream(config.getRoot()
-					+ "/Edges_G_12345_with_zlevels.csv");
+			FileInputStream fstream = new FileInputStream(config.getRoot() + "/Edges_G_12345_with_zlevels.csv");
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
-			FileWriter fstream_out1 = new FileWriter(config.getRoot()
-					+ "/Edges_G_12345_final.csv");
+			FileWriter fstream_out1 = new FileWriter(config.getRoot() + "/Edges_G_12345_final.csv");
 			BufferedWriter out1 = new BufferedWriter(fstream_out1);
 
-			FileWriter fstream_out2 = new FileWriter(config.getRoot()
-					+ "/Nodes_G_12345.csv");
+			FileWriter fstream_out2 = new FileWriter(config.getRoot() + "/Nodes_G_12345.csv");
 			BufferedWriter out2 = new BufferedWriter(fstream_out2);
 
 			String strLine;
@@ -1920,12 +1908,14 @@ public class GenerateEdgesFile {
 				double y2 = Double.parseDouble(nodes[7]);
 				int z2 = Integer.parseInt(nodes[8]);
 				String check2 = x2 + "," + y2 + "," + z2;
-
+				
+				// lookup(HashMap<String, Integer>)
 				if (lookup.containsKey(check1))
 					mark1 = 1;
 				if (lookup.containsKey(check2))
 					mark2 = 1;
-
+				
+				// can add z_level here
 				if (mark1 == 0) {
 					out2.write("n" + count_nodes + "," + x1 + "," + y1 + "\n");
 					lookup.put(check1, count_nodes);
