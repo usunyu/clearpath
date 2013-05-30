@@ -22,8 +22,36 @@ public class RoadPatternGeneration {
 		searchStreet(street);
 
 		createPattern();
+		
+//		test();
 	}
-
+	
+	private static void test() {
+		FileInputStream fstream;
+		try {
+			fstream = new FileInputStream(root + "/Edges_G_12345.csv");
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			
+			String strLine;
+			long link_id_pre = -1;
+			while ((strLine = br.readLine()) != null) {
+				String[] nodes = strLine.split(",");
+				long link_id = Long.parseLong(nodes[0]);
+				
+				if (link_id != link_id_pre) {
+				}
+				else {
+					System.out.println("Find same link_id: " + link_id);
+				}
+			}
+			System.out.println("Finished!");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	private static void createPattern() {
 		FileWriter fstream = null;
 		BufferedWriter out = null;

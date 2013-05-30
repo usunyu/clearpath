@@ -1980,12 +1980,11 @@ public class GenerateEdgesFile {
 				String[] nodes = strLine.split(",");
 				long link_id = Long.parseLong(nodes[0]);
 
+				// == will not happen
 				if (link_id != link_id_pre) {
 					String sql = "SELECT z.geom.sdo_point.y,z.geom.sdo_point.x,z.z_level FROM zlevels_new z where   z.link_id ="
 							+ nodes[0];
-					PreparedStatement pstatement = con.prepareStatement(sql,
-							ResultSet.TYPE_SCROLL_INSENSITIVE,
-							ResultSet.CONCUR_READ_ONLY);
+					PreparedStatement pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 					ResultSet res = pstatement.executeQuery();
 
 					num = 0;
@@ -2008,6 +2007,7 @@ public class GenerateEdgesFile {
 				double x2 = Double.parseDouble(nodes[5]);
 				double y2 = Double.parseDouble(nodes[6]);
 				int c = 0;
+				// should extract from check, not all
 				for (int i = 0; i < num; i++) {
 					if (x1 == check[i][0] && y1 == check[i][1]) {
 						zlevel1 = (int) check[i][2];
@@ -2142,11 +2142,11 @@ public class GenerateEdgesFile {
 			// "SELECT    dc.link_id, dc.func_class,dc.Dir_Travel, dc.st_name, dc.Speed_Cat, dc.geom  FROM streets_dca1_new dc, zlevels_new z1, zlevels_new z2 where  z1.node_id !=0 and z2.node_id !=0 and Ref_In_Id = z1.node_id and nRef_In_Id = z2.node_id order by dc.link_id   ";
 			// Selesct the link_id which has zlevels info
 			// can eliminate different zlevel here!
-			String sql_o = "SELECT distinct dc.link_id FROM streets_dca1_new dc, zlevels_new z1, zlevels_new z2 where z1.node_id !=0 and z2.node_id !=0 and Ref_In_Id = z1.node_id and nRef_In_Id = z2.node_id order by dc.link_id";
+			// only extract the link_id has corresponding node_id in zlevels_new here
+			String sql_o = "SELECT distinct dc.link_id FROM streets_dca1_new dc, zlevels_new z1, zlevels_new z2" + 
+					" where z1.node_id !=0 and z2.node_id !=0 and Ref_In_Id = z1.node_id and nRef_In_Id = z2.node_id order by dc.link_id";
 
-			PreparedStatement pstatement_o = con.prepareStatement(sql_o,
-					ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement pstatement_o = con.prepareStatement(sql_o, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			ResultSet res_o = pstatement_o.executeQuery();
 
 			int count = 0;
@@ -2154,6 +2154,7 @@ public class GenerateEdgesFile {
 			while (res_o.next()) {
 				long link_id = res_o.getLong(1);
 
+				// links(HashMap<Long, Integer>) check if duplicate
 				if (links.containsKey(link_id))
 					continue;
 				else
@@ -2162,9 +2163,7 @@ public class GenerateEdgesFile {
 				// Select Info according the link_id selected
 				String sql = "SELECT  dc.link_id, dc.func_class,dc.Dir_Travel, dc.st_name, dc.Speed_Cat, dc.geom  FROM streets_dca1_new dc where dc.link_id = "
 						+ link_id;
-				PreparedStatement pstatement = con.prepareStatement(sql,
-						ResultSet.TYPE_SCROLL_INSENSITIVE,
-						ResultSet.CONCUR_READ_ONLY);
+				PreparedStatement pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				ResultSet res = pstatement.executeQuery();
 				res.first();
 
@@ -2184,12 +2183,10 @@ public class GenerateEdgesFile {
 					point_iref[0] = points[(i + 1) * 2 + 1];
 					point_iref[1] = points[(i + 1) * 2 + 0];
 					if (Dir_Travel.equals("B")) {
-						out.write(link_id + "," + func_class + "," + st_name
-								+ "," + point_ref[0] + "," + point_ref[1] + ","
+						out.write(link_id + "," + func_class + "," + st_name + "," + point_ref[0] + "," + point_ref[1] + ","
 								+ point_iref[0] + "," + point_iref[1] + "\r\n");
 						out.write(link_id + "," + func_class + "," + st_name
-								+ "," + point_iref[0] + "," + point_iref[1]
-								+ "," + point_ref[0] + "," + point_ref[1]
+								+ "," + point_iref[0] + "," + point_iref[1] + "," + point_ref[0] + "," + point_ref[1]
 								+ "\r\n");
 					} else if (Dir_Travel.equals("F")) {
 						out.write(link_id + "," + func_class + "," + st_name
@@ -2197,8 +2194,7 @@ public class GenerateEdgesFile {
 								+ point_iref[0] + "," + point_iref[1] + "\r\n");
 					} else {
 						out.write(link_id + "," + func_class + "," + st_name
-								+ "," + point_iref[0] + "," + point_iref[1]
-								+ "," + point_ref[0] + "," + point_ref[1]
+								+ "," + point_iref[0] + "," + point_iref[1] + "," + point_ref[0] + "," + point_ref[1]
 								+ "\r\n");
 					}
 
