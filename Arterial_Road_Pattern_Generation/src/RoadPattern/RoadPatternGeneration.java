@@ -10,95 +10,37 @@ public class RoadPatternGeneration {
 	/**
 	 * @param args
 	 */
+	// street
 	static String street = "FIGUEROA";
+	// database
 	static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
+	static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
+	static String userName = "clearp";
+	static String password = "clearp";
+	static Connection connHome = null;
+	// data struct
 	static HashMap<String, PatternPairInfo> patternMap = new HashMap<String, PatternPairInfo>();
 	static ArrayList<LinkInfo> linkList = new ArrayList<LinkInfo>();
 	static ArrayList<LinkInfo> searchList = new ArrayList<LinkInfo>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		readFileToMemory();
-		searchStreet(street);
-		createPattern();
-//		 test();
+		
+//		readFileToMemory();
+//		searchStreet(street);
+//		createPattern();
 	}
 
 	private static Connection getConnection() {
-		String url_home = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
-		String userName = "clearp";
-		String password = "clearp";
-		Connection connHome = null;
-		
 		try {
 			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-			connHome = DriverManager.getConnection(url_home, userName, password);
+			connHome = DriverManager.getConnection(urlHome, userName, password);
 			return connHome;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return connHome;
 
-	}
-
-	private static void test() {
-
-		BufferedWriter out;
-		try {
-			FileWriter fstream = new FileWriter("grid_highway_original.txt");
-			out = new BufferedWriter(fstream);
-
-			double lat1 = 34.2824, lat2 = 33.9072, long1 = -119.3, long2 = -117.6;
-			// double lat1= 34.336,lat2=33.8,long1=-119.3,long2=-117.6;
-			double latstep = (lat1 - lat2) / 500.0;
-			double longstep = (long2 - long1) / 500.0;
-			System.out.println(latstep + " " + longstep);
-			Connection con = getConnection();
-			int index1 = 0, count = 0;
-			for (double i = lat1; i > lat2; index1++, i = i - latstep) {
-				System.out.println(index1);
-				if (index1 >= 500)
-					continue;
-				int index2 = 0;
-				for (double j = long1; j < long2; index2++, j = j + longstep) {
-					System.out.print(" " + index2);
-					if (index2 >= 500)
-						continue;
-					out.write(index1 + "," + index2);
-					double lati1 = i, lati2 = i - latstep, longi1 = j, longi2 = j
-							+ longstep;
-					String geomQuery = "MDSYS.SDO_GEOMETRY(2003,8307,NULL,SDO_ELEM_INFO_ARRAY(1,1003,3),SDO_ORDINATE_ARRAY("
-							+ longi1 + "," + lati1 + "," + longi2 + "," + lati2 + "))";
-					String sql = "select link_id from highway_congestion_config where "
-							+ "SDO_relate(start_lat_long,"
-							+ geomQuery
-							+ ",'mask=inside')='TRUE'";
-					// System.out.println(sql);
-
-					PreparedStatement f = con.prepareStatement(sql,
-							ResultSet.TYPE_SCROLL_INSENSITIVE,
-							ResultSet.CONCUR_READ_ONLY);
-					ResultSet rs = f.executeQuery();
-
-					// sensorsGrid[index1][index2]= new ArrayList<Integer>();
-					while (rs.next()) {
-						count++;
-						out.write("," + rs.getInt(1));
-						// sensorsGrid[index1][index2].add(rs.getInt(1));
-					}
-					rs.close();
-					f.close();
-					out.write("\n");
-				}
-			}
-			con.close();
-			out.close();
-			fstream.close();
-			System.out.println("\n" + count);
-			System.out.println("finished");
-		} catch (Exception r) {
-			r.printStackTrace();
-		}
 	}
 
 	private static void createPattern() {
