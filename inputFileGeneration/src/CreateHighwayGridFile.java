@@ -390,8 +390,7 @@ public class CreateHighwayGridFile {
 	public static void getGridSensors() throws SQLException {
 
 		try {
-			FileWriter fstream = new FileWriter(config.getRoot()
-					+ "/grid_highway_original.txt");
+			FileWriter fstream = new FileWriter(config.getRoot() + "/grid_highway_original.txt");
 			out = new BufferedWriter(fstream);
 
 			double lat1 = 34.2824, lat2 = 33.9072, long1 = -119.3, long2 = -117.6;
@@ -411,8 +410,7 @@ public class CreateHighwayGridFile {
 					if (index2 >= 500)
 						continue;
 					out.write(index1 + "," + index2);
-					double lati1 = i, lati2 = i - latstep, longi1 = j, longi2 = j
-							+ longstep;
+					double lati1 = i, lati2 = i - latstep, longi1 = j, longi2 = j + longstep;
 					String geomQuery = "MDSYS.SDO_GEOMETRY(2003,8307,NULL,SDO_ELEM_INFO_ARRAY(1,1003,3),SDO_ORDINATE_ARRAY("
 							+ longi1 + "," + lati1 + "," + longi2 + "," + lati2 + "))";
 					String sql = "select link_id from highway_congestion_config where "
@@ -733,8 +731,7 @@ public class CreateHighwayGridFile {
 	private static Connection getConnection() {
 		try {
 			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-			connHome = DriverManager
-					.getConnection(url_home, userName, password);
+			connHome = DriverManager.getConnection(url_home, userName, password);
 			return connHome;
 		} catch (Exception e) {
 			e.printStackTrace();
