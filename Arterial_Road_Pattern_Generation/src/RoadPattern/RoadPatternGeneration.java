@@ -3,6 +3,9 @@ package RoadPattern;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+
+import oracle.spatial.geometry.JGeometry;
+import oracle.sql.STRUCT;
 import Objects.*;
 
 public class RoadPatternGeneration {
@@ -19,6 +22,8 @@ public class RoadPatternGeneration {
 	static String password = "clearp";
 	static Connection connHome = null;
 	// data struct
+	static ArrayList<LinkInfo> edgeList = new ArrayList<LinkInfo>();
+	static HashMap<Integer, Boolean> checkEdge = new HashMap<Integer, Boolean>();
 	static ArrayList<SensorInfo> sensorList = new ArrayList<SensorInfo>();
 	static HashMap<Integer, Boolean> checkSensor = new HashMap<Integer, Boolean>();
 	static HashMap<String, PatternPairInfo> patternMap = new HashMap<String, PatternPairInfo>();
@@ -53,13 +58,33 @@ public class RoadPatternGeneration {
 				int linkId = res.getInt(1);
 				String dirTravel = res.getString(2);
 				String stName = res.getString(3);
-				String speedCar = res.getString(5);
-				int refNode = res.getInt(6);
-				int nrefNode = res.getInt(7);
+				int func_class = res.getInt(4);
+				// handle for geom point
+				STRUCT st = (STRUCT)res.getObject(5);
+				JGeometry geom = JGeometry.load(st);
+				double[] geomPoints = geom.getOrdinatesArray();
+				ArrayList<PairInfo> nodeList = new ArrayList<PairInfo>();
+				for(int i = 0; i < geom.getNumPoints() - 1; i++) {
+					double latitude = geomPoints[i * 2 + 1];
+					double longitude = geomPoints[i * 2 + 0];
+					PairInfo node = new PairInfo(latitude, longitude);
+					nodeList.add(node);
+				}
+				
+				String speedCar = res.getString(6);
+				int refNode = res.getInt(7);
+				int nrefNode = res.getInt(8);
+				LinkInfo link = new LinkInfo(linkId, func_class, stName, refNode, nrefNode, nodeList);
+				if(checkEdge.get(linkId) == null) {
+					checkEdge.put(linkId, true);
+					edgeList.add(link);
+				}
 			}
 			res.close();
 			pstatement.close();
 			con.close();
+			
+			System.out.println("Fetch Edge Success!");
 		}
 		catch(Exception e) {
 			e.printStackTrace();

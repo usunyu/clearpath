@@ -60,29 +60,36 @@ public class LinkInfo {
 		this.numPairs = numPairs;
 	}
 	
-	public LinkInfo(String linkId, int funcClass, String st_name,
-			String st_node, String end_node, ArrayList<PairInfo> nodeList) {
+	public LinkInfo(int linkId, int func_class, String st_name,
+			int startNode, int endNode, ArrayList<PairInfo> nodeList) {
 		super();
-		sensors = new ArrayList<Integer>();
-		LinkId = linkId;
-		this.func_class = funcClass;
+		this.linkId = linkId;
+		this.func_class = func_class;
 		this.st_name = st_name;
-		this.start_node = st_node;
-		this.end_node = end_node;
+		this.startNode = startNode;
+		this.endNode = endNode;
 		this.nodeList = nodeList;
 	}
 
+	/* Yu Sun Add */
+	int linkId;
+	int startNode;
+	int endNode;
+	ArrayList<PairInfo> nodeList;
+	int sensor;
+	String link_id;
+	/* Yu Sun Add */
+	
 	String LinkId;
 	int func_class;
-	String link_id;
 	String start_node;
 	String end_node;
-	int numPairs;
 	String st_name;
-	public ArrayList<Integer> sensors;
-
+	
 	PairInfo Nodes[];
-	ArrayList<PairInfo> nodeList;
+	int numPairs;
+	public ArrayList<Integer> sensors;
+	
 	
 	public String getPureLinkId() {
 		return link_id;
