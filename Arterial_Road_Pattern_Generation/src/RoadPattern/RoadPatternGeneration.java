@@ -38,7 +38,19 @@ public class RoadPatternGeneration {
 	}
 	
 	private static void fetchEdge() {
-
+		try {
+			System.out.println("Fetch Edge for " + street);
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			
+			sql = "select link_id, func_class,  from streets_dca1_new where upper(st_name) like '%" + street + "%'";
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static void fetchSensor() {
