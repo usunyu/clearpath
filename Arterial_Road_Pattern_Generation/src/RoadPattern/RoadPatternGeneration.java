@@ -19,18 +19,81 @@ public class RoadPatternGeneration {
 	static String password = "clearp";
 	static Connection connHome = null;
 	// data struct
+	static ArrayList<SensorInfo> sensorList = new ArrayList<SensorInfo>();
+	static HashMap<Integer, Boolean> checkSensor = new HashMap<Integer, Boolean>();
 	static HashMap<String, PatternPairInfo> patternMap = new HashMap<String, PatternPairInfo>();
 	static ArrayList<LinkInfo> linkList = new ArrayList<LinkInfo>();
 	static ArrayList<LinkInfo> searchList = new ArrayList<LinkInfo>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		fetchSensor();
 		
-//		readFileToMemory();
-//		searchStreet(street);
-//		createPattern();
+		fetchEdge();
+
+		
+		// readFileToMemory();
+		// searchStreet();
+		// createPattern();
+	}
+	
+	private static void fetchEdge() {
+
 	}
 
+	private static void fetchSensor() {
+		try {
+			System.out.println("Fetch Sensor for " + street);
+			
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			// assume this is sensing the specified street
+			sql = "select link_id, onstreet, fromstreet, direction from arterial_congestion_config " + 
+			"where upper(onstreet) like '%" + street + "%'";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while(res.next()) {
+				int sensorId = res.getInt(1);
+				String onStreet = res.getString(2);
+				String fromStreet = res.getString(3);
+				int direction = res.getInt(4);
+				SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, direction);
+				if(checkSensor.get(sensorId) == null) {
+					checkSensor.put(sensorId, true);
+					sensorList.add(sensorInfo);
+				}
+			}
+			
+			// this maybe sensing the specified street
+			sql = "select link_id, onstreet, fromstreet, direction from arterial_congestion_config " +
+			"where upper(fromstreet) like '%" + street + "%'";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while(res.next()) {
+				int sensorId = res.getInt(1);
+				String onStreet = res.getString(2);
+				String fromStreet = res.getString(3);
+				int direction = res.getInt(4);
+				SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, direction);
+				if(checkSensor.get(sensorId) == null) {
+					checkSensor.put(sensorId, true);
+					sensorList.add(sensorInfo);
+				}
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+			
+			System.out.println("Fetch Sensor Success!");
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private static Connection getConnection() {
 		try {
 			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
@@ -85,7 +148,7 @@ public class RoadPatternGeneration {
 		}
 	}
 
-	private static void searchStreet(String street) {
+	private static void searchStreet() {
 		System.out.println("search " + street + " start");
 		int sum = linkList.size();
 		for (int i = 0; i < sum; i++) {
