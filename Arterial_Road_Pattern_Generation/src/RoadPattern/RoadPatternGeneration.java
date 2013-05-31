@@ -46,7 +46,20 @@ public class RoadPatternGeneration {
 			ResultSet res = null;
 			con = getConnection();
 			
-			sql = "select link_id, func_class,  from streets_dca1_new where upper(st_name) like '%" + street + "%'";
+			sql = "select * from streets_dca1_new where upper(st_name) like '%" + street + "%'";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while(res.next()) {
+				int linkId = res.getInt(1);
+				String dirTravel = res.getString(2);
+				String stName = res.getString(3);
+				String speedCar = res.getString(5);
+				int refNode = res.getInt(6);
+				int nrefNode = res.getInt(7);
+			}
+			res.close();
+			pstatement.close();
+			con.close();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
