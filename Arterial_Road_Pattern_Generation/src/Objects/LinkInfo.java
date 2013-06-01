@@ -86,6 +86,14 @@ public class LinkInfo {
 	public SensorInfo getSensor() {
 		return sensor;
 	}
+	
+	public int getStartNode() {
+		return startNode;
+	}
+	
+	public int getEndNode() {
+		return endNode;
+	}
 	/* Yu Sun Add */
 	
 	String LinkId;

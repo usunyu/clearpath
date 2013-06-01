@@ -121,7 +121,15 @@ public class RoadPatternGeneration {
 		}
 		
 		// second round
-		
+		for(int i = 0; i < edgeList.size(); i++) {
+			LinkInfo link = edgeList.get(i);
+			if(link.getSensor() == null) {
+				System.out.println("processing link id: " + link.getIntLinkId());
+				int startNode = link.getStartNode();
+				int endNode = link.getEndNode();
+				
+			}
+		}
 		
 		System.out.println("Match Sensors Success, " + find + " link has sensor, " + notFind + " link has no sensor");
 	}
