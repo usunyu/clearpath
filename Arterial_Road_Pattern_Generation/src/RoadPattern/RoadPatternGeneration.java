@@ -50,21 +50,43 @@ public class RoadPatternGeneration {
 		
 		for(int i = 0; i < edgeList.size(); i++) {
 			LinkInfo link = edgeList.get(i);
-			
 			System.out.println("processing link id: " + link.getIntLinkId());
 			ArrayList<PairInfo> nodeList = link.getNodeList();
 			boolean findSensor = false;
 			if(nodeList.size() > 2) {
 				// examine the intermediate node first
-				double step = searchDistance / 10;
-				
-				for(int j = 1; j < nodeList.size() - 1; j++) {
-					
+				System.out.println("has more than 2 nodes");
+				for(double step = searchDistance / 10; step < searchDistance; step += step) {
+					// skip first one and last one
+					for(int j = 1; j < nodeList.size() - 1; j++) {
+						PairInfo node1 = nodeList.get(j);
+						// examine all the sensor extracted
+						for(int k = 0; k < sensorList.size(); k++) {
+							SensorInfo sensor = sensorList.get(k);
+							PairInfo node2 = sensor.getNode();
+							double distance = DistanceCalculator.CalculationByDistance(node1, node2);
+							if(distance < step) {
+								// find the sensor
+								link.setSensor(sensor);
+								findSensor = true;
+								System.out.println("find sensor " + sensor.getSensorId() + " for link " + link.getLinkId());
+								break;
+							}
+						}
+						if(findSensor)
+							break;
+					}
+					if(findSensor)
+						break;
 				}
 			}
 			
 			if(!findSensor) {
 				// examine the vertex
+				System.out.println("has 2 nodes");
+				for(double step = searchDistance / 10; step < searchDistance; step += step) {
+					
+				}
 			}
 			
 			for(int j = 0; j < nodeList.size(); j++) {
