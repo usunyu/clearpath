@@ -16,7 +16,7 @@ public class RoadPatternGeneration {
 	// street
 	static String street = "FIGUEROA";
 	// parameter
-	static double searchDistance = 0.1;
+	static double searchDistance = 0.15;
 	static int devide = 1000;
 	// database
 	static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
@@ -41,20 +41,26 @@ public class RoadPatternGeneration {
 
 		matchEdgeSensor();
 		
+		generatePattern();
+		
+		// printEdgeWithSensor();
+		
 		// readFileToMemory();
 		// searchStreet();
 		// createPattern();
 	}
 	
+	private static void generatePattern() {
+		
+	}
+	
 	private static void matchEdgeSensor() {
 		System.out.println("Match Sensors for " + street);
 		
-		int notFind = 0;
-		int find = 0;
 		// first round
 		for(int i = 0; i < edgeList.size(); i++) {
 			LinkInfo link = edgeList.get(i);
-			System.out.println("processing link id: " + link.getIntLinkId());
+//			System.out.println("processing link id: " + link.getIntLinkId());
 			ArrayList<PairInfo> nodeList = link.getNodeList();
 			boolean findSensor = false;
 			if(nodeList.size() > 2) {
@@ -73,7 +79,6 @@ public class RoadPatternGeneration {
 								// find the sensor
 								link.setSensor(sensor);
 								findSensor = true;
-								find++;
 								System.out.println("find sensor " + sensor.getSensorId() + " for link " + link.getLinkId());
 								break;
 							}
@@ -101,7 +106,6 @@ public class RoadPatternGeneration {
 								// find the sensor
 								link.setSensor(sensor);
 								findSensor = true;
-								find++;
 								System.out.println("find sensor " + sensor.getSensorId() + " for link " + link.getLinkId());
 								break;
 							}
@@ -115,23 +119,96 @@ public class RoadPatternGeneration {
 			}
 			
 			if(!findSensor) {
-				notFind++;
 				System.out.println("cannot find sensor for link " + link.getIntLinkId());
 			}
 		}
-		
-		// second round
-		for(int i = 0; i < edgeList.size(); i++) {
+		int count = 0;
+		for(int i = 0; i < edgeList.size(); i ++) {
 			LinkInfo link = edgeList.get(i);
-			if(link.getSensor() == null) {
-				System.out.println("processing link id: " + link.getIntLinkId());
-				int startNode = link.getStartNode();
-				int endNode = link.getEndNode();
-				
+			if(link.getSensor() != null) {
+				count++;
 			}
 		}
+		System.out.println("there are " + count + " link has sensor in first round");
 		
-		System.out.println("Match Sensors Success, " + find + " link has sensor, " + notFind + " link has no sensor");
+		// second round
+		int lastCount = count;
+		while(count != edgeList.size()) {
+			for(int i = 0; i < edgeList.size(); i++) {
+				LinkInfo link = edgeList.get(i);
+				if(link.getSensor() != null) {
+					// left
+					if(i - 1 >= 0) {
+						LinkInfo linkL = edgeList.get(i - 1);
+						if(linkL.getSensor() == null) {
+							int a = Math.abs(link.getStartNode() - linkL.getStartNode());
+							int b = Math.abs(link.getStartNode() - linkL.getEndNode());
+							int c = Math.abs(link.getEndNode() - linkL.getStartNode());
+							int d = Math.abs(link.getEndNode() - linkL.getEndNode());
+							
+							int min = a < b ? a : b;
+							min = min < c ? min : c;
+							min = min < d ? min : d;
+							
+							if(min <= 100) {
+								linkL.setSensor(link.getSensor());
+								count++;
+							}
+						}
+					}
+					// right
+					if(i + 1 < edgeList.size()) {
+						LinkInfo linkR = edgeList.get(i + 1);
+						if(linkR.getSensor() == null) {
+							int a = Math.abs(link.getStartNode() - linkR.getStartNode());
+							int b = Math.abs(link.getStartNode() - linkR.getEndNode());
+							int c = Math.abs(link.getEndNode() - linkR.getStartNode());
+							int d = Math.abs(link.getEndNode() - linkR.getEndNode());
+							
+							int min = a < b ? a : b;
+							min = min < c ? min : c;
+							min = min < d ? min : d;
+							
+							if(min <= 100) {
+								linkR.setSensor(link.getSensor());
+								count++;
+							}
+						}
+					}
+				}
+			}
+			if(count == lastCount)
+				break;
+			lastCount = count;
+			System.out.println("there are " + count + " link has sensor in second round, there has " + edgeList.size() +" link");
+		}
+		
+		System.out.println("there are " + count + " link has sensor in second round");
+		System.out.println("Match Sensors Success!");
+	}
+	
+	private static void printEdgeWithSensor() {
+		int count = 0;
+		for(int i = 0; i < edgeList.size(); i ++) {
+			LinkInfo link = edgeList.get(i);
+			String sensor = "";
+			if(link.getSensor() != null) {
+				count++;
+				sensor = Integer.toString(link.getSensor().getSensorId());
+			}
+			else {
+				sensor = "NULL";
+			}
+//			System.out.println("LinkInfo [LinkId=" + link.getIntLinkId()
+//					+ ", Func Class=" + link.getFunc_class()
+//					+ ", Start Node=" + link.getStartNode()
+//					+ ", End Node=" + link.getEndNode()
+//					+ ", ST Name=" + link.getSt_name()
+//					+ ", Sensor=" + sensor
+//					+ ", Nodes=" + link.getNodeList().toString() + "]");
+		}
+		int countN = edgeList.size() - count;
+		System.out.println("there are " + count + " link has sensor, " + countN + " link has no sensor.");
 	}
 	
 	private static void fetchEdge() {
@@ -148,6 +225,7 @@ public class RoadPatternGeneration {
 			res = pstatement.executeQuery();
 			while(res.next()) {
 				int linkId = res.getInt(1);
+				System.out.println("fetching link " + linkId);
 				String dirTravel = res.getString(2);
 				String stName = res.getString(3);
 				int func_class = res.getInt(4);
@@ -169,7 +247,26 @@ public class RoadPatternGeneration {
 				LinkInfo link = new LinkInfo(linkId, func_class, stName, refNode, nrefNode, nodeList);
 				if(checkEdge.get(linkId) == null) {
 					checkEdge.put(linkId, true);
-					edgeList.add(link);
+					// sort link in edgeList by in_id
+					int inId = refNode < nrefNode ? refNode : nrefNode;
+					if(edgeList.isEmpty()) {
+						edgeList.add(link);
+					}
+					else {
+						boolean isAdd = false;
+						for(int i = 0; i < edgeList.size(); i++) {
+							int cstartNode = edgeList.get(i).getStartNode();
+							int cendNode = edgeList.get(i).getEndNode();
+							int cinId = cstartNode < cendNode ? cstartNode : cendNode;
+							if(inId < cinId) {
+								edgeList.add(i, link);
+								isAdd = true;
+								break;
+							}
+						}
+						if(!isAdd)
+							edgeList.add(link);
+					}
 				}
 			}
 			res.close();
@@ -199,6 +296,7 @@ public class RoadPatternGeneration {
 			res = pstatement.executeQuery();
 			while(res.next()) {
 				int sensorId = res.getInt(1);
+				System.out.println("fetching sensor " + sensorId);
 				String onStreet = res.getString(2);
 				String fromStreet = res.getString(3);
 				STRUCT st = (STRUCT) res.getObject(4);
@@ -254,6 +352,13 @@ public class RoadPatternGeneration {
 
 	}
 
+	private static void printEdge() {
+		for(int i = 0; i < edgeList.size(); i++) {
+			System.out.println(edgeList.get(i).getIntLinkId() + ": " +
+					edgeList.get(i).getStartNode() + ", " + edgeList.get(i).getEndNode());
+		}
+	}
+	
 	private static void createPattern() {
 		FileWriter fstream = null;
 		BufferedWriter out = null;

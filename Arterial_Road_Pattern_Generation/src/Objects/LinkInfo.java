@@ -79,12 +79,20 @@ public class LinkInfo {
 	SensorInfo sensor;
 	String link_id;
 	
+	public int getIntLinkId() {
+		return linkId;
+	}
+	
 	public void setSensor(SensorInfo sensor) {
 		this.sensor = sensor;
 	}
 	
 	public SensorInfo getSensor() {
 		return sensor;
+	}
+	
+	public ArrayList<PairInfo> getNodeList() {
+		return nodeList;
 	}
 	
 	public int getStartNode() {
@@ -94,6 +102,7 @@ public class LinkInfo {
 	public int getEndNode() {
 		return endNode;
 	}
+	
 	/* Yu Sun Add */
 	
 	String LinkId;
@@ -105,14 +114,6 @@ public class LinkInfo {
 	PairInfo Nodes[];
 	int numPairs;
 	public ArrayList<Integer> sensors;
-	
-	public ArrayList<PairInfo> getNodeList() {
-		return nodeList;
-	}
-	
-	public int getIntLinkId() {
-		return linkId;
-	}
 	
 	public String getPureLinkId() {
 		return link_id;
