@@ -48,6 +48,7 @@ public class RoadPatternGeneration {
 	private static void matchEdgeSensor() {
 		System.out.println("Match Sensors for " + street);
 		
+		int notFind = 0;
 		for(int i = 0; i < edgeList.size(); i++) {
 			LinkInfo link = edgeList.get(i);
 			System.out.println("processing link id: " + link.getIntLinkId());
@@ -85,22 +86,36 @@ public class RoadPatternGeneration {
 				// examine the vertex
 				System.out.println("has 2 nodes");
 				for(double step = searchDistance / 10; step < searchDistance; step += step) {
-					
+					for(int j = 0; j < nodeList.size(); j++) {
+						PairInfo node1 = nodeList.get(j);
+						// examine all the sensor extracted
+						for(int k = 0; k < sensorList.size(); k++) {
+							SensorInfo sensor = sensorList.get(k);
+							PairInfo node2 = sensor.getNode();
+							double distance = DistanceCalculator.CalculationByDistance(node1, node2);
+							if(distance < step) {
+								// find the sensor
+								link.setSensor(sensor);
+								findSensor = true;
+								System.out.println("find sensor " + sensor.getSensorId() + " for link " + link.getLinkId());
+								break;
+							}
+						}
+						if(findSensor)
+							break;
+					}
+					if(findSensor)
+						break;
 				}
 			}
 			
-			for(int j = 0; j < nodeList.size(); j++) {
-				PairInfo node = nodeList.get(j);
-				System.out.println("Lat: " + node.getLati() + " Longi: " + node.getLongi());
+			if(!findSensor) {
+				notFind++;
+				System.out.println("cannot find sensor for link " + link.getIntLinkId());
 			}
-			
-			PairInfo node1 = new PairInfo(34.17799, -118.19501);
-			PairInfo node2 = new PairInfo(34.1785, -118.1951);
-			double distance = DistanceCalculator.CalculationByDistance(node1, node2);
-			System.out.println("Distance: " + distance);
 		}
 		
-		System.out.println("Match Sensors Success!");
+		System.out.println("Match Sensors Success, " + notFind + "link has no sensor");
 	}
 	
 	private static void fetchEdge() {
