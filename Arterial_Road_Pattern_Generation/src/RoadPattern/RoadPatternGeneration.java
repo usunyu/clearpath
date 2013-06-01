@@ -18,6 +18,7 @@ public class RoadPatternGeneration {
 	// parameter
 	static double searchDistance = 0.15;
 	static int devide = 1000;
+	private static String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 	// database
 	static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
 	static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
@@ -51,7 +52,40 @@ public class RoadPatternGeneration {
 	}
 	
 	private static void generatePattern() {
-		
+		System.out.println("Generate Pattern");
+		FileWriter fstream = null;
+		BufferedWriter out = null;
+		try {
+			fstream = new FileWriter("Pattern_" + street + "_" + days[0] + ".txt");
+			out = new BufferedWriter(fstream);
+			
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			
+			for(int i = 0; i < edgeList.size(); i++) {
+				LinkInfo link = edgeList.get(i);
+				if(link.getSensor() != null) {
+					sql = "select * from arterial_averages3 where link_id = '" + link.getSensor().getSensorId()
+							+ "'" + " and day = '" + days[0] + "'";
+					pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+					res = pstatement.executeQuery();
+					while(res.next()) {
+						int link_id = link.getIntLinkId();
+						int sensor_id = link.getSensor().getSensorId();
+						double speed = res.getDouble(2);
+						
+					}
+				}
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("Generate Pattern Success!");
 	}
 	
 	private static void matchEdgeSensor() {
