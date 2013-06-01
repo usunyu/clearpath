@@ -16,7 +16,8 @@ public class RoadPatternGeneration {
 	// street
 	static String street = "FIGUEROA";
 	// parameter
-	static double searchDistance = 0.035;
+	static double searchDistance = 0.1;
+	static int devide = 1000;
 	// database
 	static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
 	static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
@@ -49,6 +50,8 @@ public class RoadPatternGeneration {
 		System.out.println("Match Sensors for " + street);
 		
 		int notFind = 0;
+		int find = 0;
+		// first round
 		for(int i = 0; i < edgeList.size(); i++) {
 			LinkInfo link = edgeList.get(i);
 			System.out.println("processing link id: " + link.getIntLinkId());
@@ -57,7 +60,7 @@ public class RoadPatternGeneration {
 			if(nodeList.size() > 2) {
 				// examine the intermediate node first
 				System.out.println("has more than 2 nodes");
-				for(double step = searchDistance / 10; step < searchDistance; step += step) {
+				for(double step = searchDistance / devide; step < searchDistance; step += step) {
 					// skip first one and last one
 					for(int j = 1; j < nodeList.size() - 1; j++) {
 						PairInfo node1 = nodeList.get(j);
@@ -70,6 +73,7 @@ public class RoadPatternGeneration {
 								// find the sensor
 								link.setSensor(sensor);
 								findSensor = true;
+								find++;
 								System.out.println("find sensor " + sensor.getSensorId() + " for link " + link.getLinkId());
 								break;
 							}
@@ -85,7 +89,7 @@ public class RoadPatternGeneration {
 			if(!findSensor) {
 				// examine the vertex
 				System.out.println("has 2 nodes");
-				for(double step = searchDistance / 10; step < searchDistance; step += step) {
+				for(double step = searchDistance / devide; step < searchDistance; step += step) {
 					for(int j = 0; j < nodeList.size(); j++) {
 						PairInfo node1 = nodeList.get(j);
 						// examine all the sensor extracted
@@ -97,6 +101,7 @@ public class RoadPatternGeneration {
 								// find the sensor
 								link.setSensor(sensor);
 								findSensor = true;
+								find++;
 								System.out.println("find sensor " + sensor.getSensorId() + " for link " + link.getLinkId());
 								break;
 							}
@@ -115,7 +120,10 @@ public class RoadPatternGeneration {
 			}
 		}
 		
-		System.out.println("Match Sensors Success, " + notFind + "link has no sensor");
+		// second round
+		
+		
+		System.out.println("Match Sensors Success, " + find + " link has sensor, " + notFind + " link has no sensor");
 	}
 	
 	private static void fetchEdge() {
