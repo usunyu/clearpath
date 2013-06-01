@@ -90,6 +90,13 @@ public class LinkInfo {
 	int numPairs;
 	public ArrayList<Integer> sensors;
 	
+	public ArrayList<PairInfo> getNodeList() {
+		return nodeList;
+	}
+	
+	public int getIntLinkId() {
+		return linkId;
+	}
 	
 	public String getPureLinkId() {
 		return link_id;

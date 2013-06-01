@@ -15,6 +15,8 @@ public class RoadPatternGeneration {
 	 */
 	// street
 	static String street = "FIGUEROA";
+	// parameter
+	static double searchDistance = 0.035;
 	// database
 	static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
 	static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
@@ -36,10 +38,47 @@ public class RoadPatternGeneration {
 		
 		fetchEdge();
 
+		matchEdgeSensor();
 		
 		// readFileToMemory();
 		// searchStreet();
 		// createPattern();
+	}
+	
+	private static void matchEdgeSensor() {
+		System.out.println("Match Sensors for " + street);
+		
+		for(int i = 0; i < edgeList.size(); i++) {
+			LinkInfo link = edgeList.get(i);
+			
+			System.out.println("processing link id: " + link.getIntLinkId());
+			ArrayList<PairInfo> nodeList = link.getNodeList();
+			boolean findSensor = false;
+			if(nodeList.size() > 2) {
+				// examine the intermediate node first
+				double step = searchDistance / 10;
+				
+				for(int j = 1; j < nodeList.size() - 1; j++) {
+					
+				}
+			}
+			
+			if(!findSensor) {
+				// examine the vertex
+			}
+			
+			for(int j = 0; j < nodeList.size(); j++) {
+				PairInfo node = nodeList.get(j);
+				System.out.println("Lat: " + node.getLati() + " Longi: " + node.getLongi());
+			}
+			
+			PairInfo node1 = new PairInfo(34.17799, -118.19501);
+			PairInfo node2 = new PairInfo(34.1785, -118.1951);
+			double distance = DistanceCalculator.CalculationByDistance(node1, node2);
+			System.out.println("Distance: " + distance);
+		}
+		
+		System.out.println("Match Sensors Success!");
 	}
 	
 	private static void fetchEdge() {
@@ -64,7 +103,7 @@ public class RoadPatternGeneration {
 				JGeometry geom = JGeometry.load(st);
 				double[] geomPoints = geom.getOrdinatesArray();
 				ArrayList<PairInfo> nodeList = new ArrayList<PairInfo>();
-				for(int i = 0; i < geom.getNumPoints() - 1; i++) {
+				for(int i = 0; i < geom.getNumPoints(); i++) {
 					double latitude = geomPoints[i * 2 + 1];
 					double longitude = geomPoints[i * 2 + 0];
 					PairInfo node = new PairInfo(latitude, longitude);
@@ -101,7 +140,7 @@ public class RoadPatternGeneration {
 			ResultSet res = null;
 			con = getConnection();
 			// assume this is sensing the specified street
-			sql = "select link_id, onstreet, fromstreet, direction from arterial_congestion_config " + 
+			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction from arterial_congestion_config " + 
 			"where upper(onstreet) like '%" + street + "%'";
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
@@ -109,16 +148,19 @@ public class RoadPatternGeneration {
 				int sensorId = res.getInt(1);
 				String onStreet = res.getString(2);
 				String fromStreet = res.getString(3);
-				int direction = res.getInt(4);
-				SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, direction);
+				STRUCT st = (STRUCT) res.getObject(4);
+				JGeometry geom = JGeometry.load(st);
+				PairInfo node = new PairInfo(geom.getPoint()[1], geom.getPoint()[0]);
+				int direction = res.getInt(5);
 				if(checkSensor.get(sensorId) == null) {
+					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, node, direction);
 					checkSensor.put(sensorId, true);
 					sensorList.add(sensorInfo);
 				}
 			}
 			
 			// this maybe sensing the specified street
-			sql = "select link_id, onstreet, fromstreet, direction from arterial_congestion_config " +
+			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction from arterial_congestion_config " +
 			"where upper(fromstreet) like '%" + street + "%'";
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
@@ -126,9 +168,12 @@ public class RoadPatternGeneration {
 				int sensorId = res.getInt(1);
 				String onStreet = res.getString(2);
 				String fromStreet = res.getString(3);
-				int direction = res.getInt(4);
-				SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, direction);
+				STRUCT st = (STRUCT) res.getObject(4);
+				JGeometry geom = JGeometry.load(st);
+				PairInfo node = new PairInfo(geom.getPoint()[1], geom.getPoint()[0]);
+				int direction = res.getInt(5);
 				if(checkSensor.get(sensorId) == null) {
+					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, node, direction);
 					checkSensor.put(sensorId, true);
 					sensorList.add(sensorInfo);
 				}
