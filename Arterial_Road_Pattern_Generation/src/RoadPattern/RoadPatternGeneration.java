@@ -67,19 +67,27 @@ public class RoadPatternGeneration {
 			
 			for(int i = 0; i < edgeList.size(); i++) {
 				LinkInfo link = edgeList.get(i);
+				System.out.println("processing link " + link.getIntLinkId());
 				if(link.getSensor() != null) {
 					sql = "select * from arterial_averages3 where link_id = '" + link.getSensor().getSensorId()
 							+ "'" + " and day = '" + days[0] + "'";
 					pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 					res = pstatement.executeQuery();
+					out.write("Link ID:" + link.getIntLinkId() + " Sensor ID:" + link.getSensor().getSensorId() + "\n");
 					while(res.next()) {
-						int link_id = link.getIntLinkId();
-						int sensor_id = link.getSensor().getSensorId();
 						double speed = res.getDouble(2);
-						
+						String time = res.getString(5);
+						out.write(time + ": " + speed + ", ");
 					}
+					out.write("\n");
 				}
 			}
+			res.close();
+			pstatement.close();
+			con.close();
+			
+			out.close();
+			fstream.close();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
