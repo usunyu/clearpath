@@ -38,6 +38,8 @@ public class RoadPatternGeneration {
 		// TODO Auto-generated method stub
 		fetchSensor();
 		
+		generateSensorKML();
+		
 		fetchEdge();
 
 		matchEdgeSensor();
@@ -51,24 +53,49 @@ public class RoadPatternGeneration {
 		// createPattern();
 	}
 	
+	private static void generateSensorKML() {
+		System.out.println("generate sensor kml...");
+		try {
+			FileWriter fstream = new FileWriter("Sensors_List.kml");
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			for(int i = 0; i < sensorList.size(); i++) {
+				SensorInfo sensor = sensorList.get(i);
+				int id = sensor.getSensorId();
+				double lati = sensor.getNode().getLati();
+				double longi = sensor.getNode().getLongi();
+				out.write("<Placemark><name>" + id
+						+ " </name><Point><coordinates>" + String.valueOf(longi)
+						+ "," + String.valueOf(lati)
+						+ ",0</coordinates></Point></Placemark>");
+			}
+			out.write("</Document></kml>");
+			out.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate sensor kml finish!");
+	}
+	
 	private static void generatePattern() {
-		System.out.println("Generate Pattern");
+		System.out.println("generate pattern...");
 		FileWriter fstream = null;
 		BufferedWriter out = null;
 		try {
 			fstream = new FileWriter("Pattern_" + street + "_" + days[0] + ".txt");
 			out = new BufferedWriter(fstream);
 			
-			Connection con = null;
-			String sql = null;
-			PreparedStatement pstatement = null;
-			ResultSet res = null;
-			con = getConnection();
-			
 			for(int i = 0; i < edgeList.size(); i++) {
 				LinkInfo link = edgeList.get(i);
-				System.out.println("processing link " + link.getIntLinkId());
+//				System.out.println("processing link " + link.getIntLinkId());
 				if(link.getSensor() != null) {
+					Connection con = null;
+					String sql = null;
+					PreparedStatement pstatement = null;
+					ResultSet res = null;
+					con = getConnection();
+					
 					sql = "select * from arterial_averages3 where link_id = '" + link.getSensor().getSensorId()
 							+ "'" + " and day = '" + days[0] + "'";
 					pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -80,11 +107,12 @@ public class RoadPatternGeneration {
 						out.write(time + ": " + speed + ", ");
 					}
 					out.write("\n");
+					
+					res.close();
+					pstatement.close();
+					con.close();
 				}
 			}
-			res.close();
-			pstatement.close();
-			con.close();
 			
 			out.close();
 			fstream.close();
@@ -93,11 +121,11 @@ public class RoadPatternGeneration {
 			e.printStackTrace();
 		}
 
-		System.out.println("Generate Pattern Success!");
+		System.out.println("generate pattern finish!");
 	}
 	
 	private static void matchEdgeSensor() {
-		System.out.println("Match Sensors for " + street);
+		System.out.println("match sensors to edges...");
 		
 		// first round
 		for(int i = 0; i < edgeList.size(); i++) {
@@ -107,7 +135,7 @@ public class RoadPatternGeneration {
 			boolean findSensor = false;
 			if(nodeList.size() > 2) {
 				// examine the intermediate node first
-				System.out.println("has more than 2 nodes");
+//				System.out.println("has more than 2 nodes");
 				for(double step = searchDistance / devide; step < searchDistance; step += step) {
 					// skip first one and last one
 					for(int j = 1; j < nodeList.size() - 1; j++) {
@@ -121,7 +149,7 @@ public class RoadPatternGeneration {
 								// find the sensor
 								link.setSensor(sensor);
 								findSensor = true;
-								System.out.println("find sensor " + sensor.getSensorId() + " for link " + link.getLinkId());
+//								System.out.println("find sensor " + sensor.getSensorId() + " for link " + link.getLinkId());
 								break;
 							}
 						}
@@ -135,7 +163,7 @@ public class RoadPatternGeneration {
 			
 			if(!findSensor) {
 				// examine the vertex
-				System.out.println("has 2 nodes");
+//				System.out.println("has 2 nodes");
 				for(double step = searchDistance / devide; step < searchDistance; step += step) {
 					for(int j = 0; j < nodeList.size(); j++) {
 						PairInfo node1 = nodeList.get(j);
@@ -148,7 +176,7 @@ public class RoadPatternGeneration {
 								// find the sensor
 								link.setSensor(sensor);
 								findSensor = true;
-								System.out.println("find sensor " + sensor.getSensorId() + " for link " + link.getLinkId());
+//								System.out.println("find sensor " + sensor.getSensorId() + " for link " + link.getLinkId());
 								break;
 							}
 						}
@@ -161,7 +189,7 @@ public class RoadPatternGeneration {
 			}
 			
 			if(!findSensor) {
-				System.out.println("cannot find sensor for link " + link.getIntLinkId());
+//				System.out.println("cannot find sensor for link " + link.getIntLinkId());
 			}
 		}
 		int count = 0;
@@ -221,12 +249,10 @@ public class RoadPatternGeneration {
 			}
 			if(count == lastCount)
 				break;
-			lastCount = count;
-			System.out.println("there are " + count + " link has sensor in second round, there has " + edgeList.size() +" link");
+			lastCount = count;	
 		}
-		
-		System.out.println("there are " + count + " link has sensor in second round");
-		System.out.println("Match Sensors Success!");
+		System.out.println("there are " + count + " link has sensor in second round, there has " + edgeList.size() +" link");
+		System.out.println("match Sensors finish!");
 	}
 	
 	private static void printEdgeWithSensor() {
@@ -255,7 +281,7 @@ public class RoadPatternGeneration {
 	
 	private static void fetchEdge() {
 		try {
-			System.out.println("Fetch Edge for " + street);
+			System.out.println("fetch edges...");
 			Connection con = null;
 			String sql = null;
 			PreparedStatement pstatement = null;
@@ -267,7 +293,7 @@ public class RoadPatternGeneration {
 			res = pstatement.executeQuery();
 			while(res.next()) {
 				int linkId = res.getInt(1);
-				System.out.println("fetching link " + linkId);
+//				System.out.println("fetching link " + linkId);
 				String dirTravel = res.getString(2);
 				String stName = res.getString(3);
 				int func_class = res.getInt(4);
@@ -314,17 +340,16 @@ public class RoadPatternGeneration {
 			res.close();
 			pstatement.close();
 			con.close();
-			
-			System.out.println("Fetch Edge Success!");
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("fetch edge finish!");
 	}
 
 	private static void fetchSensor() {
 		try {
-			System.out.println("Fetch Sensor for " + street);
+			System.out.println("fetch Sensor...");
 			
 			Connection con = null;
 			String sql = null;
@@ -338,7 +363,7 @@ public class RoadPatternGeneration {
 			res = pstatement.executeQuery();
 			while(res.next()) {
 				int sensorId = res.getInt(1);
-				System.out.println("fetching sensor " + sensorId);
+//				System.out.println("fetching sensor " + sensorId);
 				String onStreet = res.getString(2);
 				String fromStreet = res.getString(3);
 				STRUCT st = (STRUCT) res.getObject(4);
@@ -374,12 +399,11 @@ public class RoadPatternGeneration {
 			res.close();
 			pstatement.close();
 			con.close();
-			
-			System.out.println("Fetch Sensor Success!");
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("fetch sensor finish!");
 	}
 	
 	private static Connection getConnection() {
@@ -404,8 +428,8 @@ public class RoadPatternGeneration {
 	private static void createPattern() {
 		FileWriter fstream = null;
 		BufferedWriter out = null;
+		System.out.println("create pattern...");
 		try {
-			System.out.println("create pattern for " + street + " start");
 			fstream = new FileWriter("Pattern_" + street + ".txt");
 			out = new BufferedWriter(fstream);
 			int sum = searchList.size();
@@ -416,8 +440,8 @@ public class RoadPatternGeneration {
 				String link_id = link.getPureLinkId();
 				String st_node = link.getStart_node();
 				String ed_node = link.getEnd_node();
-				System.out.println("Link_ID:" + link_id + " St_Node:" + st_node
-						+ " Ed_Node:" + ed_node);
+//				System.out.println("Link_ID:" + link_id + " St_Node:" + st_node
+//						+ " Ed_Node:" + ed_node);
 				out.write("Link_ID:" + link_id + " St_Node:" + st_node
 						+ " Ed_Node:" + ed_node + "\n");
 				double distance = DistanceCalculator.CalculationByDistance(
@@ -426,21 +450,21 @@ public class RoadPatternGeneration {
 				for (int j = 0; j < 60 && j < intervals.length; j++) {
 					double speed = (double) Math.round(distance / intervals[j]
 							* 60 * 60 * 1000 * 100) / 100;
-					System.out.print(UtilClass.getStartTime(j) + "-"
-							+ UtilClass.getEndTime(j) + ":" + speed + ", ");
+//					System.out.print(UtilClass.getStartTime(j) + "-"
+//							+ UtilClass.getEndTime(j) + ":" + speed + ", ");
 					out.write(UtilClass.getStartTime(j) + "-"
 							+ UtilClass.getEndTime(j) + ":" + speed + ", ");
 				}
-				System.out.println();
+//				System.out.println();
 				out.write("\n");
 			}
 
 			out.close();
 			fstream.close();
-			System.out.println("create pattern for " + street + " finished!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("create pattern finish!");
 	}
 
 	private static void searchStreet() {
