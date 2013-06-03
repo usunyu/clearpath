@@ -71,7 +71,7 @@ public class LinkInfo {
 		this.nodeList = nodeList;
 	}
 
-	/* Yu Sun Add */
+	/* Yu Sun Add Start */
 	int linkId;
 	int startNode;
 	int endNode;
@@ -103,7 +103,7 @@ public class LinkInfo {
 		return endNode;
 	}
 	
-	/* Yu Sun Add */
+	/* Yu Sun Add End */
 	
 	String LinkId;
 	int func_class;

@@ -41,6 +41,8 @@ public class RoadPatternGeneration {
 		generateSensorKML();
 		
 		fetchEdge();
+		
+		generateEdgeKML();
 
 		matchEdgeSensor();
 		
@@ -51,6 +53,39 @@ public class RoadPatternGeneration {
 		// readFileToMemory();
 		// searchStreet();
 		// createPattern();
+	}
+	
+	private static void generateEdgeKML() {
+		System.out.println("generate sensor kml...");
+		try {
+			FileWriter fstream = new FileWriter("Edge_List.kml");
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			for(int i = 0; i < edgeList.size(); i++) {
+				LinkInfo link = edgeList.get(i);
+				int id = link.getIntLinkId();
+				SensorInfo sensor = link.getSensor();
+				String sensorStr = "NULL";
+				ArrayList<PairInfo> nodeList = link.getNodeList();
+				int num = nodeList.size();
+				PairInfo node1 = nodeList.get(0);
+				PairInfo node2 = nodeList.get(num - 1);
+				if(sensor != null) {
+					sensorStr = String.valueOf(sensor.getSensorId());
+				}
+				out.write("<Placemark><name>Link:" + id + "</name><description>Sensor:"
+						+ sensorStr
+						+ "</description><LineString><tessellate>1</tessellate><coordinates>"
+						+ node1.getLongi() + "," + node1.getLati() + ",0 "
+						+ node2.getLongi() + "," + node2.getLati() + ",0 </coordinates></LineString></Placemark>\n");
+			}
+			out.write("</Document></kml>");
+			out.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate sensor kml finish!");
 	}
 	
 	private static void generateSensorKML() {
@@ -64,7 +99,7 @@ public class RoadPatternGeneration {
 				int id = sensor.getSensorId();
 				double lati = sensor.getNode().getLati();
 				double longi = sensor.getNode().getLongi();
-				out.write("<Placemark><name>" + id
+				out.write("<Placemark><name>Sensor:" + id
 						+ " </name><Point><coordinates>" + String.valueOf(longi)
 						+ "," + String.valueOf(lati)
 						+ ",0</coordinates></Point></Placemark>");
@@ -88,7 +123,8 @@ public class RoadPatternGeneration {
 			
 			for(int i = 0; i < edgeList.size(); i++) {
 				LinkInfo link = edgeList.get(i);
-//				System.out.println("processing link " + link.getIntLinkId());
+//				System.out.print("processing link " + link.getIntLinkId());
+//				System.out.print("\r");
 				if(link.getSensor() != null) {
 					Connection con = null;
 					String sql = null;
