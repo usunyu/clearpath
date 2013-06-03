@@ -81,9 +81,9 @@ public class RoadPatternGeneration {
 				PairInfo node = new PairInfo(geom.getPoint()[1], geom.getPoint()[0]);
 				int direction = res.getInt(5);
 				int affected = res.getInt(6);
-				out.write("<Placemark><name>Sensor:" + sensorId + ", Onstreet:" + onStreet
+				out.write("<Placemark><name>" + sensorId + "</name><description>Onstreet:" + onStreet
 						+ ", Fromstreet: " + fromStreet + ", Affected:" + affected
-						+ " </name><Point><coordinates>" + node.getLongi()
+						+ "</description><Point><coordinates>" + node.getLongi()
 						+ "," + node.getLati()
 						+ ",0</coordinates></Point></Placemark>");
 			}
