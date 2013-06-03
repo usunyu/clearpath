@@ -58,7 +58,7 @@ public class RoadPatternGeneration {
 	private static void generateEdgeKML() {
 		System.out.println("generate sensor kml...");
 		try {
-			FileWriter fstream = new FileWriter("Edge_List.kml");
+			FileWriter fstream = new FileWriter("Edges_List.kml");
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			for(int i = 0; i < edgeList.size(); i++) {
