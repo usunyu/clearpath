@@ -36,17 +36,19 @@ public class RoadPatternGeneration {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		fetchSensor();
+//		fetchSensor();
 		
-		generateSensorKML();
+//		generateSensorKML();
 		
-		fetchEdge();
-		
-		generateEdgeKML();
+//		fetchEdge();
 
-		matchEdgeSensor();
+//		matchEdgeSensor();
 		
-		generatePattern();
+//		generateEdgeKML();
+		
+//		generatePattern();
+		
+		generateAllSensorKML();
 		
 		// printEdgeWithSensor();
 		
@@ -55,8 +57,51 @@ public class RoadPatternGeneration {
 		// createPattern();
 	}
 	
+	private static void generateAllSensorKML() {
+		System.out.println("generate all sensor KML...");
+		try {
+			FileWriter fstream = new FileWriter("All_Sensor_List.kml");
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction, affected_numberof_lanes from arterial_congestion_config";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while(res.next()) {
+				int sensorId = res.getInt(1);
+				String onStreet = res.getString(2);
+				String fromStreet = res.getString(3);
+				STRUCT st = (STRUCT) res.getObject(4);
+				JGeometry geom = JGeometry.load(st);
+				PairInfo node = new PairInfo(geom.getPoint()[1], geom.getPoint()[0]);
+				int direction = res.getInt(5);
+				int affected = res.getInt(6);
+				out.write("<Placemark><name>Sensor:" + sensorId + ", Onstreet:" + onStreet
+						+ ", Fromstreet: " + fromStreet + ", Affected:" + affected
+						+ " </name><Point><coordinates>" + node.getLongi()
+						+ "," + node.getLati()
+						+ ",0</coordinates></Point></Placemark>");
+			}
+			con.close();
+			res.close();
+			pstatement.close();
+			out.write("</Document></kml>");
+			out.close();
+			fstream.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate all sensor KML finish!");
+	}
+	
 	private static void generateEdgeKML() {
-		System.out.println("generate sensor kml...");
+		System.out.println("generate edge kml...");
 		try {
 			FileWriter fstream = new FileWriter("Edges_List.kml");
 			BufferedWriter out = new BufferedWriter(fstream);
@@ -85,7 +130,7 @@ public class RoadPatternGeneration {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("generate sensor kml finish!");
+		System.out.println("generate edge kml finish!");
 	}
 	
 	private static void generateSensorKML() {
