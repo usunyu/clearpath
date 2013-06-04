@@ -52,11 +52,56 @@ public class RoadPatternGeneration {
 		
 		generateAllSensorKML();
 		
+		generateNullSensorKML();
+		
 		// printEdgeWithSensor();
 		
 		// readFileToMemory();
 		// searchStreet();
 		// createPattern();
+	}
+	
+	private static void generateNullSensorKML() {
+		System.out.println("generate null sensor KML...");
+		try {
+			FileWriter fstream = new FileWriter("All_Sensor_List.kml");
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction from arterial_congestion_config where onstreet is null";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while(res.next()) {
+				int sensorId = res.getInt(1);
+				String onStreet = res.getString(2);
+				String fromStreet = res.getString(3);
+				STRUCT st = (STRUCT) res.getObject(4);
+				JGeometry geom = JGeometry.load(st);
+				PairInfo node = new PairInfo(geom.getPoint()[1], geom.getPoint()[0]);
+				int direction = res.getInt(5);
+				int affected = res.getInt(6);
+				out.write("<Placemark><name>" + sensorId + "</name><description>Onstreet:" + onStreet
+						+ ", Fromstreet: " + fromStreet + ", Direction:" + direction + ", Affected:" + affected
+						+ "</description><Point><coordinates>" + node.getLongi()
+						+ "," + node.getLati()
+						+ ",0</coordinates></Point></Placemark>");
+			}
+			con.close();
+			res.close();
+			pstatement.close();
+			out.write("</Document></kml>");
+			out.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("generate null sensor KML finish");
 	}
 	
 	private static void generateAllSensorKML() {
