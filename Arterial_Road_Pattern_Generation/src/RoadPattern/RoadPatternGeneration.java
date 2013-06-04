@@ -234,6 +234,8 @@ public class RoadPatternGeneration {
 	private static void matchEdgeSensor() {
 		System.out.println("match sensors to edges...");
 		
+		// Todo: consider the direction
+		
 		// first round
 		for(int i = 0; i < edgeList.size(); i++) {
 			LinkInfo link = edgeList.get(i);
