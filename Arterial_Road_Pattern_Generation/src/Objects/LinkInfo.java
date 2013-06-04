@@ -51,24 +51,13 @@ public class LinkInfo {
 		super();
 		sensors = new ArrayList<Integer>();
 		LinkId = linkIndexId;
-		this.link_id = link_id;
+		this.linkIdStr = link_id;
 		this.func_class = func_class;
 		this.st_name = st_name;
 		this.start_node = start_node;
 		this.end_node = end_node;
 		Nodes = nodes;
 		this.numPairs = numPairs;
-	}
-	
-	public LinkInfo(int linkId, int func_class, String st_name,
-			int startNode, int endNode, ArrayList<PairInfo> nodeList) {
-		super();
-		this.linkId = linkId;
-		this.func_class = func_class;
-		this.st_name = st_name;
-		this.startNode = startNode;
-		this.endNode = endNode;
-		this.nodeList = nodeList;
 	}
 
 	/* Yu Sun Add Start */
@@ -77,10 +66,29 @@ public class LinkInfo {
 	int endNode;
 	ArrayList<PairInfo> nodeList;
 	SensorInfo sensor;
-	String link_id;
+	String linkIdStr;
+	String dirTravel;
+	int speedCat;
+	
+	public LinkInfo(int linkId, int func_class, String st_name,
+			int startNode, int endNode, ArrayList<PairInfo> nodeList, String dirTravel, int speedCat) {
+		super();
+		this.linkId = linkId;
+		this.func_class = func_class;
+		this.st_name = st_name;
+		this.startNode = startNode;
+		this.endNode = endNode;
+		this.nodeList = nodeList;
+		this.dirTravel = dirTravel;
+		this.speedCat = speedCat;
+	}
 	
 	public int getIntLinkId() {
 		return linkId;
+	}
+	
+	public String getStrLinkId() {
+		return linkIdStr;
 	}
 	
 	public void setSensor(SensorInfo sensor) {
@@ -102,6 +110,14 @@ public class LinkInfo {
 	public int getEndNode() {
 		return endNode;
 	}
+
+	public int getSpeedCat() {
+		return speedCat;
+	}
+
+	public String getDirTravel() {
+		return dirTravel;
+	}
 	
 	/* Yu Sun Add End */
 	
@@ -114,10 +130,6 @@ public class LinkInfo {
 	PairInfo Nodes[];
 	int numPairs;
 	public ArrayList<Integer> sensors;
-	
-	public String getPureLinkId() {
-		return link_id;
-	}
 
 	public String getLinkId() {
 		return LinkId;

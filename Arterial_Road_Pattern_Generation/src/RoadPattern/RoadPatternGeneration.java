@@ -4,6 +4,8 @@ import java.io.*;
 import java.sql.*;
 import java.util.*;
 
+import javax.lang.model.element.Element;
+
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 import Objects.*;
@@ -40,11 +42,11 @@ public class RoadPatternGeneration {
 		
 //		generateSensorKML();
 		
-//		fetchEdge();
+		fetchEdge();
 
 //		matchEdgeSensor();
 		
-//		generateEdgeKML();
+		generateEdgeKML();
 		
 //		generatePattern();
 		
@@ -82,7 +84,7 @@ public class RoadPatternGeneration {
 				int direction = res.getInt(5);
 				int affected = res.getInt(6);
 				out.write("<Placemark><name>" + sensorId + "</name><description>Onstreet:" + onStreet
-						+ ", Fromstreet: " + fromStreet + ", Affected:" + affected
+						+ ", Fromstreet: " + fromStreet + ", Direction:" + direction + ", Affected:" + affected
 						+ "</description><Point><coordinates>" + node.getLongi()
 						+ "," + node.getLati()
 						+ ",0</coordinates></Point></Placemark>");
@@ -112,17 +114,41 @@ public class RoadPatternGeneration {
 				SensorInfo sensor = link.getSensor();
 				String sensorStr = "NULL";
 				ArrayList<PairInfo> nodeList = link.getNodeList();
-				int num = nodeList.size();
-				PairInfo node1 = nodeList.get(0);
-				PairInfo node2 = nodeList.get(num - 1);
 				if(sensor != null) {
 					sensorStr = String.valueOf(sensor.getSensorId());
 				}
-				out.write("<Placemark><name>Link:" + id + "</name><description>Sensor:"
-						+ sensorStr
-						+ "</description><LineString><tessellate>1</tessellate><coordinates>"
-						+ node1.getLongi() + "," + node1.getLati() + ",0 "
-						+ node2.getLongi() + "," + node2.getLati() + ",0 </coordinates></LineString></Placemark>\n");
+				String direction = null;
+				int num = nodeList.size();
+				if(link.getDirTravel().equals("B")) {
+					int dir = DistanceCalculator.getDirection(nodeList.get(0), nodeList.get(num - 1));
+					direction = String.valueOf(dir);
+					dir = DistanceCalculator.getDirection(nodeList.get(num - 1), nodeList.get(0));
+					direction = direction + "," +String.valueOf(dir);
+				}
+				else if(link.getDirTravel().equals("T")) {
+					int dir = DistanceCalculator.getDirection(nodeList.get(0), nodeList.get(num - 1));
+					direction = String.valueOf(dir);
+				}
+				else {
+					int dir = DistanceCalculator.getDirection(nodeList.get(num - 1), nodeList.get(0));
+					direction = String.valueOf(dir);
+				}
+				
+				String kmlStr = "<Placemark><name>Link:" + id + "</name>";
+				kmlStr += "<description>Sensor:" + sensorStr;
+				kmlStr += ", Direction:" + direction;
+				kmlStr += ", DirTravel:" + link.getDirTravel();
+				kmlStr += ", StreetName:" + link.getSt_name();
+				kmlStr += ", FuncClass:" + link.getFunc_class();
+				kmlStr += ", SpeedCat:" + link.getSpeedCat() + "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				for(int j = 0; j < nodeList.size(); j++) {
+					PairInfo node = nodeList.get(j);
+					kmlStr += node.getLongi() + "," + node.getLati() + ",0 ";
+				}
+				kmlStr += "</coordinates></LineString></Placemark>\n";
+				
+				out.write(kmlStr);
 			}
 			out.write("</Document></kml>");
 			out.close();
@@ -390,10 +416,10 @@ public class RoadPatternGeneration {
 					nodeList.add(node);
 				}
 				
-				String speedCar = res.getString(6);
+				int speedCat = res.getInt(6);
 				int refNode = res.getInt(7);
 				int nrefNode = res.getInt(8);
-				LinkInfo link = new LinkInfo(linkId, func_class, stName, refNode, nrefNode, nodeList);
+				LinkInfo link = new LinkInfo(linkId, func_class, stName, refNode, nrefNode, nodeList, dirTravel, speedCat);
 				if(checkEdge.get(linkId) == null) {
 					checkEdge.put(linkId, true);
 					// sort link in edgeList by in_id
@@ -518,7 +544,7 @@ public class RoadPatternGeneration {
 				LinkInfo link = searchList.get(i);
 				String patternId = link.getStart_node() + link.getEnd_node();
 				PatternPairInfo patternInfo = patternMap.get(patternId);
-				String link_id = link.getPureLinkId();
+				String link_id = link.getStrLinkId();
 				String st_node = link.getStart_node();
 				String ed_node = link.getEnd_node();
 //				System.out.println("Link_ID:" + link_id + " St_Node:" + st_node
