@@ -64,7 +64,7 @@ public class RoadPatternGeneration {
 	private static void generateNullSensorKML() {
 		System.out.println("generate null sensor KML...");
 		try {
-			FileWriter fstream = new FileWriter("All_Sensor_List.kml");
+			FileWriter fstream = new FileWriter("Null_Sensor_List.kml");
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			
@@ -73,7 +73,7 @@ public class RoadPatternGeneration {
 			PreparedStatement pstatement = null;
 			ResultSet res = null;
 			con = getConnection();
-			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction from arterial_congestion_config where onstreet is null";
+			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction, affected_numberof_lanes from arterial_congestion_config where onstreet is null";
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
 			while(res.next()) {
