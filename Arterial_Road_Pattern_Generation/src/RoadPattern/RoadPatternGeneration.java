@@ -29,7 +29,7 @@ public class RoadPatternGeneration {
 	static Connection connHome = null;
 	// data struct
 	static ArrayList<LinkInfo> edgeList = new ArrayList<LinkInfo>();
-	static HashSet<Integer> checkEdge = new HashSet<Integer>();
+	static HashSet<String> checkEdge = new HashSet<String>();
 	static ArrayList<SensorInfo> sensorList = new ArrayList<SensorInfo>();
 	static HashSet<Integer> checkSensor = new HashSet<Integer>();
 	static HashMap<String, PatternPairInfo> patternMap = new HashMap<String, PatternPairInfo>();
@@ -42,7 +42,7 @@ public class RoadPatternGeneration {
 		
 //		generateSensorKML();
 		
-//		fetchEdge();
+		fetchEdge();
 
 //		matchEdgeSensor();
 		
@@ -54,7 +54,7 @@ public class RoadPatternGeneration {
 		
 //		generateNullSensorKML();
 		
-		testDirection();
+//		testDirection();
 		
 		// printEdgeWithSensor();
 		
@@ -96,7 +96,8 @@ public class RoadPatternGeneration {
 				int speedCat = res.getInt(6);
 				int refNode = res.getInt(7);
 				int nrefNode = res.getInt(8);
-				LinkInfo link = new LinkInfo(linkId, func_class, stName, refNode, nrefNode, nodeList, dirTravel, speedCat);
+				
+				LinkInfo link = new LinkInfo("test", linkId, func_class, stName, refNode, nrefNode, nodeList, dirTravel, speedCat, 1);
 				int num = nodeList.size();
 				int dir = DistanceCalculator.getDirection(nodeList.get(0), nodeList.get(num - 1));
 				
@@ -347,9 +348,6 @@ public class RoadPatternGeneration {
 	
 	private static void matchEdgeSensor() {
 		System.out.println("match sensors to edges...");
-		
-		// Todo: consider the direction
-		
 		// first round
 		for(int i = 0; i < edgeList.size(); i++) {
 			LinkInfo link = edgeList.get(i);
@@ -502,6 +500,35 @@ public class RoadPatternGeneration {
 		System.out.println("there are " + count + " link has sensor, " + countN + " link has no sensor.");
 	}
 	
+	private static void addSortEdge(LinkInfo link) {
+		String id = link.getId();
+		int refNode = link.getStartNode();
+		int nrefNode = link.getEndNode();
+		if(!checkEdge.contains(id)) {
+			checkEdge.add(id);
+			// sort link in edgeList by in_id
+			int inId = refNode < nrefNode ? refNode : nrefNode;
+			if(edgeList.isEmpty()) {
+				edgeList.add(link);
+			}
+			else {
+				boolean isAdd = false;
+				for(int i = 0; i < edgeList.size(); i++) {
+					int cstartNode = edgeList.get(i).getStartNode();
+					int cendNode = edgeList.get(i).getEndNode();
+					int cinId = cstartNode < cendNode ? cstartNode : cendNode;
+					if(inId < cinId) {
+						edgeList.add(i, link);
+						isAdd = true;
+						break;
+					}
+				}
+				if(!isAdd)
+					edgeList.add(link);
+			}
+		}
+	}
+	
 	private static void fetchEdge() {
 		try {
 			System.out.println("fetch edges...");
@@ -535,29 +562,31 @@ public class RoadPatternGeneration {
 				int speedCat = res.getInt(6);
 				int refNode = res.getInt(7);
 				int nrefNode = res.getInt(8);
-				LinkInfo link = new LinkInfo(linkId, func_class, stName, refNode, nrefNode, nodeList, dirTravel, speedCat);
-				if(!checkEdge.contains(linkId)) {
-					checkEdge.add(linkId);
-					// sort link in edgeList by in_id
-					int inId = refNode < nrefNode ? refNode : nrefNode;
-					if(edgeList.isEmpty()) {
-						edgeList.add(link);
-					}
-					else {
-						boolean isAdd = false;
-						for(int i = 0; i < edgeList.size(); i++) {
-							int cstartNode = edgeList.get(i).getStartNode();
-							int cendNode = edgeList.get(i).getEndNode();
-							int cinId = cstartNode < cendNode ? cstartNode : cendNode;
-							if(inId < cinId) {
-								edgeList.add(i, link);
-								isAdd = true;
-								break;
-							}
-						}
-						if(!isAdd)
-							edgeList.add(link);
-					}
+				
+				int num = nodeList.size();
+				String id = String.valueOf(linkId);
+				if(dirTravel.equals("B")) {
+					String _id = id + refNode + nrefNode;
+					int dir = DistanceCalculator.getDirection(nodeList.get(0), nodeList.get(num - 1));
+					LinkInfo link = new LinkInfo(_id, linkId, func_class, stName, refNode, nrefNode, nodeList, dirTravel, speedCat, dir);
+					addSortEdge(link);
+					
+					_id = id + nrefNode + refNode;
+					dir = DistanceCalculator.getDirection(nodeList.get(num - 1), nodeList.get(0));
+					link = new LinkInfo(_id, linkId, func_class, stName, refNode, nrefNode, nodeList, dirTravel, speedCat, dir);
+					addSortEdge(link);
+				}
+				else if(dirTravel.equals("T")) {
+					String _id = id + nrefNode + refNode;
+					int dir = DistanceCalculator.getDirection(nodeList.get(num - 1), nodeList.get(0));
+					LinkInfo link = new LinkInfo(_id, linkId, func_class, stName, refNode, nrefNode, nodeList, dirTravel, speedCat, dir);
+					addSortEdge(link);
+				}
+				else {
+					String _id = id + refNode + nrefNode;
+					int dir = DistanceCalculator.getDirection(nodeList.get(0), nodeList.get(num - 1));
+					LinkInfo link = new LinkInfo(_id, linkId, func_class, stName, refNode, nrefNode, nodeList, dirTravel, speedCat, dir);
+					addSortEdge(link);
 				}
 			}
 			res.close();

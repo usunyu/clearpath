@@ -61,6 +61,7 @@ public class LinkInfo {
 	}
 
 	/* Yu Sun Add Start */
+	String id;
 	int linkId;
 	int startNode;
 	int endNode;
@@ -69,10 +70,12 @@ public class LinkInfo {
 	String linkIdStr;
 	String dirTravel;
 	int speedCat;
+	int direction;
 	
-	public LinkInfo(int linkId, int func_class, String st_name,
-			int startNode, int endNode, ArrayList<PairInfo> nodeList, String dirTravel, int speedCat) {
+	public LinkInfo(String id, int linkId, int func_class, String st_name, int startNode, 
+			int endNode, ArrayList<PairInfo> nodeList, String dirTravel, int speedCat, int direction) {
 		super();
+		this.id = id;
 		this.linkId = linkId;
 		this.func_class = func_class;
 		this.st_name = st_name;
@@ -81,6 +84,11 @@ public class LinkInfo {
 		this.nodeList = nodeList;
 		this.dirTravel = dirTravel;
 		this.speedCat = speedCat;
+		this.direction = direction;
+	}
+	
+	public String getId() {
+		return id;
 	}
 	
 	public int getIntLinkId() {
