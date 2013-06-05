@@ -29,9 +29,9 @@ public class RoadPatternGeneration {
 	static Connection connHome = null;
 	// data struct
 	static ArrayList<LinkInfo> edgeList = new ArrayList<LinkInfo>();
-	static HashMap<Integer, Boolean> checkEdge = new HashMap<Integer, Boolean>();
+	static HashSet<Integer> checkEdge = new HashSet<Integer>();
 	static ArrayList<SensorInfo> sensorList = new ArrayList<SensorInfo>();
-	static HashMap<Integer, Boolean> checkSensor = new HashMap<Integer, Boolean>();
+	static HashSet<Integer> checkSensor = new HashSet<Integer>();
 	static HashMap<String, PatternPairInfo> patternMap = new HashMap<String, PatternPairInfo>();
 	static ArrayList<LinkInfo> linkList = new ArrayList<LinkInfo>();
 	static ArrayList<LinkInfo> searchList = new ArrayList<LinkInfo>();
@@ -42,23 +42,92 @@ public class RoadPatternGeneration {
 		
 //		generateSensorKML();
 		
-		fetchEdge();
+//		fetchEdge();
 
 //		matchEdgeSensor();
 		
-		generateEdgeKML();
+//		generateEdgeKML();
 		
 //		generatePattern();
 		
-		generateAllSensorKML();
+//		generateAllSensorKML();
 		
-		generateNullSensorKML();
+//		generateNullSensorKML();
+		
+		testDirection();
 		
 		// printEdgeWithSensor();
 		
 		// readFileToMemory();
 		// searchStreet();
 		// createPattern();
+	}
+	
+	private static void testDirection() {
+		try {
+			FileWriter fstream = new FileWriter("test.kml");
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			sql = "select * from streets_dca1_new where link_id = '24589498'";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while(res.next()) {
+				int linkId = res.getInt(1);
+				String dirTravel = res.getString(2);
+				String stName = res.getString(3);
+				int func_class = res.getInt(4);
+				// handle for geom point
+				STRUCT st = (STRUCT)res.getObject(5);
+				JGeometry geom = JGeometry.load(st);
+				double[] geomPoints = geom.getOrdinatesArray();
+				ArrayList<PairInfo> nodeList = new ArrayList<PairInfo>();
+				for(int i = 0; i < geom.getNumPoints(); i++) {
+					double latitude = geomPoints[i * 2 + 1];
+					double longitude = geomPoints[i * 2 + 0];
+					PairInfo node = new PairInfo(latitude, longitude);
+					nodeList.add(node);
+				}
+				int speedCat = res.getInt(6);
+				int refNode = res.getInt(7);
+				int nrefNode = res.getInt(8);
+				LinkInfo link = new LinkInfo(linkId, func_class, stName, refNode, nrefNode, nodeList, dirTravel, speedCat);
+				int num = nodeList.size();
+				int dir = DistanceCalculator.getDirection(nodeList.get(0), nodeList.get(num - 1));
+				
+				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
+				kmlStr += "<description>Sensor:NULL";
+				kmlStr += ", Direction:" + dir;
+				kmlStr += ", DirTravel:" + link.getDirTravel();
+				kmlStr += ", StreetName:" + link.getSt_name();
+				kmlStr += ", FuncClass:" + link.getFunc_class();
+				kmlStr += ", SpeedCat:" + link.getSpeedCat() + "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				for(int j = 0; j < nodeList.size(); j++) {
+					PairInfo node = nodeList.get(j);
+					kmlStr += node.getLongi() + "," + node.getLati() + ",0 ";
+					if(j == 0)
+						System.out.println("ref_node: (" + node.getLongi() + "," + node.getLati() + ")");
+					if(j == nodeList.size() - 1)
+						System.out.println("nref_node: (" + node.getLongi() + "," + node.getLati() + ")");
+				}
+				kmlStr += "</coordinates></LineString></Placemark>\n";
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+			con.close();
+			res.close();
+			pstatement.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 	}
 	
 	private static void generateNullSensorKML() {
@@ -467,8 +536,8 @@ public class RoadPatternGeneration {
 				int refNode = res.getInt(7);
 				int nrefNode = res.getInt(8);
 				LinkInfo link = new LinkInfo(linkId, func_class, stName, refNode, nrefNode, nodeList, dirTravel, speedCat);
-				if(checkEdge.get(linkId) == null) {
-					checkEdge.put(linkId, true);
+				if(!checkEdge.contains(linkId)) {
+					checkEdge.add(linkId);
 					// sort link in edgeList by in_id
 					int inId = refNode < nrefNode ? refNode : nrefNode;
 					if(edgeList.isEmpty()) {
@@ -524,9 +593,9 @@ public class RoadPatternGeneration {
 				JGeometry geom = JGeometry.load(st);
 				PairInfo node = new PairInfo(geom.getPoint()[1], geom.getPoint()[0]);
 				int direction = res.getInt(5);
-				if(checkSensor.get(sensorId) == null) {
+				if(!checkSensor.contains(sensorId)) {
 					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, node, direction);
-					checkSensor.put(sensorId, true);
+					checkSensor.add(sensorId);
 					sensorList.add(sensorInfo);
 				}
 			}
@@ -544,9 +613,9 @@ public class RoadPatternGeneration {
 				JGeometry geom = JGeometry.load(st);
 				PairInfo node = new PairInfo(geom.getPoint()[1], geom.getPoint()[0]);
 				int direction = res.getInt(5);
-				if(checkSensor.get(sensorId) == null) {
+				if(!checkSensor.contains(sensorId)) {
 					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, node, direction);
-					checkSensor.put(sensorId, true);
+					checkSensor.add(sensorId);
 					sensorList.add(sensorInfo);
 				}
 			}
