@@ -38,15 +38,15 @@ public class RoadPatternGeneration {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-//		fetchSensor();
+		fetchSensor();
 		
-//		generateSensorKML();
+		generateSensorKML();
 		
 		fetchEdge();
 
-//		matchEdgeSensor();
+		matchEdgeSensor();
 		
-//		generateEdgeKML();
+		generateEdgeKML();
 		
 //		generatePattern();
 		
@@ -225,33 +225,19 @@ public class RoadPatternGeneration {
 			out.write("<kml><Document>");
 			for(int i = 0; i < edgeList.size(); i++) {
 				LinkInfo link = edgeList.get(i);
-				int id = link.getIntLinkId();
+				String id = link.getId();
+				int intId = link.getIntLinkId();
 				SensorInfo sensor = link.getSensor();
 				String sensorStr = "NULL";
 				ArrayList<PairInfo> nodeList = link.getNodeList();
 				if(sensor != null) {
 					sensorStr = String.valueOf(sensor.getSensorId());
 				}
-				String direction = null;
-				int num = nodeList.size();
-				if(link.getDirTravel().equals("B")) {
-					int dir = DistanceCalculator.getDirection(nodeList.get(0), nodeList.get(num - 1));
-					direction = String.valueOf(dir);
-					dir = DistanceCalculator.getDirection(nodeList.get(num - 1), nodeList.get(0));
-					direction = direction + "," +String.valueOf(dir);
-				}
-				else if(link.getDirTravel().equals("T")) {
-					int dir = DistanceCalculator.getDirection(nodeList.get(0), nodeList.get(num - 1));
-					direction = String.valueOf(dir);
-				}
-				else {
-					int dir = DistanceCalculator.getDirection(nodeList.get(num - 1), nodeList.get(0));
-					direction = String.valueOf(dir);
-				}
 				
-				String kmlStr = "<Placemark><name>Link:" + id + "</name>";
-				kmlStr += "<description>Sensor:" + sensorStr;
-				kmlStr += ", Direction:" + direction;
+				String kmlStr = "<Placemark><name>Link:" + intId + "</name>";
+				kmlStr += "<description>Id:" + id;
+				kmlStr += ", Sensor:" + sensorStr;
+				kmlStr += ", Direction:" + link.getDirection();
 				kmlStr += ", DirTravel:" + link.getDirTravel();
 				kmlStr += ", StreetName:" + link.getSt_name();
 				kmlStr += ", FuncClass:" + link.getFunc_class();
@@ -285,9 +271,10 @@ public class RoadPatternGeneration {
 				int id = sensor.getSensorId();
 				double lati = sensor.getNode().getLati();
 				double longi = sensor.getNode().getLongi();
-				out.write("<Placemark><name>Sensor:" + id
-						+ " </name><Point><coordinates>" + String.valueOf(longi)
-						+ "," + String.valueOf(lati)
+				out.write("<Placemark><name>" + id + "</name><description>Onstreet:" + sensor.getOnStreet()
+						+ ", Fromstreet: " + sensor.getFromStreet() + ", Direction:" + sensor.getDirection()
+						+ "</description><Point><coordinates>" + longi
+						+ "," + lati
 						+ ",0</coordinates></Point></Placemark>");
 			}
 			out.write("</Document></kml>");
@@ -354,6 +341,9 @@ public class RoadPatternGeneration {
 //			System.out.println("processing link id: " + link.getIntLinkId());
 			ArrayList<PairInfo> nodeList = link.getNodeList();
 			boolean findSensor = false;
+			if(link.getIntLinkId() == 23923153) {
+				System.out.println("23923153");
+			}
 			if(nodeList.size() > 2) {
 				// examine the intermediate node first
 //				System.out.println("has more than 2 nodes");
@@ -366,7 +356,7 @@ public class RoadPatternGeneration {
 							SensorInfo sensor = sensorList.get(k);
 							PairInfo node2 = sensor.getNode();
 							double distance = DistanceCalculator.CalculationByDistance(node1, node2);
-							if(distance < step) {
+							if(distance < step && sensor.getDirection() == link.getDirection()) {
 								// find the sensor
 								link.setSensor(sensor);
 								findSensor = true;
@@ -393,7 +383,7 @@ public class RoadPatternGeneration {
 							SensorInfo sensor = sensorList.get(k);
 							PairInfo node2 = sensor.getNode();
 							double distance = DistanceCalculator.CalculationByDistance(node1, node2);
-							if(distance < step) {
+							if(distance < step && sensor.getDirection() == link.getDirection()) {
 								// find the sensor
 								link.setSensor(sensor);
 								findSensor = true;
@@ -409,9 +399,9 @@ public class RoadPatternGeneration {
 				}
 			}
 			
-			if(!findSensor) {
+//			if(!findSensor) {
 //				System.out.println("cannot find sensor for link " + link.getIntLinkId());
-			}
+//			}
 		}
 		int count = 0;
 		for(int i = 0; i < edgeList.size(); i ++) {
@@ -429,40 +419,44 @@ public class RoadPatternGeneration {
 				LinkInfo link = edgeList.get(i);
 				if(link.getSensor() != null) {
 					// left
-					if(i - 1 >= 0) {
-						LinkInfo linkL = edgeList.get(i - 1);
-						if(linkL.getSensor() == null) {
-							int a = Math.abs(link.getStartNode() - linkL.getStartNode());
-							int b = Math.abs(link.getStartNode() - linkL.getEndNode());
-							int c = Math.abs(link.getEndNode() - linkL.getStartNode());
-							int d = Math.abs(link.getEndNode() - linkL.getEndNode());
-							
-							int min = a < b ? a : b;
-							min = min < c ? min : c;
-							min = min < d ? min : d;
-							
-							if(min <= 100) {
-								linkL.setSensor(link.getSensor());
-								count++;
+					for(int n = 0; n < 4; n++) {
+						if(i - 1 >= 0) {
+							LinkInfo linkL = edgeList.get(i - 1);
+							if(linkL.getSensor() == null) {
+								int a = Math.abs(link.getStartNode() - linkL.getStartNode());
+								int b = Math.abs(link.getStartNode() - linkL.getEndNode());
+								int c = Math.abs(link.getEndNode() - linkL.getStartNode());
+								int d = Math.abs(link.getEndNode() - linkL.getEndNode());
+								
+								int min = a < b ? a : b;
+								min = min < c ? min : c;
+								min = min < d ? min : d;
+								
+								if(min <= 100  && link.getSensor().getDirection() == link.getDirection()) {
+									linkL.setSensor(link.getSensor());
+									count++;
+								}
 							}
 						}
 					}
 					// right
-					if(i + 1 < edgeList.size()) {
-						LinkInfo linkR = edgeList.get(i + 1);
-						if(linkR.getSensor() == null) {
-							int a = Math.abs(link.getStartNode() - linkR.getStartNode());
-							int b = Math.abs(link.getStartNode() - linkR.getEndNode());
-							int c = Math.abs(link.getEndNode() - linkR.getStartNode());
-							int d = Math.abs(link.getEndNode() - linkR.getEndNode());
-							
-							int min = a < b ? a : b;
-							min = min < c ? min : c;
-							min = min < d ? min : d;
-							
-							if(min <= 100) {
-								linkR.setSensor(link.getSensor());
-								count++;
+					for(int n =0; n < 4; n++) {
+						if(i + 1 < edgeList.size()) {
+							LinkInfo linkR = edgeList.get(i + 1);
+							if(linkR.getSensor() == null) {
+								int a = Math.abs(link.getStartNode() - linkR.getStartNode());
+								int b = Math.abs(link.getStartNode() - linkR.getEndNode());
+								int c = Math.abs(link.getEndNode() - linkR.getStartNode());
+								int d = Math.abs(link.getEndNode() - linkR.getEndNode());
+								
+								int min = a < b ? a : b;
+								min = min < c ? min : c;
+								min = min < d ? min : d;
+								
+								if(min <= 100 && link.getSensor().getDirection() == link.getDirection()) {
+									linkR.setSensor(link.getSensor());
+									count++;
+								}
 							}
 						}
 					}

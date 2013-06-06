@@ -122,6 +122,10 @@ public class LinkInfo {
 	public int getSpeedCat() {
 		return speedCat;
 	}
+	
+	public int getDirection() {
+		return direction;
+	}
 
 	public String getDirTravel() {
 		return dirTravel;
