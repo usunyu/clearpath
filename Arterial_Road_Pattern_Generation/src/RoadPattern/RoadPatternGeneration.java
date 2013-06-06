@@ -48,7 +48,7 @@ public class RoadPatternGeneration {
 		
 		generateEdgeKML();
 		
-//		generatePattern();
+		generatePattern();
 		
 //		generateAllSensorKML();
 		
@@ -341,9 +341,6 @@ public class RoadPatternGeneration {
 //			System.out.println("processing link id: " + link.getIntLinkId());
 			ArrayList<PairInfo> nodeList = link.getNodeList();
 			boolean findSensor = false;
-			if(link.getIntLinkId() == 23923153) {
-				System.out.println("23923153");
-			}
 			if(nodeList.size() > 2) {
 				// examine the intermediate node first
 //				System.out.println("has more than 2 nodes");
@@ -419,9 +416,10 @@ public class RoadPatternGeneration {
 				LinkInfo link = edgeList.get(i);
 				if(link.getSensor() != null) {
 					// left
-					for(int n = 0; n < 4; n++) {
-						if(i - 1 >= 0) {
-							LinkInfo linkL = edgeList.get(i - 1);
+					int n;
+					for(n = 1; n < 3; n++) {
+						if(i - n >= 0) {
+							LinkInfo linkL = edgeList.get(i - n);
 							if(linkL.getSensor() == null) {
 								int a = Math.abs(link.getStartNode() - linkL.getStartNode());
 								int b = Math.abs(link.getStartNode() - linkL.getEndNode());
@@ -432,7 +430,7 @@ public class RoadPatternGeneration {
 								min = min < c ? min : c;
 								min = min < d ? min : d;
 								
-								if(min <= 100  && link.getSensor().getDirection() == link.getDirection()) {
+								if(min <= 100  && link.getDirection() == linkL.getDirection()) {
 									linkL.setSensor(link.getSensor());
 									count++;
 								}
@@ -440,9 +438,9 @@ public class RoadPatternGeneration {
 						}
 					}
 					// right
-					for(int n =0; n < 4; n++) {
-						if(i + 1 < edgeList.size()) {
-							LinkInfo linkR = edgeList.get(i + 1);
+					for(n = 1; n < 3; n++) {
+						if(i + n < edgeList.size()) {
+							LinkInfo linkR = edgeList.get(i + n);
 							if(linkR.getSensor() == null) {
 								int a = Math.abs(link.getStartNode() - linkR.getStartNode());
 								int b = Math.abs(link.getStartNode() - linkR.getEndNode());
@@ -453,7 +451,7 @@ public class RoadPatternGeneration {
 								min = min < c ? min : c;
 								min = min < d ? min : d;
 								
-								if(min <= 100 && link.getSensor().getDirection() == link.getDirection()) {
+								if(min <= 100 && link.getDirection() == linkR.getDirection()) {
 									linkR.setSensor(link.getSensor());
 									count++;
 								}
