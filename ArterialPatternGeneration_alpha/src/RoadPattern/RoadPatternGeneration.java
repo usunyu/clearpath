@@ -4,8 +4,6 @@ import java.io.*;
 import java.sql.*;
 import java.util.*;
 
-import javax.lang.model.element.Element;
-
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 import Objects.*;
