@@ -23,6 +23,27 @@ public class arterialPatternGeneration {
 		fetchSensor();
 		generateSensorKML();
 	}
+	
+	public static String getDirectionStr(int code) {
+		String dir = "";
+		switch (code) {
+		case 0:
+			dir = "North";
+			break;
+		case 1:
+			dir = "South";
+			break;
+		case 2:
+			dir = "East";
+			break;
+		case 3:
+			dir = "West";
+			break;
+		default:
+			break;
+		}
+		return dir;
+	}
 
 	private static void generateSensorKML() {
 		System.out.println("generate arterial sensor kml...");
@@ -39,7 +60,7 @@ public class arterialPatternGeneration {
 						+ "</name><description>Onstreet:"
 						+ sensor.getOnStreet() + ", Fromstreet: "
 						+ sensor.getFromStreet() + ", Direction:"
-						+ sensor.getDirection() + ", Affected:"
+						+ getDirectionStr(sensor.getDirection()) + ", Affected:"
 						+ sensor.getAffected()
 						+ "</description><Point><coordinates>" + longi + ","
 						+ lati + ",0</coordinates></Point></Placemark>");
