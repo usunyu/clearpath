@@ -4,81 +4,29 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class LinkInfo {
-	public LinkInfo(String index2, int func_class, String start_node,
-			String end_node, PairInfo[] nodes, int numPairs) {
-		super();
-		sensors = new ArrayList<Integer>();
-		LinkId = index2;
-		this.func_class = func_class;
-		this.start_node = start_node;
-		this.end_node = end_node;
-		Nodes = nodes;
-		this.numPairs = numPairs;
-	}
-
-	public LinkInfo(String linkId, int func_class, PairInfo[] nodes,
-			int numPairs) {
-		super();
-		sensors = new ArrayList<Integer>();
-		LinkId = linkId;
-		this.func_class = func_class;
-		Nodes = nodes;
-		this.numPairs = numPairs;
-	}
-
-	public LinkInfo(String linkId, PairInfo[] nodes) {
-		super();
-		sensors = new ArrayList<Integer>();
-		LinkId = linkId;
-		Nodes = nodes;
-	}
-
-	public LinkInfo(String linkId, int funcClass, String st_name2,
-			String st_node, String end_node, PairInfo[] nodes, int count) {
-		super();
-		sensors = new ArrayList<Integer>();
-		LinkId = linkId;
-		this.func_class = funcClass;
-		this.st_name = st_name2;
-		this.start_node = st_node;
-		this.end_node = end_node;
-		Nodes = nodes;
-		this.numPairs = count;
-	}
-	
-	public LinkInfo(String linkIndexId, String link_id, int func_class, String st_name, String start_node,
-			String end_node, PairInfo[] nodes, int numPairs) {
-		super();
-		sensors = new ArrayList<Integer>();
-		LinkId = linkIndexId;
-		this.linkIdStr = link_id;
-		this.func_class = func_class;
-		this.st_name = st_name;
-		this.start_node = start_node;
-		this.end_node = end_node;
-		Nodes = nodes;
-		this.numPairs = numPairs;
-	}
-
-	/* Yu Sun Add Start */
-	String id;
+	// id = link_id + ref_id + nref_id
+	String indexId;
 	int linkId;
+	int funcClass;
+	String streetName;
 	int startNode;
 	int endNode;
 	ArrayList<PairInfo> nodeList;
-	SensorInfo sensor;
-	String linkIdStr;
 	String dirTravel;
 	int speedCat;
 	int direction;
-	
-	public LinkInfo(String id, int linkId, int func_class, String st_name, int startNode, 
-			int endNode, ArrayList<PairInfo> nodeList, String dirTravel, int speedCat, int direction) {
+
+	SensorInfo sensor;
+
+	public LinkInfo(String indexId, int linkId, int funcClass,
+			String streetName, int startNode, int endNode,
+			ArrayList<PairInfo> nodeList, String dirTravel, int speedCat,
+			int direction) {
 		super();
-		this.id = id;
+		this.indexId = indexId;
 		this.linkId = linkId;
-		this.func_class = func_class;
-		this.st_name = st_name;
+		this.funcClass = funcClass;
+		this.streetName = streetName;
 		this.startNode = startNode;
 		this.endNode = endNode;
 		this.nodeList = nodeList;
@@ -86,35 +34,31 @@ public class LinkInfo {
 		this.speedCat = speedCat;
 		this.direction = direction;
 	}
-	
-	public String getId() {
-		return id;
+
+	public String getIndexId() {
+		return indexId;
 	}
-	
+
 	public int getIntLinkId() {
 		return linkId;
 	}
-	
-	public String getStrLinkId() {
-		return linkIdStr;
-	}
-	
+
 	public void setSensor(SensorInfo sensor) {
 		this.sensor = sensor;
 	}
-	
+
 	public SensorInfo getSensor() {
 		return sensor;
 	}
-	
+
 	public ArrayList<PairInfo> getNodeList() {
 		return nodeList;
 	}
-	
+
 	public int getStartNode() {
 		return startNode;
 	}
-	
+
 	public int getEndNode() {
 		return endNode;
 	}
@@ -122,7 +66,7 @@ public class LinkInfo {
 	public int getSpeedCat() {
 		return speedCat;
 	}
-	
+
 	public int getDirection() {
 		return direction;
 	}
@@ -130,93 +74,22 @@ public class LinkInfo {
 	public String getDirTravel() {
 		return dirTravel;
 	}
-	
-	/* Yu Sun Add End */
-	
-	String LinkId;
-	int func_class;
-	String start_node;
-	String end_node;
-	String st_name;
-	
-	PairInfo Nodes[];
-	int numPairs;
-	public ArrayList<Integer> sensors;
 
-	public String getLinkId() {
-		return LinkId;
-	}
-
-	public PairInfo[] getNodes() {
-		return Nodes;
-	}
-
-	public void setNodes(PairInfo[] nodes) {
-		Nodes = nodes;
-	}
-
-	public int getFunc_class() {
-		return func_class;
-	}
-
-	public void setFunc_class(int func_class) {
-		this.func_class = func_class;
-	}
-
-	public int getPairCount() {
-		return numPairs;
-	}
-
-	public String getStart_node() {
-		return start_node;
-	}
-
-	public void setStart_node(String start_node) {
-		this.start_node = start_node;
-	}
-
-	public String getEnd_node() {
-		return end_node;
-	}
-
-	public void setEnd_node(String end_node) {
-		this.end_node = end_node;
-	}
-
-	public int getNumPairs() {
-		return numPairs;
-	}
-
-	public void setNumPairs(int numPairs) {
-		this.numPairs = numPairs;
+	public String getStreetName() {
+		return streetName;
 	}
 
 	@Override
 	public String toString() {
-		return "LinkInfo [LinkId=" + LinkId + ", func_class=" + func_class
-				+ ", start_node=" + start_node + ", end_node=" + end_node
-				+ ", numPairs=" + numPairs + ", sensors=" + sensors
-				+ ", Nodes=" + Arrays.toString(Nodes) + "]";
-	}
+		String nodeListStr = "";
+		for(int i = 0; i < nodeList.size(); i++) {
+			
+		}
 
-	public String getSt_name() {
-		return st_name;
+		return "LinkInfo [LinkId=" + linkId + ", FuncClass=" + funcClass
+				+ ", StartNode=" + startNode + ", EndNode=" + endNode
+				+ ", NodeList=" + nodeListStr + ", DirTravel=" + dirTravel
+				+ ", SpeedCat=" + speedCat + ", Direction=" + direction
+				+ ", Sensor=" + sensor.toString() + "]";
 	}
-
-	public void setSt_name(String st_name) {
-		this.st_name = st_name;
-	}
-
-	public ArrayList<Integer> getSensors() {
-		return sensors;
-	}
-
-	public void setSensors(ArrayList<Integer> sensors) {
-		this.sensors = sensors;
-	}
-
-	public void setLinkId(String linkId) {
-		LinkId = linkId;
-	}
-
 }

@@ -1,5 +1,7 @@
 package Objects;
 
+import java.util.ArrayList;
+
 public class DistanceCalculator {
 
 	static public double Radius;
@@ -28,7 +30,7 @@ public class DistanceCalculator {
 		System.out.println(CalculationByDistance(new PairInfo(34.28215,
 				-118.74368), new PairInfo(34.28214, -118.73976)));
 	}
-	
+
 	public static int getDirection(PairInfo startNode, PairInfo endNode) {
 		double latitude1 = startNode.getLati() * Math.PI / 180.;// coordinate1.Latitude.ToRadian();
 		double latitude2 = endNode.getLati() * Math.PI / 180.;// coordinate2.Latitude.ToRadian();
@@ -57,9 +59,9 @@ public class DistanceCalculator {
 	}
 
 	public static int getDirection(LinkInfo linkFound) {
-		PairInfo[] pairs = linkFound.getNodes();
-		PairInfo startNode = pairs[0];
-		PairInfo endNode = pairs[linkFound.numPairs - 1];
+		ArrayList<PairInfo> pairs = linkFound.getNodeList();
+		PairInfo startNode = pairs.get(0);
+		PairInfo endNode = pairs.get(pairs.size() - 1);
 
 		double latitude1 = startNode.getLati() * Math.PI / 180.;// coordinate1.Latitude.ToRadian();
 		double latitude2 = endNode.getLati() * Math.PI / 180.;// coordinate2.Latitude.ToRadian();

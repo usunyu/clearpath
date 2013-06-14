@@ -7,8 +7,9 @@ public class SensorInfo {
 	PairInfo node;
 	int direction;
 	int affected;
-	
-	public SensorInfo(int sensorId, String onStreet, String fromStreet, PairInfo node, int direction, int affected) {
+
+	public SensorInfo(int sensorId, String onStreet, String fromStreet,
+			PairInfo node, int direction, int affected) {
 		this.sensorId = sensorId;
 		this.onStreet = onStreet;
 		this.fromStreet = fromStreet;
@@ -16,11 +17,35 @@ public class SensorInfo {
 		this.direction = direction;
 		this.affected = affected;
 	}
-	
-	public int getSensorId() { return sensorId; }
-	public String getOnStreet() { return onStreet; }
-	public String getFromStreet() { return fromStreet; }
-	public PairInfo getNode() { return node; }
-	public int getDirection() { return direction; }
-	public int getAffected() {return affected; }
+
+	public int getSensorId() {
+		return sensorId;
+	}
+
+	public String getOnStreet() {
+		return onStreet;
+	}
+
+	public String getFromStreet() {
+		return fromStreet;
+	}
+
+	public PairInfo getNode() {
+		return node;
+	}
+
+	public int getDirection() {
+		return direction;
+	}
+
+	public int getAffected() {
+		return affected;
+	}
+
+	@Override
+	public String toString() {
+		return "SensorInfo [SensorId=" + sensorId + ", OnStreet=" + onStreet
+				+ ", FromStreet=" + fromStreet + ", Node=" + node.toString()
+				+ ", Direction=" + direction + ", Affected=" + affected + "]";
+	}
 }
