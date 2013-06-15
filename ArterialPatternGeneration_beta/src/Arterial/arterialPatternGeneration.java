@@ -97,6 +97,7 @@ public class arterialPatternGeneration {
 			res1 = pstatement1.executeQuery();
 			while (res1.next()) {
 				long linkId = res1.getLong(1);
+				System.out.println("processing link " + linkId);
 				sql2 = "select * from streets_dca1_new where link_id =" + linkId;
 				pstatement2 = con.prepareStatement(sql2,
 						ResultSet.TYPE_SCROLL_INSENSITIVE,
