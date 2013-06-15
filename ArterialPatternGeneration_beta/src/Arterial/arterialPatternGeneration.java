@@ -99,6 +99,7 @@ public class arterialPatternGeneration {
 			pstatement1 = con.prepareStatement(sql1,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
+			System.out.println("execute query...");
 			res1 = pstatement1.executeQuery();
 			res1.last();
 			int sum = res1.getRow();
@@ -256,6 +257,7 @@ public class arterialPatternGeneration {
 			pstatement = con.prepareStatement(sql,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
+			System.out.println("execute query...");
 			res = pstatement.executeQuery();
 			res.last();
 			int sum = res.getRow();
@@ -288,6 +290,7 @@ public class arterialPatternGeneration {
 
 	private static Connection getConnection() {
 		try {
+			System.out.println("connecting to database...");
 			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
 			connHome = DriverManager.getConnection(urlHome, userName, password);
 			return connHome;
