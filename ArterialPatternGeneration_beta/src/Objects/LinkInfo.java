@@ -5,8 +5,8 @@ import java.util.Arrays;
 
 public class LinkInfo {
 	// id = link_id + ref_id + nref_id
-	String indexId;
-	int linkId;
+	// String indexId;
+	long linkId;
 	int funcClass;
 	String streetName;
 	int startNode;
@@ -18,12 +18,10 @@ public class LinkInfo {
 
 	SensorInfo sensor;
 
-	public LinkInfo(String indexId, int linkId, int funcClass,
-			String streetName, int startNode, int endNode,
-			ArrayList<PairInfo> nodeList, String dirTravel, int speedCat,
-			int direction) {
+	public LinkInfo(long linkId, int funcClass, String streetName,
+			int startNode, int endNode, ArrayList<PairInfo> nodeList,
+			String dirTravel, int speedCat, int direction) {
 		super();
-		this.indexId = indexId;
 		this.linkId = linkId;
 		this.funcClass = funcClass;
 		this.streetName = streetName;
@@ -35,11 +33,11 @@ public class LinkInfo {
 		this.direction = direction;
 	}
 
-	public String getIndexId() {
-		return indexId;
-	}
+	// public String getIndexId() {
+	// return indexId;
+	//	}
 
-	public int getIntLinkId() {
+	public long getIntLinkId() {
 		return linkId;
 	}
 
@@ -82,8 +80,8 @@ public class LinkInfo {
 	@Override
 	public String toString() {
 		String nodeListStr = "";
-		for(int i = 0; i < nodeList.size(); i++) {
-			
+		for (int i = 0; i < nodeList.size(); i++) {
+
 		}
 
 		return "LinkInfo [LinkId=" + linkId + ", FuncClass=" + funcClass
