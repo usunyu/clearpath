@@ -110,7 +110,7 @@ public class arterialPatternGeneration {
 			while (res1.next()) {
 				no++;
 				long linkId = res1.getLong(1);
-				System.out.println("processing no." + no + "link, "
+				System.out.println("processing no." + no + " link, "
 						+ df.format((double) no / sum * 100) + "%");
 				sql2 = "select * from streets_dca1_new where link_id ="
 						+ linkId;
@@ -267,7 +267,7 @@ public class arterialPatternGeneration {
 			df.applyPattern("#0.00");
 			while (res.next()) {
 				no++;
-				System.out.println("processing no." + no + "sensor, "
+				System.out.println("processing no." + no + " sensor, "
 						+ df.format((double) no / sum * 100) + "%");
 				int sensorId = res.getInt(1);
 				String onStreet = res.getString(2);
