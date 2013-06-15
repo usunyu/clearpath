@@ -2,6 +2,7 @@ package Arterial;
 
 import java.io.*;
 import java.sql.*;
+import java.text.*;
 import java.util.*;
 
 import oracle.spatial.geometry.JGeometry;
@@ -103,11 +104,13 @@ public class arterialPatternGeneration {
 			int sum = res1.getRow();
 			res1.beforeFirst();
 			int no = 0;
+			DecimalFormat df = new DecimalFormat();
+			df.applyPattern("#0.00");
 			while (res1.next()) {
 				no++;
 				long linkId = res1.getLong(1);
 				System.out.println("processing no." + no + "link, "
-						+ (double) no / sum + "%");
+						+ df.format((double) no / sum * 100) + "%");
 				sql2 = "select * from streets_dca1_new where link_id ="
 						+ linkId;
 				pstatement2 = con.prepareStatement(sql2,
@@ -258,10 +261,12 @@ public class arterialPatternGeneration {
 			int sum = res.getRow();
 			res.beforeFirst();
 			int no = 0;
+			DecimalFormat df = new DecimalFormat();
+			df.applyPattern("#0.00");
 			while (res.next()) {
 				no++;
 				System.out.println("processing no." + no + "sensor, "
-						+ (double) no / sum + "%");
+						+ df.format((double) no / sum * 100) + "%");
 				int sensorId = res.getInt(1);
 				String onStreet = res.getString(2);
 				String fromStreet = res.getString(3);
