@@ -26,7 +26,7 @@ public class arterialPatternGeneration {
 		fetchEdge();
 		generateEdgeKML();
 	}
-	
+
 	public static void generateEdgeKML() {
 		Connection con = null;
 		String sql = null;
@@ -43,12 +43,14 @@ public class arterialPatternGeneration {
 			sql = "select distinct dc.link_id from streets_dca1_new dc, zlevels_new z1, zlevels_new z2 where "
 					+ "z1.node_id !=0 and z2.node_id !=0 and ref_in_id = z1.node_id and nref_in_id = z2.node_id "
 					+ "order by dc.link_id";
-			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			pstatement = con.prepareStatement(sql,
+					ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
-			while(res.next()) {
+			while (res.next()) {
 				long linkId = res.getLong(1);
 				ArrayList<LinkInfo> linkList = edgeMap.get(linkId);
-				for(int i = 0; i < linkList.size(); i++) {
+				for (int i = 0; i < linkList.size(); i++) {
 					LinkInfo link = linkList.get(i);
 					long id = link.getLinkId();
 					ArrayList<PairInfo> nodeList = link.getNodeList();
@@ -57,11 +59,13 @@ public class arterialPatternGeneration {
 					kmlStr += ", DirTravel:" + link.getDirTravel();
 					kmlStr += ", StreetName:" + link.getStreetName();
 					kmlStr += ", FuncClass:" + link.getFuncClass();
-					kmlStr += ", SpeedCat:" + link.getSpeedCat() + "</description>";
+					kmlStr += ", SpeedCat:" + link.getSpeedCat()
+							+ "</description>";
 					kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
-					for(int j = 0; j < nodeList.size(); j++) {
+					for (int j = 0; j < nodeList.size(); j++) {
 						PairInfo node = nodeList.get(j);
-						kmlStr += node.getLongi() + "," + node.getLati() + ",0 ";
+						kmlStr += node.getLongi() + "," + node.getLati()
+								+ ",0 ";
 					}
 					kmlStr += "</coordinates></LineString></Placemark>\n";
 					out.write(kmlStr);
@@ -95,10 +99,17 @@ public class arterialPatternGeneration {
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
 			res1 = pstatement1.executeQuery();
+			res1.last();
+			int sum = res1.getRow();
+			res1.beforeFirst();
+			int no = 0;
 			while (res1.next()) {
+				no++;
 				long linkId = res1.getLong(1);
-				System.out.println("processing link " + linkId);
-				sql2 = "select * from streets_dca1_new where link_id =" + linkId;
+				System.out.println("processing no." + no + "link, "
+						+ (double) no / sum + "%");
+				sql2 = "select * from streets_dca1_new where link_id ="
+						+ linkId;
 				pstatement2 = con.prepareStatement(sql2,
 						ResultSet.TYPE_SCROLL_INSENSITIVE,
 						ResultSet.CONCUR_READ_ONLY);
@@ -243,7 +254,14 @@ public class arterialPatternGeneration {
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
+			res.last();
+			int sum = res.getRow();
+			res.beforeFirst();
+			int no = 0;
 			while (res.next()) {
+				no++;
+				System.out.println("processing no." + no + "sensor, "
+						+ (double) no / sum + "%");
 				int sensorId = res.getInt(1);
 				String onStreet = res.getString(2);
 				String fromStreet = res.getString(3);
