@@ -28,7 +28,56 @@ public class arterialPatternGeneration {
 	}
 	
 	public static void generateEdgeKML() {
-		
+		Connection con = null;
+		String sql = null;
+		PreparedStatement pstatement = null;
+		ResultSet res = null;
+		FileWriter fstream = null;
+		BufferedWriter out = null;
+		try {
+			System.out.println("generate arterial edge kml...");
+			fstream = new FileWriter("Arterial_Edges_List.kml");
+			out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			con = getConnection();
+			sql = "select distinct dc.link_id from streets_dca1_new dc, zlevels_new z1, zlevels_new z2 where "
+					+ "z1.node_id !=0 and z2.node_id !=0 and ref_in_id = z1.node_id and nref_in_id = z2.node_id "
+					+ "order by dc.link_id";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while(res.next()) {
+				long linkId = res.getLong(1);
+				ArrayList<LinkInfo> linkList = edgeMap.get(linkId);
+				for(int i = 0; i < linkList.size(); i++) {
+					LinkInfo link = linkList.get(i);
+					long id = link.getLinkId();
+					ArrayList<PairInfo> nodeList = link.getNodeList();
+					String kmlStr = "<Placemark><name>LinkId:" + id + "</name>";
+					kmlStr += "<description>Direction:" + link.getDirection();
+					kmlStr += ", DirTravel:" + link.getDirTravel();
+					kmlStr += ", StreetName:" + link.getStreetName();
+					kmlStr += ", FuncClass:" + link.getFuncClass();
+					kmlStr += ", SpeedCat:" + link.getSpeedCat() + "</description>";
+					kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+					for(int j = 0; j < nodeList.size(); j++) {
+						PairInfo node = nodeList.get(j);
+						kmlStr += node.getLongi() + "," + node.getLati() + ",0 ";
+					}
+					kmlStr += "</coordinates></LineString></Placemark>\n";
+					out.write(kmlStr);
+				}
+			}
+			out.write("</Document></kml>");
+			res.close();
+			pstatement.close();
+			con.close();
+			out.close();
+			fstream.close();
+			System.out.println("generate arterial edge kml finish!");
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 	}
 
 	public static void fetchEdge() {
@@ -151,10 +200,10 @@ public class arterialPatternGeneration {
 	}
 
 	private static void generateSensorKML() {
-		System.out.println("generate arterial sensor kml...");
 		FileWriter fstream = null;
 		BufferedWriter out = null;
 		try {
+			System.out.println("generate arterial sensor kml...");
 			fstream = new FileWriter("Arterial_Sensors_List.kml");
 			out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
@@ -174,10 +223,10 @@ public class arterialPatternGeneration {
 			}
 			out.write("</Document></kml>");
 			out.close();
+			System.out.println("generate arterial sensor kml finish!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("generate arterial sensor kml finish!");
 	}
 
 	public static void fetchSensor() {

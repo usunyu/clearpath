@@ -37,7 +37,7 @@ public class LinkInfo {
 	// return indexId;
 	//	}
 
-	public long getIntLinkId() {
+	public long getLinkId() {
 		return linkId;
 	}
 
@@ -67,6 +67,10 @@ public class LinkInfo {
 
 	public int getDirection() {
 		return direction;
+	}
+	
+	public int getFuncClass() {
+		return funcClass;
 	}
 
 	public String getDirTravel() {
