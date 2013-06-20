@@ -14,7 +14,7 @@ public class RoadPatternGeneration {
 	 * @param args
 	 */
 	// file
-	private static String fileRoot = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
+	private static String fileRoot = "../GeneratedFile";
 	private static String fileLink = "Edges.csv";
 	// street
 	static String street = "FIGUEROA";
