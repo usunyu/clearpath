@@ -91,7 +91,7 @@ public class RoadPatternGeneration {
 				kmlStr += "<description>Id:" + linkId;
 				kmlStr += ", Direction:" + link.getDirection();
 				kmlStr += ", DirTravel:" + link.getDirTravel();
-				kmlStr += ", StreetName:" + link.getSt_name();
+				kmlStr += ", StreetName:" + link.getSt_name().replace('&', '+');
 				kmlStr += ", FuncClass:" + link.getFunc_class();
 				kmlStr += ", SpeedCat:" + link.getSpeedCat() + "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
