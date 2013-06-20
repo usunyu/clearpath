@@ -22,9 +22,10 @@ public class arterialPatternGeneration {
 	static HashMap<Long, ArrayList<LinkInfo>> edgeMap = new HashMap<Long, ArrayList<LinkInfo>>();
 
 	public static void main(String[] args) {
-		fetchSensor();
-		generateSensorKML();
+//		fetchSensor();
+//		generateSensorKML();
 		fetchEdge();
+		
 		generateEdgeKML();
 	}
 
@@ -299,5 +300,18 @@ public class arterialPatternGeneration {
 		}
 		return connHome;
 
+	}
+	
+	public static BufferedReader readFile(String fileName) throws IOException {
+		FileInputStream fstream = new FileInputStream(fileName);
+		DataInputStream in = new DataInputStream(fstream);
+		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		return br;
+	}
+	
+	public static BufferedWriter writeFile(String fileName) throws IOException {
+		FileWriter fstream = new FileWriter(fileName);
+		BufferedWriter out = new BufferedWriter(fstream);
+		return out;
 	}
 }
