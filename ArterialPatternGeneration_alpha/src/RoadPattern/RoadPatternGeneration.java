@@ -2,6 +2,7 @@ package RoadPattern;
 
 import java.io.*;
 import java.sql.*;
+import java.text.*;
 import java.util.*;
 
 import oracle.spatial.geometry.JGeometry;
@@ -39,13 +40,13 @@ public class RoadPatternGeneration {
 	static ArrayList<LinkInfo> searchList = new ArrayList<LinkInfo>();
 	
 	static HashMap<String, LinkInfo> edgeMap = new HashMap<String, LinkInfo>();
-	static ArrayList<String> linkIdList = new ArrayList<String>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		/* ------------------------- */
 		readFileInMemory();
-		generateEdgesKML();
+		//generateEdgesKML();
+		matchSensorsToEdges();
 		/* ------------------------- */
 
 		// fetchSensor();
@@ -76,36 +77,62 @@ public class RoadPatternGeneration {
 	/*
 	 * ------------------------------------------------------------------------------------------------------------------------------
 	 */
-
-	private static void generateEdgesKML() {
-		System.out.println("generate edges kml...");
+	
+	private static void matchSensorsToEdges() {
+		System.out.println("matching sensors to edges...");
+		Set<String> keys = edgeMap.keySet();
+		Iterator<String> iter = keys.iterator();
+		int num = keys.size(), i = 0, count = 0;
+		DecimalFormat df = new DecimalFormat("#.00");
 		try {
-			FileWriter fstream = new FileWriter("Edges_List.kml");
-			BufferedWriter out = new BufferedWriter(fstream);
-			out.write("<kml><Document>");
-			for(int i = 0; i < linkIdList.size(); i++) {
-				String linkId = linkIdList.get(i);
-				LinkInfo link = edgeMap.get(linkId);
-				PairInfo[] nodes = link.getNodes();
-				String kmlStr = "<Placemark><name>Link:" + linkId.substring(0, 8) + "</name>";
-				kmlStr += "<description>Id:" + linkId;
-				kmlStr += ", Direction:" + link.getDirection();
-				kmlStr += ", DirTravel:" + link.getDirTravel();
-				kmlStr += ", StreetName:" + link.getSt_name().replace('&', '+');
-				kmlStr += ", FuncClass:" + link.getFunc_class();
-				kmlStr += ", SpeedCat:" + link.getSpeedCat() + "</description>";
-				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
-				kmlStr += nodes[0].getLongi() + "," + nodes[0].getLati() + ",0 ";
-				kmlStr += nodes[1].getLongi() + "," + nodes[1].getLati() + ",0 ";
-				kmlStr += "</coordinates></LineString></Placemark>\n";
-				out.write(kmlStr);
+			while(iter.hasNext()) {
+				if(i % 500 == 0 || i == num)
+					System.out.println(df.format((double) i / num * 100) + "%");
+				LinkInfo link = edgeMap.get(iter.next());
+				String sql = "select link_id, direction, start_lat_long from arterial_congestion_config where sdo_within_distance"
+						+ "(START_LAT_LONG,MDSYS.SDO_GEOMETRY(2002,8307,NULL,MDSYS.SDO_ELEM_INFO_ARRAY(1,2,1),MDSYS.SDO_ORDINATE_ARRAY("
+						+ link.getNodes()[0].getQuery()
+						+ ","
+						+ link.getNodes()[1].getQuery()
+						+ ")),'distance=150 unit=METER')='TRUE'";
+				Connection con = getConnection();
+				PreparedStatement f = con.prepareStatement(sql,
+						ResultSet.TYPE_SCROLL_INSENSITIVE,
+						ResultSet.CONCUR_READ_ONLY);
+				ResultSet rs = f.executeQuery();
+				double max = 200;
+				int closestSensor = 0;
+				while (rs.next()) {
+					
+					int sensorId = rs.getInt(1);
+					int direction = rs.getInt(2);
+					// handle for geom point
+					STRUCT st = (STRUCT) rs.getObject(3);
+					JGeometry geom = JGeometry.load(st);
+					double lati = geom.getPoint()[1];
+					double lon = geom.getPoint()[0];
+					PairInfo node = new PairInfo(lati, lon);
+					
+					int dir = DistanceCalculator.getDirection(link);
+					double d1 = DistanceCalculator.CalculationByDistance(node, link.getNodes()[0]);
+					double d2 = DistanceCalculator.CalculationByDistance(node, link.getNodes()[1]);
+					double d = d1 < d2 ? d1 : d2;
+					// select the closest
+					if(d < max && dir == direction) {
+						closestSensor = sensorId;
+						count++;
+					}
+				}
+				edgeMap.get(link.getLinkId()).setClosestSensor(closestSensor);
+				rs.close();
+				f.close();
+				con.close();
 			}
-			out.write("</Document></kml>");
-			out.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("generate edges kml finish!");
+		System.out.println("matching sensors to edges finish!");
+		System.out.println("total" + num + "links, " + count + " links have sensors.");
 	}
 
 	private static void readFileInMemory() {
@@ -142,12 +169,8 @@ public class RoadPatternGeneration {
 					if (edgeMap.get(LinkIdIndex) != null)
 						System.out.println(edgeMap.get(LinkIdIndex)
 								+ "Duplicate LinkIds");
-					else
-						linkIdList.add(LinkIdIndex);
 
-					edgeMap.put(LinkIdIndex,
-							new LinkInfo(LinkIdIndex, FuncClass, st_name,
-									st_node, end_node, pairs, count));
+					edgeMap.put(LinkIdIndex, new LinkInfo(LinkIdIndex, FuncClass, st_name, st_node, end_node, pairs, count));
 
 				}
 			}
@@ -157,6 +180,38 @@ public class RoadPatternGeneration {
 			e.printStackTrace();
 		}
 
+	}
+	
+	private static void generateEdgesKML() {
+		System.out.println("generate edges kml...");
+		try {
+			FileWriter fstream = new FileWriter("Edges_List.kml");
+			BufferedWriter out = new BufferedWriter(fstream);
+			Set<String> keys = edgeMap.keySet();
+			Iterator<String> iter = keys.iterator();
+			out.write("<kml><Document>");
+			while(iter.hasNext()) {
+				LinkInfo link = edgeMap.get(iter.next());
+				PairInfo[] nodes = link.getNodes();
+				String kmlStr = "<Placemark><name>Link:" + link.getLinkId().substring(0, 8) + "</name>";
+				kmlStr += "<description>Id:" + link.getLinkId();
+				kmlStr += ", Direction:" + link.getDirection();
+				kmlStr += ", DirTravel:" + link.getDirTravel();
+				kmlStr += ", StreetName:" + link.getSt_name().replace('&', '+');
+				kmlStr += ", FuncClass:" + link.getFunc_class();
+				kmlStr += ", SpeedCat:" + link.getSpeedCat() + "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				kmlStr += nodes[0].getLongi() + "," + nodes[0].getLati() + ",0 ";
+				kmlStr += nodes[1].getLongi() + "," + nodes[1].getLati() + ",0 ";
+				kmlStr += "</coordinates></LineString></Placemark>\n";
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate edges kml finish!");
 	}
 
 	/*

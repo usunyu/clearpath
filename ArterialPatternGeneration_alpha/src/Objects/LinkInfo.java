@@ -142,6 +142,15 @@ public class LinkInfo {
 	PairInfo Nodes[];
 	int numPairs;
 	public ArrayList<Integer> sensors;
+	int closestSensor;
+	
+	public void setClosestSensor(int sensor) {
+		closestSensor = sensor;
+	}
+	
+	public int getClosestSensor() {
+		return closestSensor;
+	}
 
 	public String getLinkId() {
 		return LinkId;
