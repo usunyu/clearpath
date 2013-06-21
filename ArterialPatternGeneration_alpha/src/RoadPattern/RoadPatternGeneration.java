@@ -86,7 +86,7 @@ public class RoadPatternGeneration {
 		DecimalFormat df = new DecimalFormat("#.00");
 		try {
 			while(iter.hasNext()) {
-				if(i % 500 == 0 || i == num)
+				if(i++ % 500 == 0 || i == num)
 					System.out.println(df.format((double) i / num * 100) + "%");
 				LinkInfo link = edgeMap.get(iter.next());
 				String sql = "select link_id, direction, start_lat_long from arterial_congestion_config where sdo_within_distance"
