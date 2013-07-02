@@ -19,6 +19,8 @@ public class RoadPatternGeneration {
 	private static String fileLink = "Edges.csv";
 	// street
 	static String street = "FIGUEROA";
+	static int StartNode = 49250387;
+	static int EndNode = 49260081;
 	// parameter
 	static double searchDistance = 0.15;
 	static int devide = 1000;
@@ -33,6 +35,7 @@ public class RoadPatternGeneration {
 	// data struct
 	static ArrayList<LinkInfo> edgeList = new ArrayList<LinkInfo>();
 	static ArrayList<LinkInfo> pathList = new ArrayList<LinkInfo>();
+	
 	static HashSet<String> checkEdge = new HashSet<String>();
 	static ArrayList<SensorInfo> sensorList = new ArrayList<SensorInfo>();
 	static HashSet<Integer> checkSensor = new HashSet<Integer>();
@@ -43,6 +46,10 @@ public class RoadPatternGeneration {
 	static HashMap<String, LinkInfo> edgeMap = new HashMap<String, LinkInfo>();
 
 	static HashMap<Integer, ArrayList<Integer>> adjNodeMap = new HashMap<Integer, ArrayList<Integer>>();
+	
+	static HashMap<String, Integer> nodesToLink = new HashMap<String, Integer>();
+	
+	static HashMap<Integer, PairInfo> nodePosition = new HashMap<Integer, PairInfo>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -50,6 +57,8 @@ public class RoadPatternGeneration {
 		fetchEdge2();
 		generateAdjNodeList();
 		// printAdjNodeList();
+		generatePath();
+		generateEdgeKML2();
 		/* ------------------------- */
 		// readFileInMemory();
 		// generateEdgesKML();
@@ -75,6 +84,55 @@ public class RoadPatternGeneration {
 	 * --------------------------------------------------------------------------
 	 * ----------------------------------------------------
 	 */
+	private static void generatePath() {
+		int current = StartNode;
+		while(current != EndNode) {
+			ArrayList<Integer> adjList = adjNodeMap.get(current);
+		}
+	}
+	
+	private static void generateEdgeKML2() {
+		System.out.println("generate edge kml...");
+		try {
+			FileWriter fstream = new FileWriter("Edges_List.kml");
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			for (int i = 0; i < edgeList.size(); i++) {
+				LinkInfo link = edgeList.get(i);
+				int intId = link.getIntLinkId();
+				SensorInfo sensor = link.getSensor();
+				String sensorStr = "NULL";
+				ArrayList<PairInfo> nodeList = link.getNodeList();
+				if (sensor != null) {
+					sensorStr = String.valueOf(sensor.getSensorId());
+				}
+
+				String kmlStr = "<Placemark><name>Link:" + intId + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "Sensor:" + sensorStr;
+				kmlStr += "Start:" + link.getStartNode();
+				kmlStr += "End:" + link.getEndNode();
+				kmlStr += ", Direction:" + link.getAllDir();
+				// kmlStr += ", StreetName:" + link.getSt_name();
+				kmlStr += ", FuncClass:" + link.getFunc_class();
+				kmlStr += ", SpeedCat:" + link.getSpeedCat() + "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				for (int j = 0; j < nodeList.size(); j++) {
+					PairInfo node = nodeList.get(j);
+					kmlStr += node.getLongi() + "," + node.getLati() + ",0 ";
+				}
+				kmlStr += "</coordinates></LineString></Placemark>\n";
+
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate edge kml finish!");
+	}
+
 	private static void fetchEdge2() {
 		try {
 			System.out.println("fetch edges...");
@@ -111,9 +169,15 @@ public class RoadPatternGeneration {
 				int speedCat = res.getInt(6);
 				int refNode = res.getInt(7);
 				int nrefNode = res.getInt(8);
-
+				
 				int num = nodeList.size();
-				String id = String.valueOf(linkId);
+				
+				if(!nodePosition.containsKey(refNode))
+					nodePosition.put(refNode, nodeList.get(0));
+				if(!nodePosition.containsKey(nrefNode))
+					nodePosition.put(refNode, nodeList.get(num - 1));
+
+				
 				if (dirTravel.equals("B")) {
 					int dir1 = DistanceCalculator.getDirection(nodeList.get(0),
 							nodeList.get(num - 1));
@@ -151,21 +215,18 @@ public class RoadPatternGeneration {
 		System.out.println("fetch edge finish!");
 	}
 
-	private static void getStartNode(int linkId) {
-
-	}
-
-	private static void getEndNode(int linkId) {
-
-	}
-
 	private static void generateAdjNodeList() {
 		System.out.println("generate adj node list...");
 		for (int i = 0; i < edgeList.size(); i++) {
 			LinkInfo link = edgeList.get(i);
+			int id = link.getIntLinkId();
 			int start = link.getStartNode();
 			int end = link.getEndNode();
-
+			String seString = String.valueOf(start);
+			String esString = String.valueOf(end);
+			nodesToLink.put(seString, id);
+			nodesToLink.put(esString, id);
+			
 			if (adjNodeMap.containsKey(start)) {
 				ArrayList<Integer> tempList = adjNodeMap.get(start);
 				if (!tempList.contains(end))
@@ -206,10 +267,6 @@ public class RoadPatternGeneration {
 				System.out.print(tempEndList.get(j) + ",");
 			System.out.println();
 		}
-	}
-
-	private static void generatePath(int start, int end) {
-
 	}
 
 	/*
