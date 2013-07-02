@@ -53,6 +53,8 @@ public class RoadPatternGeneration {
 
 	static HashMap<Integer, PairInfo> nodePosition = new HashMap<Integer, PairInfo>();
 
+	static double[] speedArray = new double[60];
+
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		/* ------------------------- */
@@ -60,13 +62,13 @@ public class RoadPatternGeneration {
 		generateAdjNodeList();
 		// printAdjNodeList();
 		generatePath();
-
 		fetchSensor();
 		// generateSensorKML();
-
 		matchEdgeSensor2(0);
-
 		generateEdgeKML2();
+		// generatePattern2();
+		calAvergSpeed();
+		generateExcel();
 		/* ------------------------- */
 		// readFileInMemory();
 		// generateEdgesKML();
@@ -92,6 +94,109 @@ public class RoadPatternGeneration {
 	 * --------------------------------------------------------------------------
 	 * ----------------------------------------------------
 	 */
+	private static void generateExcel() {
+		
+	}
+	
+	private static void calAvergSpeed() {
+		System.out.println("calculate avg speed...");
+		try {
+			for (int i = 0; i < pathList.size(); i++) {
+				LinkInfo link = pathList.get(i);
+				// System.out.print("processing link " + link.getIntLinkId());
+				// System.out.print("\r");
+				if (link.getSensor() != null) {
+					Connection con = null;
+					String sql = null;
+					PreparedStatement pstatement = null;
+					ResultSet res = null;
+					con = getConnection();
+
+					sql = "select * from arterial_averages3 where link_id = '"
+							+ link.getSensor().getSensorId() + "'"
+							+ " and day = '" + days[0] + "'";
+					pstatement = con.prepareStatement(sql,
+							ResultSet.TYPE_SCROLL_INSENSITIVE,
+							ResultSet.CONCUR_READ_ONLY);
+					res = pstatement.executeQuery();
+
+					while (res.next()) {
+						double speed = res.getDouble(2);
+						String time = res.getString(5);
+						int index = UtilClass.getIndex(time);
+						if (index == -1)
+							continue;
+						speedArray[index] += speed;
+					}
+
+					res.close();
+					pstatement.close();
+					con.close();
+				}
+			}
+
+			for (int i = 0; i < speedArray.length; i++) {
+				speedArray[i] /= pathList.size();
+				// System.out.println(speedArray[i]);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("calculate avg speed finish!");
+	}
+
+	private static void generatePattern2() {
+		System.out.println("generate pattern...");
+		FileWriter fstream = null;
+		BufferedWriter out = null;
+		try {
+			fstream = new FileWriter("Pattern_" + street + "_" + days[0]
+					+ ".txt");
+			out = new BufferedWriter(fstream);
+
+			for (int i = 0; i < pathList.size(); i++) {
+				LinkInfo link = pathList.get(i);
+				// System.out.print("processing link " + link.getIntLinkId());
+				// System.out.print("\r");
+				if (link.getSensor() != null) {
+					Connection con = null;
+					String sql = null;
+					PreparedStatement pstatement = null;
+					ResultSet res = null;
+					con = getConnection();
+
+					sql = "select * from arterial_averages3 where link_id = '"
+							+ link.getSensor().getSensorId() + "'"
+							+ " and day = '" + days[0] + "'";
+					pstatement = con.prepareStatement(sql,
+							ResultSet.TYPE_SCROLL_INSENSITIVE,
+							ResultSet.CONCUR_READ_ONLY);
+					res = pstatement.executeQuery();
+					out.write("Link ID:" + link.getIntLinkId() + " Sensor ID:"
+							+ link.getSensor().getSensorId() + "\n");
+					while (res.next()) {
+						double speed = res.getDouble(2);
+						String time = res.getString(5);
+						out.write(time + ": " + speed + ", ");
+					}
+					out.write("\n");
+
+					res.close();
+					pstatement.close();
+					con.close();
+				}
+			}
+
+			out.close();
+			fstream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("generate pattern finish!");
+	}
+
 	private static void matchEdgeSensor2(int dir) {
 		System.out.println("match sensors to edges...");
 		// first round
@@ -111,7 +216,8 @@ public class RoadPatternGeneration {
 						for (int k = 0; k < sensorList.size(); k++) {
 							SensorInfo sensor = sensorList.get(k);
 							PairInfo node2 = sensor.getNode();
-							double distance = DistanceCalculator.CalculationByDistance(node1, node2);
+							double distance = DistanceCalculator
+									.CalculationByDistance(node1, node2);
 							if (distance < step && sensor.getDirection() == dir) {
 								// find the sensor
 								link.setSensor(sensor);
@@ -172,7 +278,8 @@ public class RoadPatternGeneration {
 				count++;
 			}
 		}
-		System.out.println("there are " + count + " link has sensor in first round");
+		System.out.println("there are " + count
+				+ " link has sensor in first round");
 
 		// second round
 		int lastCount = count;
@@ -207,7 +314,7 @@ public class RoadPatternGeneration {
 				+ pathList.size() + " link");
 		System.out.println("match Sensors finish!");
 	}
-	
+
 	private static void generatePath() {
 		System.out.println("generate path...");
 		int current = StartNode;
