@@ -9,8 +9,28 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 import Objects.*;
 
-public class RoadPatternGeneration {
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.ui.ApplicationFrame;
+import org.jfree.ui.RefineryUtilities;
+
+public class RoadPatternGeneration extends ApplicationFrame {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/**
 	 * @param args
 	 */
@@ -55,6 +75,93 @@ public class RoadPatternGeneration {
 
 	static double[] speedArray = new double[60];
 
+	public RoadPatternGeneration(String title) {
+		super(title);
+		// TODO Auto-generated constructor stub
+		final CategoryDataset dataset = createDataset();
+		final JFreeChart chart = createChart(dataset);
+		final ChartPanel chartPanel = new ChartPanel(chart);
+		chartPanel.setPreferredSize(new Dimension(500, 270));
+		setContentPane(chartPanel);
+	}
+
+	private JFreeChart createChart(final CategoryDataset dataset) {
+
+		// create the chart...
+		final JFreeChart chart = ChartFactory.createLineChart("Arterial Chart", // chart
+																				// title
+				"Time", // domain axis label
+				"Speed", // range axis label
+				dataset, // data
+				PlotOrientation.VERTICAL, // orientation
+				true, // include legend
+				true, // tooltips
+				false // urls
+				);
+
+		// NOW DO SOME OPTIONAL CUSTOMISATION OF THE CHART...
+		// final StandardLegend legend = (StandardLegend) chart.getLegend();
+		// legend.setDisplaySeriesShapes(true);
+		// legend.setShapeScaleX(1.5);
+		// legend.setShapeScaleY(1.5);
+		// legend.setDisplaySeriesLines(true);
+
+		chart.setBackgroundPaint(Color.white);
+
+		final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+		plot.setBackgroundPaint(Color.lightGray);
+		plot.setRangeGridlinePaint(Color.white);
+
+		// customise the range axis...
+		final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+		rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+		rangeAxis.setAutoRangeIncludesZero(true);
+
+		// ****************************************************************************
+		// * JFREECHART DEVELOPER GUIDE *
+		// * The JFreeChart Developer Guide, written by David Gilbert, is
+		// available *
+		// * to purchase from Object Refinery Limited: *
+		// * *
+		// * http://www.object-refinery.com/jfreechart/guide.html *
+		// * *
+		// * Sales are used to provide funding for the JFreeChart project -
+		// please *
+		// * support us so that we can continue developing free software. *
+		// ****************************************************************************
+
+		// customise the renderer...
+		final LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+				.getRenderer();
+		// renderer.setDrawShapes(true);
+
+		renderer.setSeriesStroke(0, new BasicStroke(2.0f,
+				BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.0f,
+				new float[] { 10.0f, 6.0f }, 0.0f));
+		renderer.setSeriesStroke(1, new BasicStroke(2.0f,
+				BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.0f,
+				new float[] { 6.0f, 6.0f }, 0.0f));
+		renderer.setSeriesStroke(2, new BasicStroke(2.0f,
+				BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.0f,
+				new float[] { 2.0f, 6.0f }, 0.0f));
+		// OPTIONAL CUSTOMISATION COMPLETED.
+
+		return chart;
+	}
+
+	private CategoryDataset createDataset() {
+		// create the dataset...
+		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+		for (int i = 0; i < speedArray.length; i++) {
+			dataset.addValue(speedArray[i], "Average Speed",
+					UtilClass.getStartTime(i));
+		}
+
+		return dataset;
+
+	}
+
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		/* ------------------------- */
@@ -65,10 +172,16 @@ public class RoadPatternGeneration {
 		fetchSensor();
 		// generateSensorKML();
 		matchEdgeSensor2(0);
-		generateEdgeKML2();
+
+		// generateEdgeKML2();
 		// generatePattern2();
 		calAvergSpeed();
-		generateExcel();
+
+		final RoadPatternGeneration chart = new RoadPatternGeneration("Chart");
+		chart.pack();
+		RefineryUtilities.centerFrameOnScreen(chart);
+		chart.setVisible(true);
+
 		/* ------------------------- */
 		// readFileInMemory();
 		// generateEdgesKML();
@@ -94,10 +207,17 @@ public class RoadPatternGeneration {
 	 * --------------------------------------------------------------------------
 	 * ----------------------------------------------------
 	 */
-	private static void generateExcel() {
-		
-	}
 	
+	private void calTravelTime() {
+		// from 6:00 to 9:00
+		for(int i = 0; i < 12; i++) {
+			String time = UtilClass.getStartTime(i);
+			for(int j = 0; j < pathList.size(); j++) {
+				
+			}
+		}
+	}
+
 	private static void calAvergSpeed() {
 		System.out.println("calculate avg speed...");
 		try {
@@ -1386,8 +1506,7 @@ public class RoadPatternGeneration {
 						link.getNodes()[0], link.getNodes()[1]);
 				int[] intervals = patternInfo.getIntervals();
 				for (int j = 0; j < 60 && j < intervals.length; j++) {
-					double speed = (double) Math.round(distance / intervals[j]
-							* 60 * 60 * 1000 * 100) / 100;
+					double speed = (double) Math.round(distance / intervals[j] * 60 * 60 * 1000 * 100) / 100;
 					// System.out.print(UtilClass.getStartTime(j) + "-"
 					// + UtilClass.getEndTime(j) + ":" + speed + ", ");
 					out.write(UtilClass.getStartTime(j) + "-"
@@ -1454,8 +1573,7 @@ public class RoadPatternGeneration {
 					int[] interval = new int[60];
 					int intervalNum = 0;
 					while (intervalNum < 60 && intervalNum < intervalS.length) {
-						interval[intervalNum] = Integer
-								.parseInt(intervalS[intervalNum]);
+						interval[intervalNum] = Integer.parseInt(intervalS[intervalNum]);
 						intervalNum++;
 					}
 					PatternPairInfo pattern = new PatternPairInfo(node1, node2,
