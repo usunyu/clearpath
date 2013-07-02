@@ -176,6 +176,7 @@ public class RoadPatternGeneration extends ApplicationFrame {
 		// generateEdgeKML2();
 		// generatePattern2();
 		calAvergSpeed();
+		calTravelTime();
 
 		final RoadPatternGeneration chart = new RoadPatternGeneration("Chart");
 		chart.pack();
@@ -208,7 +209,7 @@ public class RoadPatternGeneration extends ApplicationFrame {
 	 * ----------------------------------------------------
 	 */
 	
-	private void calTravelTime() {
+	private static void calTravelTime() {
 		// from 6:00 to 9:00
 		for(int i = 0; i < 12; i++) {
 			String time = UtilClass.getStartTime(i);
