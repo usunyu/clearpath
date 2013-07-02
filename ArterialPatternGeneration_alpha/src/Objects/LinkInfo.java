@@ -71,6 +71,7 @@ public class LinkInfo {
 	String dirTravel;
 	int speedCat;
 	int direction;
+	String allDir;
 	
 	public LinkInfo(String id, int linkId, int func_class, String st_name, int startNode, 
 			int endNode, ArrayList<PairInfo> nodeList, String dirTravel, int speedCat, int direction) {
@@ -86,6 +87,25 @@ public class LinkInfo {
 		this.speedCat = speedCat;
 		this.direction = direction;
 	}
+
+	public LinkInfo(int linkId, int func_class, String st_name, int startNode, 
+			int endNode, ArrayList<PairInfo> nodeList, String dirTravel, int speedCat, String allDir) {
+		super();
+		this.linkId = linkId;
+		this.func_class = func_class;
+		this.st_name = st_name;
+		this.startNode = startNode;
+		this.endNode = endNode;
+		this.nodeList = nodeList;
+		this.dirTravel = dirTravel;
+		this.speedCat = speedCat;
+		this.allDir = allDir;
+	}
+
+	public String getAllDir() {
+		return allDir;
+	}
+
 	
 	public String getId() {
 		return id;
