@@ -64,7 +64,7 @@ public class RoadPatternGeneration {
 		fetchSensor();
 		// generateSensorKML();
 
-		matchEdgeSensor();
+		matchEdgeSensor2(0);
 
 		generateEdgeKML2();
 		/* ------------------------- */
@@ -92,6 +92,122 @@ public class RoadPatternGeneration {
 	 * --------------------------------------------------------------------------
 	 * ----------------------------------------------------
 	 */
+	private static void matchEdgeSensor2(int dir) {
+		System.out.println("match sensors to edges...");
+		// first round
+		for (int i = 0; i < pathList.size(); i++) {
+			LinkInfo link = pathList.get(i);
+			// System.out.println("processing link id: " + link.getIntLinkId());
+			ArrayList<PairInfo> nodeList = link.getNodeList();
+			boolean findSensor = false;
+			if (nodeList.size() > 2) {
+				// examine the intermediate node first
+				// System.out.println("has more than 2 nodes");
+				for (double step = searchDistance / devide; step < searchDistance; step += step) {
+					// skip first one and last one
+					for (int j = 1; j < nodeList.size() - 1; j++) {
+						PairInfo node1 = nodeList.get(j);
+						// examine all the sensor extracted
+						for (int k = 0; k < sensorList.size(); k++) {
+							SensorInfo sensor = sensorList.get(k);
+							PairInfo node2 = sensor.getNode();
+							double distance = DistanceCalculator.CalculationByDistance(node1, node2);
+							if (distance < step && sensor.getDirection() == dir) {
+								// find the sensor
+								link.setSensor(sensor);
+								findSensor = true;
+								// System.out.println("find sensor " +
+								// sensor.getSensorId() + " for link " +
+								// link.getLinkId());
+								break;
+							}
+						}
+						if (findSensor)
+							break;
+					}
+					if (findSensor)
+						break;
+				}
+			}
+
+			if (!findSensor) {
+				// examine the vertex
+				// System.out.println("has 2 nodes");
+				for (double step = searchDistance / devide; step < searchDistance; step += step) {
+					for (int j = 0; j < nodeList.size(); j++) {
+						PairInfo node1 = nodeList.get(j);
+						// examine all the sensor extracted
+						for (int k = 0; k < sensorList.size(); k++) {
+							SensorInfo sensor = sensorList.get(k);
+							PairInfo node2 = sensor.getNode();
+							double distance = DistanceCalculator
+									.CalculationByDistance(node1, node2);
+							if (distance < step && sensor.getDirection() == dir) {
+								// find the sensor
+								link.setSensor(sensor);
+								findSensor = true;
+								// System.out.println("find sensor " +
+								// sensor.getSensorId() + " for link " +
+								// link.getLinkId());
+								break;
+							}
+						}
+						if (findSensor)
+							break;
+					}
+					if (findSensor)
+						break;
+				}
+			}
+
+			// if(!findSensor) {
+			// System.out.println("cannot find sensor for link " +
+			// link.getIntLinkId());
+			// }
+		}
+		int count = 0;
+		for (int i = 0; i < pathList.size(); i++) {
+			LinkInfo link = pathList.get(i);
+			if (link.getSensor() != null) {
+				count++;
+			}
+		}
+		System.out.println("there are " + count + " link has sensor in first round");
+
+		// second round
+		int lastCount = count;
+		while (count != pathList.size()) {
+			for (int i = 0; i < pathList.size(); i++) {
+				LinkInfo link = pathList.get(i);
+				if (link.getSensor() != null) {
+					// left
+					if (i - 1 >= 0) {
+						LinkInfo linkL = pathList.get(i - 1);
+						if (linkL.getSensor() == null) {
+							linkL.setSensor(link.getSensor());
+							count++;
+						}
+					}
+					// right
+					if (i + 1 < pathList.size()) {
+						LinkInfo linkR = pathList.get(i + 1);
+						if (linkR.getSensor() == null) {
+							linkR.setSensor(link.getSensor());
+							count++;
+						}
+					}
+				}
+			}
+			if (count == lastCount)
+				break;
+			lastCount = count;
+		}
+		System.out.println("there are " + count
+				+ " link has sensor in second round, there has "
+				+ pathList.size() + " link");
+		System.out.println("match Sensors finish!");
+	}
+	
 	private static void generatePath() {
 		System.out.println("generate path...");
 		int current = StartNode;
