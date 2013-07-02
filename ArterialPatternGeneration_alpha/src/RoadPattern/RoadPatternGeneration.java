@@ -35,7 +35,9 @@ public class RoadPatternGeneration {
 	// data struct
 	static ArrayList<LinkInfo> edgeList = new ArrayList<LinkInfo>();
 	static ArrayList<LinkInfo> pathList = new ArrayList<LinkInfo>();
-	
+
+	static HashMap<Integer, LinkInfo> linkMap = new HashMap<Integer, LinkInfo>();
+
 	static HashSet<String> checkEdge = new HashSet<String>();
 	static ArrayList<SensorInfo> sensorList = new ArrayList<SensorInfo>();
 	static HashSet<Integer> checkSensor = new HashSet<Integer>();
@@ -46,9 +48,9 @@ public class RoadPatternGeneration {
 	static HashMap<String, LinkInfo> edgeMap = new HashMap<String, LinkInfo>();
 
 	static HashMap<Integer, ArrayList<Integer>> adjNodeMap = new HashMap<Integer, ArrayList<Integer>>();
-	
+
 	static HashMap<String, Integer> nodesToLink = new HashMap<String, Integer>();
-	
+
 	static HashMap<Integer, PairInfo> nodePosition = new HashMap<Integer, PairInfo>();
 
 	public static void main(String[] args) {
@@ -58,6 +60,12 @@ public class RoadPatternGeneration {
 		generateAdjNodeList();
 		// printAdjNodeList();
 		generatePath();
+
+		fetchSensor();
+		// generateSensorKML();
+
+		matchEdgeSensor();
+
 		generateEdgeKML2();
 		/* ------------------------- */
 		// readFileInMemory();
@@ -85,20 +93,50 @@ public class RoadPatternGeneration {
 	 * ----------------------------------------------------
 	 */
 	private static void generatePath() {
+		System.out.println("generate path...");
 		int current = StartNode;
-		while(current != EndNode) {
+		PairInfo endPosition = nodePosition.get(EndNode);
+		while (current != EndNode) {
 			ArrayList<Integer> adjList = adjNodeMap.get(current);
+			int minNode = -1;
+			double minDis = 0;
+			for (int i = 0; i < adjList.size(); i++) {
+				if (adjList.get(i) == 49251564)
+					continue;
+				if (minNode == -1) {
+					minNode = adjList.get(i);
+					PairInfo nodePos = nodePosition.get(minNode);
+					minDis = DistanceCalculator.CalculationByDistance(nodePos,
+							endPosition);
+				} else {
+					int node = adjList.get(i);
+					PairInfo nodePos = nodePosition.get(node);
+					double dis = DistanceCalculator.CalculationByDistance(
+							nodePos, endPosition);
+					if (dis < minDis) {
+						minNode = node;
+						minDis = dis;
+					}
+				}
+			}
+			String nodeString = String.valueOf(current)
+					+ String.valueOf(minNode);
+			int linkId = nodesToLink.get(nodeString);
+			LinkInfo link = linkMap.get(linkId);
+			pathList.add(link);
+			current = minNode;
 		}
+		System.out.println("generate path finish!");
 	}
-	
+
 	private static void generateEdgeKML2() {
 		System.out.println("generate edge kml...");
 		try {
 			FileWriter fstream = new FileWriter("Edges_List.kml");
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
-			for (int i = 0; i < edgeList.size(); i++) {
-				LinkInfo link = edgeList.get(i);
+			for (int i = 0; i < pathList.size(); i++) {
+				LinkInfo link = pathList.get(i);
 				int intId = link.getIntLinkId();
 				SensorInfo sensor = link.getSensor();
 				String sensorStr = "NULL";
@@ -169,15 +207,14 @@ public class RoadPatternGeneration {
 				int speedCat = res.getInt(6);
 				int refNode = res.getInt(7);
 				int nrefNode = res.getInt(8);
-				
-				int num = nodeList.size();
-				
-				if(!nodePosition.containsKey(refNode))
-					nodePosition.put(refNode, nodeList.get(0));
-				if(!nodePosition.containsKey(nrefNode))
-					nodePosition.put(refNode, nodeList.get(num - 1));
 
-				
+				int num = nodeList.size();
+
+				if (!nodePosition.containsKey(refNode))
+					nodePosition.put(refNode, nodeList.get(0));
+				if (!nodePosition.containsKey(nrefNode))
+					nodePosition.put(nrefNode, nodeList.get(num - 1));
+
 				if (dirTravel.equals("B")) {
 					int dir1 = DistanceCalculator.getDirection(nodeList.get(0),
 							nodeList.get(num - 1));
@@ -188,6 +225,7 @@ public class RoadPatternGeneration {
 							refNode, nrefNode, nodeList, dirTravel, speedCat,
 							dir);
 					edgeList.add(link);
+					linkMap.put(linkId, link);
 				} else if (dirTravel.equals("T")) {
 					int dir = DistanceCalculator.getDirection(
 							nodeList.get(num - 1), nodeList.get(0));
@@ -196,6 +234,7 @@ public class RoadPatternGeneration {
 							refNode, nrefNode, nodeList, dirTravel, speedCat,
 							sDir);
 					edgeList.add(link);
+					linkMap.put(linkId, link);
 				} else {
 					int dir = DistanceCalculator.getDirection(nodeList.get(0),
 							nodeList.get(num - 1));
@@ -204,6 +243,7 @@ public class RoadPatternGeneration {
 							refNode, nrefNode, nodeList, dirTravel, speedCat,
 							sDir);
 					edgeList.add(link);
+					linkMap.put(linkId, link);
 				}
 			}
 			res.close();
@@ -222,11 +262,11 @@ public class RoadPatternGeneration {
 			int id = link.getIntLinkId();
 			int start = link.getStartNode();
 			int end = link.getEndNode();
-			String seString = String.valueOf(start);
-			String esString = String.valueOf(end);
+			String seString = String.valueOf(start) + String.valueOf(end);
+			String esString = String.valueOf(end) + String.valueOf(start);
 			nodesToLink.put(seString, id);
 			nodesToLink.put(esString, id);
-			
+
 			if (adjNodeMap.containsKey(start)) {
 				ArrayList<Integer> tempList = adjNodeMap.get(start);
 				if (!tempList.contains(end))
