@@ -74,6 +74,10 @@ public class RoadPatternGeneration extends ApplicationFrame {
 	static HashMap<Integer, PairInfo> nodePosition = new HashMap<Integer, PairInfo>();
 
 	static double[] speedArray = new double[60];
+	
+	static HashMap<Integer, ArrayList<Double>> speedMap = new HashMap<Integer, ArrayList<Double>>();
+	
+	static ArrayList<Double> travelTimeList = new ArrayList<Double>(); 
 
 	public RoadPatternGeneration(String title) {
 		super(title);
@@ -91,7 +95,7 @@ public class RoadPatternGeneration extends ApplicationFrame {
 		final JFreeChart chart = ChartFactory.createLineChart("Arterial Chart", // chart
 																				// title
 				"Time", // domain axis label
-				"Speed", // range axis label
+				"Cost", // range axis label
 				dataset, // data
 				PlotOrientation.VERTICAL, // orientation
 				true, // include legend
@@ -153,9 +157,13 @@ public class RoadPatternGeneration extends ApplicationFrame {
 		// create the dataset...
 		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
-		for (int i = 0; i < speedArray.length; i++) {
-			dataset.addValue(speedArray[i], "Average Speed",
-					UtilClass.getStartTime(i));
+//		for (int i = 0; i < speedArray.length; i++) {
+//			dataset.addValue(speedArray[i], "Average Speed",
+//					UtilClass.getStartTime(i));
+//		}
+		
+		for(int i = 0; i < travelTimeList.size(); i++) {
+			dataset.addValue(travelTimeList.get(i), "Travel Time", UtilClass.getStartTime(i));
 		}
 
 		return dataset;
@@ -169,9 +177,11 @@ public class RoadPatternGeneration extends ApplicationFrame {
 		generateAdjNodeList();
 		// printAdjNodeList();
 		generatePath();
+		reversePath();
+		
 		fetchSensor();
 		// generateSensorKML();
-		matchEdgeSensor2(0);
+		matchEdgeSensor2(1);
 
 		// generateEdgeKML2();
 		// generatePattern2();
@@ -208,15 +218,55 @@ public class RoadPatternGeneration extends ApplicationFrame {
 	 * --------------------------------------------------------------------------
 	 * ----------------------------------------------------
 	 */
+	private static int timeStoI(String time) {
+		String[] strArray = time.split(":");
+		int hour = Integer.parseInt(strArray[0]);
+		int minute = Integer.parseInt(strArray[1]);
+		int t = 60 * hour + minute;
+		return t;
+	}
+	
+	private static String timeItoS(int minutes) {
+		int hour = minutes / 60;
+		int minute = minutes - hour * 60;
+		String hourString = String.valueOf(hour);
+		if(hourString.length() == 0)
+			hourString = "00";
+		else if(hourString.length() == 1)
+			hourString = "0" + hourString;
+		String minuteString = String.valueOf(minute);
+		if(minuteString.length() == 0)
+			minuteString = "00";
+		else if(minuteString.length() == 1)
+			minuteString = "0" + minuteString;
+		return hourString + ":" + minuteString;
+	}
 	
 	private static void calTravelTime() {
+		System.out.println("calculate travel time...");
 		// from 6:00 to 9:00
+		double totalTime = 0;
 		for(int i = 0; i < 12; i++) {
-			String time = UtilClass.getStartTime(i);
+			String currentTime = UtilClass.getStartTime(i);
+			int currentIndex = i;
 			for(int j = 0; j < pathList.size(); j++) {
-				
+				LinkInfo link = pathList.get(j);
+				int num = link.getNodeList().size();
+				double distance = DistanceCalculator.CalculationByDistance(link.getNodeList().get(0), link.getNodeList().get(num - 1));
+				SensorInfo sensor = link.getSensor();
+				ArrayList<Double> speedList = speedMap.get(sensor.getSensorId());
+				double speed = speedList.get(currentIndex);
+				double t = distance / speed * 60;
+				totalTime += t;
+				int m = timeStoI(currentTime);
+				m += totalTime;
+				currentTime = timeItoS(m);
+				currentIndex = UtilClass.getIndex(currentTime);
 			}
+			travelTimeList.add(totalTime);
+			totalTime = 0;
 		}
+		System.out.println("calculate travel time finish!");
 	}
 
 	private static void calAvergSpeed() {
@@ -226,7 +276,8 @@ public class RoadPatternGeneration extends ApplicationFrame {
 				LinkInfo link = pathList.get(i);
 				// System.out.print("processing link " + link.getIntLinkId());
 				// System.out.print("\r");
-				if (link.getSensor() != null) {
+				SensorInfo sensor = link.getSensor();
+				if (sensor != null) {
 					Connection con = null;
 					String sql = null;
 					PreparedStatement pstatement = null;
@@ -234,7 +285,7 @@ public class RoadPatternGeneration extends ApplicationFrame {
 					con = getConnection();
 
 					sql = "select * from arterial_averages3 where link_id = '"
-							+ link.getSensor().getSensorId() + "'"
+							+ sensor.getSensorId() + "'"
 							+ " and day = '" + days[0] + "'";
 					pstatement = con.prepareStatement(sql,
 							ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -248,6 +299,16 @@ public class RoadPatternGeneration extends ApplicationFrame {
 						if (index == -1)
 							continue;
 						speedArray[index] += speed;
+						
+						if(speedMap.containsKey(sensor.getSensorId())) {
+							ArrayList<Double> speedList = speedMap.get(sensor.getSensorId());
+							speedList.add(speed);
+						}
+						else {
+							ArrayList<Double> speedList = new ArrayList<Double>();
+							speedList.add(speed);
+							speedMap.put(sensor.getSensorId(), speedList);
+						}
 					}
 
 					res.close();
@@ -434,6 +495,10 @@ public class RoadPatternGeneration extends ApplicationFrame {
 				+ " link has sensor in second round, there has "
 				+ pathList.size() + " link");
 		System.out.println("match Sensors finish!");
+	}
+	
+	private static void reversePath() {
+		Collections.reverse(pathList);
 	}
 
 	private static void generatePath() {
