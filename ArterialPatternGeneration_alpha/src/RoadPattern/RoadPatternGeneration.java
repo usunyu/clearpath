@@ -177,14 +177,14 @@ public class RoadPatternGeneration extends ApplicationFrame {
 		generateAdjNodeList();
 		// printAdjNodeList();
 		generatePath();
-		reversePath();
+//		reversePath();
 		
 		fetchSensor();
 		// generateSensorKML();
-		matchEdgeSensor2(1);
+		matchEdgeSensor2(0);
 
 		// generateEdgeKML2();
-		// generatePattern2();
+		generatePattern2();
 		calAvergSpeed();
 		calTravelTime();
 
@@ -271,6 +271,8 @@ public class RoadPatternGeneration extends ApplicationFrame {
 
 	private static void calAvergSpeed() {
 		System.out.println("calculate avg speed...");
+		double maxSpeed = 0;
+		double minSpeed = 100;
 		try {
 			for (int i = 0; i < pathList.size(); i++) {
 				LinkInfo link = pathList.get(i);
@@ -303,11 +305,20 @@ public class RoadPatternGeneration extends ApplicationFrame {
 						if(speedMap.containsKey(sensor.getSensorId())) {
 							ArrayList<Double> speedList = speedMap.get(sensor.getSensorId());
 							speedList.add(speed);
+							
+							if(speed > maxSpeed)
+								maxSpeed = speed;
 						}
 						else {
 							ArrayList<Double> speedList = new ArrayList<Double>();
 							speedList.add(speed);
 							speedMap.put(sensor.getSensorId(), speedList);
+							
+							if(speed > maxSpeed)
+								maxSpeed = speed;
+							
+							if(speed < minSpeed)
+								minSpeed = speed;
 						}
 					}
 
@@ -325,7 +336,7 @@ public class RoadPatternGeneration extends ApplicationFrame {
 			e.printStackTrace();
 		}
 
-		System.out.println("calculate avg speed finish!");
+		System.out.println("calculate avg speed finish! The max speed is " + maxSpeed + ", min speed is " + minSpeed);
 	}
 
 	private static void generatePattern2() {
@@ -360,7 +371,8 @@ public class RoadPatternGeneration extends ApplicationFrame {
 					while (res.next()) {
 						double speed = res.getDouble(2);
 						String time = res.getString(5);
-						out.write(time + ": " + speed + ", ");
+						if(UtilClass.getIndex(time) >= 0 && UtilClass.getIndex(time) <= 12)
+							out.write(time + ": " + speed + ", ");
 					}
 					out.write("\n");
 
