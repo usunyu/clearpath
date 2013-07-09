@@ -22,6 +22,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.time.Day;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
@@ -41,11 +42,13 @@ public class RoadPatternGeneration extends ApplicationFrame {
 	static String street = "FIGUEROA";
 	static int StartNode = 49250387;
 	static int EndNode = 49260081;
+	static double streetDistance = 0;
 	// parameter
 	static double searchDistance = 0.15;
 	static int devide = 1000;
 	private static String[] days = { "Monday", "Tuesday", "Wednesday",
 			"Thursday", "Friday", "Saturday", "Sunday" };
+	private static String Day = days[1];
 	// database
 	static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
 	static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
@@ -187,6 +190,8 @@ public class RoadPatternGeneration extends ApplicationFrame {
 		generatePattern2();
 		calAvergSpeed();
 		calTravelTime();
+		
+//		calDistance();
 
 		final RoadPatternGeneration chart = new RoadPatternGeneration("Chart");
 		chart.pack();
@@ -218,6 +223,19 @@ public class RoadPatternGeneration extends ApplicationFrame {
 	 * --------------------------------------------------------------------------
 	 * ----------------------------------------------------
 	 */
+	private static void calDistance() {
+		System.out.println("calculate distance...");
+		double dis = 0;
+		for(int i = 0; i < pathList.size(); i++) {
+			LinkInfo link = pathList.get(i);
+			ArrayList<PairInfo> nodeList = link.getNodeList();
+			double d = DistanceCalculator.CalculationByDistance(nodeList.get(0), nodeList.get(nodeList.size() - 1));
+			dis += d;
+		}
+		streetDistance = dis;
+		System.out.println("calculate distance finish! distance is " + streetDistance);
+	}
+	
 	private static int timeStoI(String time) {
 		String[] strArray = time.split(":");
 		int hour = Integer.parseInt(strArray[0]);
@@ -288,7 +306,7 @@ public class RoadPatternGeneration extends ApplicationFrame {
 
 					sql = "select * from arterial_averages3 where link_id = '"
 							+ sensor.getSensorId() + "'"
-							+ " and day = '" + days[0] + "'";
+							+ " and day = '" + Day + "'";
 					pstatement = con.prepareStatement(sql,
 							ResultSet.TYPE_SCROLL_INSENSITIVE,
 							ResultSet.CONCUR_READ_ONLY);
@@ -344,7 +362,7 @@ public class RoadPatternGeneration extends ApplicationFrame {
 		FileWriter fstream = null;
 		BufferedWriter out = null;
 		try {
-			fstream = new FileWriter("Pattern_" + street + "_" + days[0]
+			fstream = new FileWriter("Pattern_" + street + "_" + Day
 					+ ".txt");
 			out = new BufferedWriter(fstream);
 
@@ -361,7 +379,7 @@ public class RoadPatternGeneration extends ApplicationFrame {
 
 					sql = "select * from arterial_averages3 where link_id = '"
 							+ link.getSensor().getSensorId() + "'"
-							+ " and day = '" + days[0] + "'";
+							+ " and day = '" + Day + "'";
 					pstatement = con.prepareStatement(sql,
 							ResultSet.TYPE_SCROLL_INSENSITIVE,
 							ResultSet.CONCUR_READ_ONLY);
@@ -1128,7 +1146,7 @@ public class RoadPatternGeneration extends ApplicationFrame {
 		FileWriter fstream = null;
 		BufferedWriter out = null;
 		try {
-			fstream = new FileWriter("Pattern_" + street + "_" + days[0]
+			fstream = new FileWriter("Pattern_" + street + "_" + Day
 					+ ".txt");
 			out = new BufferedWriter(fstream);
 
@@ -1145,7 +1163,7 @@ public class RoadPatternGeneration extends ApplicationFrame {
 
 					sql = "select * from arterial_averages3 where link_id = '"
 							+ link.getSensor().getSensorId() + "'"
-							+ " and day = '" + days[0] + "'";
+							+ " and day = '" + Day + "'";
 					pstatement = con.prepareStatement(sql,
 							ResultSet.TYPE_SCROLL_INSENSITIVE,
 							ResultSet.CONCUR_READ_ONLY);
