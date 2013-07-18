@@ -36,7 +36,7 @@ public class highwayPatternGeneration {
 
 	private static void fetchSensor() {
 		System.out.println("fetch Sensor...");
-
+		
 		System.out.println("fetch sensor finish!");
 	}
 
@@ -59,10 +59,10 @@ public class highwayPatternGeneration {
 				String kmlStr = "<Placemark><name>Link:" + intId + "</name>";
 				kmlStr += "<description>";
 				kmlStr += "Sensor:" + sensorStr;
-				kmlStr += "Start:" + link.getStartNode();
-				kmlStr += "End:" + link.getEndNode();
+				kmlStr += ", Name:" + link.getSt_name();
+				kmlStr += ", Start:" + link.getStartNode();
+				kmlStr += ", End:" + link.getEndNode();
 				kmlStr += ", Direction:" + link.getAllDir();
-				// kmlStr += ", StreetName:" + link.getSt_name();
 				kmlStr += ", FuncClass:" + link.getFunc_class();
 				kmlStr += ", SpeedCat:" + link.getSpeedCat() + "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
