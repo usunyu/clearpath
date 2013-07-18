@@ -26,24 +26,113 @@ public class EdgeSensorKML {
 	static HashMap<Integer, LinkInfo> linkMap = new HashMap<Integer, LinkInfo>();
 	static HashMap<Integer, PairInfo> nodePosition = new HashMap<Integer, PairInfo>();
 
+	static ArrayList<SensorInfo> sensorList = new ArrayList<SensorInfo>();
+	static HashSet<Integer> checkSensor = new HashSet<Integer>();
+
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		fetchLink();
-		generateLinkKML();
-		writeLinkFile();
+		// fetchLink();
+		// generateLinkKML();
 		fetchSensor();
+		generateSensorKML();
+	}
+
+	private static void generateSensorKML() {
+		System.out.println("generate sensor kml...");
+		try {
+			FileWriter fstream = new FileWriter("Sensors_List.kml");
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			for (int i = 0; i < sensorList.size(); i++) {
+				SensorInfo sensor = sensorList.get(i);
+				int id = sensor.getSensorId();
+				double lati = sensor.getNode().getLati();
+				double longi = sensor.getNode().getLongi();
+				out.write("<Placemark><name>" + id
+						+ "</name><description>On:"
+						+ sensor.getOnStreet() + ", From: "
+						+ sensor.getFromStreet() + ", Dir:"
+						+ sensor.getDirection()
+						+ "</description><Point><coordinates>" + longi + ","
+						+ lati + ",0</coordinates></Point></Placemark>");
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate sensor kml finish!");
 	}
 
 	private static void fetchSensor() {
 		System.out.println("fetch Sensor...");
-		
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			// assume this is sensing the specified street
+			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction from highway_congestion_config "
+					+ "where upper(onstreet) = '" + highwayName + "'";
+			pstatement = con.prepareStatement(sql,
+					ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while (res.next()) {
+				int sensorId = res.getInt(1);
+				// System.out.println("fetching sensor " + sensorId);
+				String onStreet = res.getString(2);
+				String fromStreet = res.getString(3);
+				STRUCT st = (STRUCT) res.getObject(4);
+				JGeometry geom = JGeometry.load(st);
+				PairInfo node = new PairInfo(geom.getPoint()[1],
+						geom.getPoint()[0]);
+				int direction = res.getInt(5);
+				if (!checkSensor.contains(sensorId)) {
+					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet,
+							fromStreet, node, direction);
+					checkSensor.add(sensorId);
+					sensorList.add(sensorInfo);
+				}
+			}
+
+			// this maybe sensing the specified street
+			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction from highway_congestion_config "
+					+ "where upper(fromstreet) like '%" + highwayName + "%'";
+			pstatement = con.prepareStatement(sql,
+					ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while (res.next()) {
+				int sensorId = res.getInt(1);
+				String onStreet = res.getString(2);
+				String fromStreet = res.getString(3);
+				STRUCT st = (STRUCT) res.getObject(4);
+				JGeometry geom = JGeometry.load(st);
+				PairInfo node = new PairInfo(geom.getPoint()[1],
+						geom.getPoint()[0]);
+				int direction = res.getInt(5);
+				if (!checkSensor.contains(sensorId)) {
+					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet,
+							fromStreet, node, direction);
+					checkSensor.add(sensorId);
+					sensorList.add(sensorInfo);
+				}
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		System.out.println("fetch sensor finish!");
 	}
 
 	private static void generateLinkKML() {
 		System.out.println("generate link kml...");
 		try {
-			FileWriter fstream = new FileWriter("Highway_Link_List.kml");
+			FileWriter fstream = new FileWriter(highwayName + "_Link_List.kml");
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			for (int i = 0; i < linkList.size(); i++) {
@@ -59,12 +148,12 @@ public class EdgeSensorKML {
 				String kmlStr = "<Placemark><name>Link:" + intId + "</name>";
 				kmlStr += "<description>";
 				kmlStr += "Sensor:" + sensorStr;
-				kmlStr += ", Name:" + link.getSt_name();
 				kmlStr += ", Start:" + link.getStartNode();
 				kmlStr += ", End:" + link.getEndNode();
-				kmlStr += ", Direction:" + link.getAllDir();
-				kmlStr += ", FuncClass:" + link.getFunc_class();
-				kmlStr += ", SpeedCat:" + link.getSpeedCat() + "</description>";
+				kmlStr += ", Dir:" + link.getAllDir();
+				kmlStr += ", Name:" + link.getSt_name();
+				kmlStr += ", FClass:" + link.getFunc_class();
+				kmlStr += ", SCat:" + link.getSpeedCat() + "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
 				for (int j = 0; j < nodeList.size(); j++) {
 					PairInfo node = nodeList.get(j);
@@ -82,29 +171,6 @@ public class EdgeSensorKML {
 		System.out.println("generate link kml finish!");
 	}
 
-	private static void writeLinkFile() {
-		System.out.println("write link file...");
-		try {
-			FileWriter fstream = new FileWriter("Highway_Link_List.txt");
-			BufferedWriter out = new BufferedWriter(fstream);
-			for (int i = 0; i < linkList.size(); i++) {
-				LinkInfo link = linkList.get(i);
-				ArrayList<PairInfo> nodeList = link.getNodeList();
-				int num = nodeList.size();
-				String str = Integer.toString(link.getIntLinkId()) + "|" + link.getAllDir() + "|" + link.getSt_name() + "|" + link.getFunc_class() + 
-						"|" + nodeList.get(0).getLongi() + "," + nodeList.get(0).getLati() + 
-						"|" + nodeList.get(num - 1).getLongi() + "," + nodeList.get(num - 1).getLati() + 
-						"|" + link.getSpeedCat() + "|" + link.getStartNode() + "|" + link.getEndNode() + "\r\n";
-				out.write(str);
-			}
-			out.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-		}
-		System.out.println("write link file finish!");
-	}
-
 	private static void fetchLink() {
 		System.out.println("fetch link...");
 		try {
@@ -114,8 +180,8 @@ public class EdgeSensorKML {
 			ResultSet res = null;
 			con = getConnection();
 
-			sql = "SELECT * FROM streets_dca1_new WHERE UPPER(st_name) LIKE '%"
-					+ highwayName + "%'";
+			sql = "SELECT * FROM streets_dca1_new WHERE UPPER(st_name) = '"
+					+ highwayName + "'";
 			pstatement = con.prepareStatement(sql,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
