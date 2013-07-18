@@ -5,6 +5,8 @@ import java.sql.*;
 import java.text.*;
 import java.util.*;
 
+import org.jfree.ui.tabbedui.RootEditor;
+
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 import Objects.*;
@@ -14,10 +16,12 @@ public class EdgeSensorKML {
 	/**
 	 * @param args
 	 */
+	// file
+	static String root = "file";
 	// highway name
 	static String highwayName = "I-10";
-	static double searchDistance = 0.15;
-	static int devide = 1000;
+	static double searchDistance = 0.05;
+	static int devide = 10;
 	// database
 	static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
 	static String userName = "clearp";
@@ -29,7 +33,9 @@ public class EdgeSensorKML {
 	static HashMap<Integer, PairInfo> nodePosition = new HashMap<Integer, PairInfo>();
 
 	static ArrayList<SensorInfo> sensorList = new ArrayList<SensorInfo>();
+	static ArrayList<SensorInfo> matchSensorList = new ArrayList<SensorInfo>();
 	static HashSet<Integer> checkSensor = new HashSet<Integer>();
+	static HashSet<Integer> checkMatchSensor = new HashSet<Integer>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -52,19 +58,27 @@ public class EdgeSensorKML {
 						SensorInfo sensor = sensorList.get(k);
 						PairInfo node2 = sensor.getNode();
 						// same direction
-						// Wrong !!!!
-						if (sensor.getDirection() == link.getDirection()) {
-							double distance = DistanceCalculator
-									.CalculationByDistance(node1, node2);
-							// in the search area
-							if (distance < step) {
-								// match sensor
-								link.addSensor(sensor);
+						String allDir = link.getAllDir();
+						String[] dirList = allDir.split(",");
+						for(int d = 0; d < dirList.length; d++) {
+							if(sensor.getDirection() == Integer.parseInt(dirList[d])) {
+								double distance = DistanceCalculator.CalculationByDistance(node1, node2);
+								// in the search area
+								if (distance < step) {
+									// match sensor
+									if(!link.containSensor(sensor))
+										link.addSensor(sensor);
+									if(!checkMatchSensor.contains(sensor.getSensorId())) {
+										matchSensorList.add(sensor);
+										checkMatchSensor.add(sensor.getSensorId());
+									}
+								}
 							}
 						}
 					}
 				}
 			}
+			System.out.println((float)i / linkList.size() * 100 + "%");
 		}
 		System.out.println("match Sensors finish!");
 	}
@@ -72,12 +86,11 @@ public class EdgeSensorKML {
 	private static void generateSensorKML() {
 		System.out.println("generate sensor kml...");
 		try {
-			FileWriter fstream = new FileWriter(highwayName
-					+ "_Sensors_List.kml");
+			FileWriter fstream = new FileWriter(root + "/" + highwayName + "_Sensors_List.kml");
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
-			for (int i = 0; i < sensorList.size(); i++) {
-				SensorInfo sensor = sensorList.get(i);
+			for (int i = 0; i < matchSensorList.size(); i++) {
+				SensorInfo sensor = matchSensorList.get(i);
 				int id = sensor.getSensorId();
 				double lati = sensor.getNode().getLati();
 				double longi = sensor.getNode().getLongi();
@@ -104,12 +117,8 @@ public class EdgeSensorKML {
 			PreparedStatement pstatement = null;
 			ResultSet res = null;
 			con = getConnection();
-			// assume this is sensing the specified street
-			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction from highway_congestion_config "
-					+ "where upper(onstreet) = '" + highwayName + "'";
-			pstatement = con.prepareStatement(sql,
-					ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
+			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction from highway_congestion_config ";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
 			while (res.next()) {
 				int sensorId = res.getInt(1);
@@ -129,29 +138,6 @@ public class EdgeSensorKML {
 				}
 			}
 
-			// this maybe sensing the specified street
-			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction from highway_congestion_config "
-					+ "where upper(fromstreet) like '%" + highwayName + "%'";
-			pstatement = con.prepareStatement(sql,
-					ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
-			res = pstatement.executeQuery();
-			while (res.next()) {
-				int sensorId = res.getInt(1);
-				String onStreet = res.getString(2);
-				String fromStreet = res.getString(3);
-				STRUCT st = (STRUCT) res.getObject(4);
-				JGeometry geom = JGeometry.load(st);
-				PairInfo node = new PairInfo(geom.getPoint()[1],
-						geom.getPoint()[0]);
-				int direction = res.getInt(5);
-				if (!checkSensor.contains(sensorId)) {
-					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet,
-							fromStreet, node, direction);
-					checkSensor.add(sensorId);
-					sensorList.add(sensorInfo);
-				}
-			}
 			res.close();
 			pstatement.close();
 			con.close();
@@ -164,7 +150,7 @@ public class EdgeSensorKML {
 	private static void generateLinkKML() {
 		System.out.println("generate link kml...");
 		try {
-			FileWriter fstream = new FileWriter(highwayName + "_Link_List.kml");
+			FileWriter fstream = new FileWriter(root + "/" + highwayName + "_Link_List.kml");
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			for (int i = 0; i < linkList.size(); i++) {
@@ -175,7 +161,7 @@ public class EdgeSensorKML {
 				ArrayList<PairInfo> nodeList = link.getNodeList();
 				if(sensorList.size() > 0) {
 					for(int j = 0; j < sensorList.size(); j++) {
-						sensorStr += String.valueOf(sensorList.get(j).getSensorId());
+						sensorStr = sensorStr + "," + String.valueOf(sensorList.get(j).getSensorId());
 					}
 				}
 				else {
@@ -217,7 +203,7 @@ public class EdgeSensorKML {
 			ResultSet res = null;
 			con = getConnection();
 
-			sql = "SELECT * FROM streets_dca1_new WHERE UPPER(st_name) = '"
+			sql = "SELECT * FROM streets_dca1_new WHERE st_name = '"
 					+ highwayName + "'";
 			pstatement = con.prepareStatement(sql,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,

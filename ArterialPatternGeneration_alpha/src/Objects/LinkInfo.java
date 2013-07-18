@@ -122,6 +122,14 @@ public class LinkInfo {
 		return linkIdStr;
 	}
 	
+	public boolean containSensor(SensorInfo sensor) {
+		for(int i = 0; i < sensorList.size(); i++) {
+			if(sensorList.get(i).getSensorId() == sensor.getSensorId())
+				return true;
+		}
+		return false;
+	}
+	
 	public void addSensor(SensorInfo sensor) {
 		sensorList.add(sensor);
 	}
