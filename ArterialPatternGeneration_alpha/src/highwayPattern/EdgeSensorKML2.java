@@ -9,71 +9,38 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 import Objects.*;
 
-public class EdgeSensorKML {
+public class EdgeSensorKML2 {
 
 	/**
 	 * @param args
 	 */
-	// highway name
 	static String highwayName = "I-10";
-	static double searchDistance = 0.15;
-	static int devide = 1000;
+	// file
+	private static String fileRoot = "../GeneratedFile";
 	// database
 	static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
 	static String userName = "clearp";
 	static String password = "clearp";
 	static Connection connHome = null;
-	// data struct
+	// data structure
+	static HashMap<String, String> matchMap = new HashMap<String, String>();
 	static ArrayList<LinkInfo> linkList = new ArrayList<LinkInfo>();
-	static HashMap<Integer, LinkInfo> linkMap = new HashMap<Integer, LinkInfo>();
-	static HashMap<Integer, PairInfo> nodePosition = new HashMap<Integer, PairInfo>();
-
+	static HashSet<String> checkSensor = new HashSet<String>();
 	static ArrayList<SensorInfo> sensorList = new ArrayList<SensorInfo>();
-	static HashSet<Integer> checkSensor = new HashSet<Integer>();
-
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		readMatchSensor();
 		fetchLink();
-		fetchSensor();
-		matchLinkSensor();
-		generateSensorKML();
 		generateLinkKML();
+		generateSensorKML();
 	}
-
-	private static void matchLinkSensor() {
-		System.out.println("match sensors to links...");
-		for (int i = 0; i < linkList.size(); i++) {
-			LinkInfo link = linkList.get(i);
-			ArrayList<PairInfo> nodeList = link.getNodeList();
-			for (double step = searchDistance / devide; step < searchDistance; step += step) {
-				for (int j = 0; j < nodeList.size(); j++) {
-					PairInfo node1 = nodeList.get(j);
-					for (int k = 0; k < sensorList.size(); k++) {
-						SensorInfo sensor = sensorList.get(k);
-						PairInfo node2 = sensor.getNode();
-						// same direction
-						// Wrong !!!!
-						if (sensor.getDirection() == link.getDirection()) {
-							double distance = DistanceCalculator
-									.CalculationByDistance(node1, node2);
-							// in the search area
-							if (distance < step) {
-								// match sensor
-								link.addSensor(sensor);
-							}
-						}
-					}
-				}
-			}
-		}
-		System.out.println("match Sensors finish!");
-	}
-
+	
 	private static void generateSensorKML() {
 		System.out.println("generate sensor kml...");
 		try {
 			FileWriter fstream = new FileWriter(highwayName
-					+ "_Sensors_List.kml");
+					+ "_Sensors_List_Close.kml");
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			for (int i = 0; i < sensorList.size(); i++) {
@@ -95,9 +62,8 @@ public class EdgeSensorKML {
 		}
 		System.out.println("generate sensor kml finish!");
 	}
-
-	private static void fetchSensor() {
-		System.out.println("fetch Sensor...");
+	
+	private static void getSensor(String sensor) {
 		try {
 			Connection con = null;
 			String sql = null;
@@ -106,14 +72,14 @@ public class EdgeSensorKML {
 			con = getConnection();
 			// assume this is sensing the specified street
 			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction from highway_congestion_config "
-					+ "where upper(onstreet) = '" + highwayName + "'";
+					+ "where link_id = '" + sensor + "'";
 			pstatement = con.prepareStatement(sql,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
 			while (res.next()) {
-				int sensorId = res.getInt(1);
-				// System.out.println("fetching sensor " + sensorId);
+				String sensorId = res.getString(1);
+				int sensorId2 = res.getInt(1);
 				String onStreet = res.getString(2);
 				String fromStreet = res.getString(3);
 				STRUCT st = (STRUCT) res.getObject(4);
@@ -122,31 +88,7 @@ public class EdgeSensorKML {
 						geom.getPoint()[0]);
 				int direction = res.getInt(5);
 				if (!checkSensor.contains(sensorId)) {
-					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet,
-							fromStreet, node, direction);
-					checkSensor.add(sensorId);
-					sensorList.add(sensorInfo);
-				}
-			}
-
-			// this maybe sensing the specified street
-			sql = "select link_id, onstreet, fromstreet, start_lat_long, direction from highway_congestion_config "
-					+ "where upper(fromstreet) like '%" + highwayName + "%'";
-			pstatement = con.prepareStatement(sql,
-					ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_READ_ONLY);
-			res = pstatement.executeQuery();
-			while (res.next()) {
-				int sensorId = res.getInt(1);
-				String onStreet = res.getString(2);
-				String fromStreet = res.getString(3);
-				STRUCT st = (STRUCT) res.getObject(4);
-				JGeometry geom = JGeometry.load(st);
-				PairInfo node = new PairInfo(geom.getPoint()[1],
-						geom.getPoint()[0]);
-				int direction = res.getInt(5);
-				if (!checkSensor.contains(sensorId)) {
-					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet,
+					SensorInfo sensorInfo = new SensorInfo(sensorId2, onStreet,
 							fromStreet, node, direction);
 					checkSensor.add(sensorId);
 					sensorList.add(sensorInfo);
@@ -158,29 +100,29 @@ public class EdgeSensorKML {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("fetch sensor finish!");
 	}
-
+	
 	private static void generateLinkKML() {
 		System.out.println("generate link kml...");
 		try {
-			FileWriter fstream = new FileWriter(highwayName + "_Link_List.kml");
+			FileWriter fstream = new FileWriter(highwayName + "_Link_List_Close.kml");
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			for (int i = 0; i < linkList.size(); i++) {
 				LinkInfo link = linkList.get(i);
 				int intId = link.getIntLinkId();
-				ArrayList<SensorInfo> sensorList = link.getSensorList();
-				String sensorStr = "";
-				ArrayList<PairInfo> nodeList = link.getNodeList();
-				if(sensorList.size() > 0) {
-					for(int j = 0; j < sensorList.size(); j++) {
-						sensorStr += String.valueOf(sensorList.get(j).getSensorId());
+				String strId = String.valueOf(intId);
+				String sensorStr = matchMap.get(strId);
+				if(sensorStr != null) {
+					String[] strList = sensorStr.split(",");
+					for(int j = 0; j < strList.length; j++) {
+						getSensor(strList[j]);
 					}
 				}
-				else {
-					sensorStr = "null";
-				}
+				
+				System.out.println((float)i / linkList.size() * 100 + "%");
+				
+				ArrayList<PairInfo> nodeList = link.getNodeList();
 
 				String kmlStr = "<Placemark><name>Link:" + intId + "</name>";
 				kmlStr += "<description>";
@@ -207,7 +149,7 @@ public class EdgeSensorKML {
 		}
 		System.out.println("generate link kml finish!");
 	}
-
+	
 	private static void fetchLink() {
 		System.out.println("fetch link...");
 		try {
@@ -247,11 +189,6 @@ public class EdgeSensorKML {
 
 				int num = nodeList.size();
 
-				if (!nodePosition.containsKey(refNode))
-					nodePosition.put(refNode, nodeList.get(0));
-				if (!nodePosition.containsKey(nrefNode))
-					nodePosition.put(nrefNode, nodeList.get(num - 1));
-
 				if (dirTravel.equals("B")) {
 					int dir1 = DistanceCalculator.getDirection(nodeList.get(0),
 							nodeList.get(num - 1));
@@ -262,7 +199,6 @@ public class EdgeSensorKML {
 							refNode, nrefNode, nodeList, dirTravel, speedCat,
 							dir);
 					linkList.add(link);
-					linkMap.put(linkId, link);
 				} else if (dirTravel.equals("T")) {
 					int dir = DistanceCalculator.getDirection(
 							nodeList.get(num - 1), nodeList.get(0));
@@ -271,7 +207,6 @@ public class EdgeSensorKML {
 							refNode, nrefNode, nodeList, dirTravel, speedCat,
 							sDir);
 					linkList.add(link);
-					linkMap.put(linkId, link);
 				} else {
 					int dir = DistanceCalculator.getDirection(nodeList.get(0),
 							nodeList.get(num - 1));
@@ -280,7 +215,6 @@ public class EdgeSensorKML {
 							refNode, nrefNode, nodeList, dirTravel, speedCat,
 							sDir);
 					linkList.add(link);
-					linkMap.put(linkId, link);
 				}
 			}
 			res.close();
@@ -291,7 +225,48 @@ public class EdgeSensorKML {
 		}
 		System.out.println("fetch link finish!");
 	}
-
+	
+	private static void readMatchSensor() {
+		System.out.println("read match sensors...");
+		try {
+			FileInputStream fstream = new FileInputStream(fileRoot + "/Highway_Sensor_Close.csv");
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				String[] strList = strLine.split(",");
+				String linkId = strList[0];
+				if(linkId == "10648765")
+					linkId = "106487653";
+				if(linkId == "11012413")
+					linkId = "110124136";
+				if(linkId == "11012412")
+					linkId = "110124123";
+				
+				if( linkId.equals("28425397") ) {
+					System.out.println(matchMap.get("28425397"));
+				}
+					
+				
+				for(int i = 2; i < strList.length; i++) {
+					if(matchMap.containsKey(linkId)) {
+						String sensorStr = matchMap.get(linkId);
+						sensorStr = sensorStr + "," + strList[i];
+						matchMap.put(linkId, sensorStr);
+					}
+					else {
+						matchMap.put(linkId, strList[i]);
+					}
+				}
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("read match sensors finish!");
+	}
+	
 	private static Connection getConnection() {
 		try {
 			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());

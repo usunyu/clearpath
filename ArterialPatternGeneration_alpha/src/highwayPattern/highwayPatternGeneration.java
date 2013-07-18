@@ -20,6 +20,9 @@ public class highwayPatternGeneration {
 	static String password = "clearp";
 	static Connection connHome = null;
 	// data struct
+	static ArrayList<String> highwayList = new ArrayList<String>();
+	static HashMap<String, ArrayList<LinkInfo>> highwayLinkMap = new HashMap<String, ArrayList<LinkInfo>>();
+
 	static ArrayList<Integer> linkIdList = new ArrayList<Integer>();
 	static ArrayList<LinkInfo> linkList = new ArrayList<LinkInfo>();
 	static HashMap<Integer, LinkInfo> linkMap = new HashMap<Integer, LinkInfo>();
@@ -27,19 +30,73 @@ public class highwayPatternGeneration {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		fetchLinkId();
-		fetchLink();
-		generateLinkKML();
-		writeLinkFile();
-		fetchSensor();
+		fetchHighwayName();
+		fetchHighwayLink();
+		/* ------------------------- */
+		// fetchLinkId();
+		// fetchLink();
+		// generateLinkKML();
+		// writeLinkFile();
+		// fetchSensor();
+	}
+	
+	private static void fetchHighwayLink() {
+		System.out.println("fetch highway link...");
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			for(int i = 0; i < highwayList.size(); i++) {
+				
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("fetch highway link finish!");
+	}
+
+	private static void fetchHighwayName() {
+		System.out.println("fetch highway name...");
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+
+			sql = "SELECT DISTINCT st_name FROM streets_dca1_new WHERE func_class = 1 OR func_class = 2";
+
+			pstatement = con.prepareStatement(sql,
+					ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+
+			while (res.next()) {
+				String highwayNmae = res.getString(1);
+				if (highwayNmae == null)
+					continue;
+				highwayList.add(highwayNmae);
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("fetch highway name finish!");
 	}
 
 	private static void fetchSensor() {
 		System.out.println("fetch Sensor...");
-		
+
 		System.out.println("fetch sensor finish!");
 	}
 
+	/* -------------------------------------------------- */
 	private static void generateLinkKML() {
 		System.out.println("generate link kml...");
 		try {
@@ -91,10 +148,15 @@ public class highwayPatternGeneration {
 				LinkInfo link = linkList.get(i);
 				ArrayList<PairInfo> nodeList = link.getNodeList();
 				int num = nodeList.size();
-				String str = Integer.toString(link.getIntLinkId()) + "|" + link.getAllDir() + "|" + link.getSt_name() + "|" + link.getFunc_class() + 
-						"|" + nodeList.get(0).getLongi() + "," + nodeList.get(0).getLati() + 
-						"|" + nodeList.get(num - 1).getLongi() + "," + nodeList.get(num - 1).getLati() + 
-						"|" + link.getSpeedCat() + "|" + link.getStartNode() + "|" + link.getEndNode() + "\r\n";
+				String str = Integer.toString(link.getIntLinkId()) + "|"
+						+ link.getAllDir() + "|" + link.getSt_name() + "|"
+						+ link.getFunc_class() + "|"
+						+ nodeList.get(0).getLongi() + ","
+						+ nodeList.get(0).getLati() + "|"
+						+ nodeList.get(num - 1).getLongi() + ","
+						+ nodeList.get(num - 1).getLati() + "|"
+						+ link.getSpeedCat() + "|" + link.getStartNode() + "|"
+						+ link.getEndNode() + "\r\n";
 				out.write(str);
 			}
 			out.close();
@@ -124,9 +186,9 @@ public class highwayPatternGeneration {
 						ResultSet.TYPE_SCROLL_INSENSITIVE,
 						ResultSet.CONCUR_READ_ONLY);
 				res = pstatement.executeQuery();
-				
+
 				res.next();
-				
+
 				String dirTravel = res.getString(2);
 				String stName = res.getString(3);
 				int func_class = res.getInt(4);
@@ -145,7 +207,7 @@ public class highwayPatternGeneration {
 				int speedCat = res.getInt(6);
 				int refNode = res.getInt(7);
 				int nrefNode = res.getInt(8);
-				
+
 				while (res.next()) {
 					stName = stName + "," + res.getString(3);
 				}
@@ -158,32 +220,32 @@ public class highwayPatternGeneration {
 					nodePosition.put(nrefNode, nodeList.get(num - 1));
 
 				if (dirTravel.equals("B")) {
-					int dir1 = DistanceCalculator.getDirection(
-							nodeList.get(0), nodeList.get(num - 1));
+					int dir1 = DistanceCalculator.getDirection(nodeList.get(0),
+							nodeList.get(num - 1));
 					int dir2 = DistanceCalculator.getDirection(
 							nodeList.get(num - 1), nodeList.get(0));
 					String dir = dir1 + "," + dir2;
-					LinkInfo link = new LinkInfo(linkId, func_class,
-							stName, refNode, nrefNode, nodeList, dirTravel,
-							speedCat, dir);
+					LinkInfo link = new LinkInfo(linkId, func_class, stName,
+							refNode, nrefNode, nodeList, dirTravel, speedCat,
+							dir);
 					linkList.add(link);
 					linkMap.put(linkId, link);
 				} else if (dirTravel.equals("T")) {
 					int dir = DistanceCalculator.getDirection(
 							nodeList.get(num - 1), nodeList.get(0));
 					String sDir = String.valueOf(dir);
-					LinkInfo link = new LinkInfo(linkId, func_class,
-							stName, refNode, nrefNode, nodeList, dirTravel,
-							speedCat, sDir);
+					LinkInfo link = new LinkInfo(linkId, func_class, stName,
+							refNode, nrefNode, nodeList, dirTravel, speedCat,
+							sDir);
 					linkList.add(link);
 					linkMap.put(linkId, link);
 				} else {
-					int dir = DistanceCalculator.getDirection(
-							nodeList.get(0), nodeList.get(num - 1));
+					int dir = DistanceCalculator.getDirection(nodeList.get(0),
+							nodeList.get(num - 1));
 					String sDir = String.valueOf(dir);
-					LinkInfo link = new LinkInfo(linkId, func_class,
-							stName, refNode, nrefNode, nodeList, dirTravel,
-							speedCat, sDir);
+					LinkInfo link = new LinkInfo(linkId, func_class, stName,
+							refNode, nrefNode, nodeList, dirTravel, speedCat,
+							sDir);
 					linkList.add(link);
 					linkMap.put(linkId, link);
 				}
@@ -195,7 +257,8 @@ public class highwayPatternGeneration {
 
 					con = getConnection();
 
-					System.out.println((double) i / linkIdList.size() * 100 + "%");
+					System.out.println((double) i / linkIdList.size() * 100
+							+ "%");
 				}
 			}
 			res.close();

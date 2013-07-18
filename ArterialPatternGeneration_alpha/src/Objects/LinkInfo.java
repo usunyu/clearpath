@@ -72,6 +72,7 @@ public class LinkInfo {
 	int speedCat;
 	int direction;
 	String allDir;
+	ArrayList<SensorInfo> sensorList;
 	
 	public LinkInfo(String id, int linkId, int func_class, String st_name, int startNode, 
 			int endNode, ArrayList<PairInfo> nodeList, String dirTravel, int speedCat, int direction) {
@@ -86,6 +87,7 @@ public class LinkInfo {
 		this.dirTravel = dirTravel;
 		this.speedCat = speedCat;
 		this.direction = direction;
+		sensorList = new ArrayList<SensorInfo>();
 	}
 
 	public LinkInfo(int linkId, int func_class, String st_name, int startNode, 
@@ -100,6 +102,7 @@ public class LinkInfo {
 		this.dirTravel = dirTravel;
 		this.speedCat = speedCat;
 		this.allDir = allDir;
+		sensorList = new ArrayList<SensorInfo>();
 	}
 
 	public String getAllDir() {
@@ -119,6 +122,14 @@ public class LinkInfo {
 		return linkIdStr;
 	}
 	
+	public void addSensor(SensorInfo sensor) {
+		sensorList.add(sensor);
+	}
+	
+	public ArrayList<SensorInfo> getSensorList() {
+		return sensorList;
+	}
+
 	public void setSensor(SensorInfo sensor) {
 		this.sensor = sensor;
 	}
