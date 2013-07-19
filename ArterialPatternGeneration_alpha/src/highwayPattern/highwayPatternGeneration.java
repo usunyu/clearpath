@@ -22,6 +22,8 @@ public class highwayPatternGeneration {
 	static String allHighwaySensorKML = "All_Highway_Sensor_List.kml";
 	// param
 	static double searchDistance = 0.05;
+	static double corssSearchDistance = 0.03;
+	static double noDirSearchDistance = 0.001;
 	static int devide = 10;
 	// database
 	static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
@@ -51,11 +53,14 @@ public class highwayPatternGeneration {
 		matchLinkSensor();
 		generateLinkKML();
 		generateSensorKML();
-//		generateAllSensorKML();
+		// generateAllSensorKML();
 	}
-	
+
 	private static void matchLinkSensor() {
+		// 3 round match algorithm
 		System.out.println("match sensors to links...");
+		// 1) match same direction
+		System.out.println("first round...");
 		for (int i = 0; i < linkList.size(); i++) {
 			LinkInfo link = linkList.get(i);
 			ArrayList<PairInfo> nodeList = link.getNodeList();
@@ -68,17 +73,21 @@ public class highwayPatternGeneration {
 						// same direction
 						String allDir = link.getAllDir();
 						String[] dirList = allDir.split(",");
-						for(int d = 0; d < dirList.length; d++) {
-							if(sensor.getDirection() == Integer.parseInt(dirList[d])) {
-								double distance = DistanceCalculator.CalculationByDistance(node1, node2);
+						for (int d = 0; d < dirList.length; d++) {
+							if (sensor.getDirection() == Integer
+									.parseInt(dirList[d])) {
+								double distance = DistanceCalculator
+										.CalculationByDistance(node1, node2);
 								// in the search area
 								if (distance < step) {
 									// match sensor
-									if(!link.containSensor(sensor))
+									if (!link.containSensor(sensor))
 										link.addSensor(sensor);
-									if(!checkMatchSensor.contains(sensor.getSensorId())) {
+									if (!checkMatchSensor.contains(sensor
+											.getSensorId())) {
 										matchSensorList.add(sensor);
-										checkMatchSensor.add(sensor.getSensorId());
+										checkMatchSensor.add(sensor
+												.getSensorId());
 									}
 								}
 							}
@@ -86,12 +95,92 @@ public class highwayPatternGeneration {
 					}
 				}
 			}
-			if(i % 100 == 0)
-				System.out.println((float)i / linkList.size() * 100 + "%");
+			if (i % 1000 == 0)
+				System.out.println((float) i / linkList.size() * 100 + "%");
+		}
+		// 2) match direction 0 to 3, 1 to 2
+		System.out.println("second round...");
+		for (int i = 0; i < linkList.size(); i++) {
+			LinkInfo link = linkList.get(i);
+			if (link.getSensorList().size() > 0)
+				continue;
+			ArrayList<PairInfo> nodeList = link.getNodeList();
+			for (double step = corssSearchDistance / devide; step < searchDistance; step += step) {
+				for (int j = 0; j < nodeList.size(); j++) {
+					PairInfo node1 = nodeList.get(j);
+					for (int k = 0; k < sensorList.size(); k++) {
+						SensorInfo sensor = sensorList.get(k);
+						PairInfo node2 = sensor.getNode();
+						// same direction
+						String allDir = link.getAllDir();
+						String[] dirList = allDir.split(",");
+						for (int d = 0; d < dirList.length; d++) {
+							// 0 : 3, 1 : 2
+							if ((sensor.getDirection() == 0 && Integer
+									.parseInt(dirList[d]) == 3)
+									|| (sensor.getDirection() == 3 && Integer
+											.parseInt(dirList[d]) == 0)
+									|| (sensor.getDirection() == 1 && Integer
+											.parseInt(dirList[d]) == 2)
+									|| (sensor.getDirection() == 2 && Integer
+											.parseInt(dirList[d]) == 1)) {
+								double distance = DistanceCalculator
+										.CalculationByDistance(node1, node2);
+								// in the search area
+								if (distance < step) {
+									// match sensor
+									if (!link.containSensor(sensor))
+										link.addSensor(sensor);
+									if (!checkMatchSensor.contains(sensor
+											.getSensorId())) {
+										matchSensorList.add(sensor);
+										checkMatchSensor.add(sensor
+												.getSensorId());
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			if (i % 1000 == 0)
+				System.out.println((float) i / linkList.size() * 100 + "%");
+		}
+		// 3) match smallest distance
+		System.out.println("third round...");
+		for (int i = 0; i < linkList.size(); i++) {
+			LinkInfo link = linkList.get(i);
+			if (link.getSensorList().size() > 0)
+				continue;
+			ArrayList<PairInfo> nodeList = link.getNodeList();
+			for (double step = noDirSearchDistance / devide; step < searchDistance; step += step) {
+				for (int j = 0; j < nodeList.size(); j++) {
+					PairInfo node1 = nodeList.get(j);
+					for (int k = 0; k < sensorList.size(); k++) {
+						SensorInfo sensor = sensorList.get(k);
+						PairInfo node2 = sensor.getNode();
+						double distance = DistanceCalculator
+								.CalculationByDistance(node1, node2);
+						// in the search area
+						if (distance < step) {
+							// match sensor
+							if (!link.containSensor(sensor))
+								link.addSensor(sensor);
+							if (!checkMatchSensor
+									.contains(sensor.getSensorId())) {
+								matchSensorList.add(sensor);
+								checkMatchSensor.add(sensor.getSensorId());
+							}
+						}
+					}
+				}
+			}
+			if (i % 1000 == 0)
+				System.out.println((float) i / linkList.size() * 100 + "%");
 		}
 		System.out.println("match Sensors finish!");
 	}
-	
+
 	private static void generateSensorKML() {
 		System.out.println("generate sensor kml...");
 		try {
@@ -117,11 +206,12 @@ public class highwayPatternGeneration {
 		}
 		System.out.println("generate sensor kml finish!");
 	}
-	
+
 	private static void generateAllSensorKML() {
 		System.out.println("generate all sensor kml...");
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + allHighwaySensorKML);
+			FileWriter fstream = new FileWriter(root + "/"
+					+ allHighwaySensorKML);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			for (int i = 0; i < sensorList.size(); i++) {
@@ -240,12 +330,16 @@ public class highwayPatternGeneration {
 				int intId = link.getIntLinkId();
 				ArrayList<SensorInfo> sensorList = link.getSensorList();
 				String sensorStr = "null";
-				
-				for(int j = 0; j < sensorList.size(); j++)
-					if(j == 0) 
-						sensorStr = String.valueOf(sensorList.get(j).getSensorId());
+
+				for (int j = 0; j < sensorList.size(); j++)
+					if (j == 0)
+						sensorStr = String.valueOf(sensorList.get(j)
+								.getSensorId());
 					else
-						sensorStr = sensorStr + "," + String.valueOf(sensorList.get(j).getSensorId());
+						sensorStr = sensorStr
+								+ ","
+								+ String.valueOf(sensorList.get(j)
+										.getSensorId());
 
 				ArrayList<PairInfo> nodeList = link.getNodeList();
 				String kmlStr = "<Placemark><name>Link:" + intId + "</name>";
