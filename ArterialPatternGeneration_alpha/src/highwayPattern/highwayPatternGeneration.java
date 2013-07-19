@@ -27,6 +27,7 @@ public class highwayPatternGeneration {
 	static double corssSearchDistance = 0.15;
 	static double noDirSearchDistance = 0.01;
 	static int devide = 10;
+	static int thirdRoundTime = 3;
 	static String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday",
 			"Friday", "Saturday", "Sunday" };
 	// database
@@ -47,6 +48,11 @@ public class highwayPatternGeneration {
 	static ArrayList<SensorInfo> matchSensorList = new ArrayList<SensorInfo>();
 	static HashSet<Integer> checkMatchSensor = new HashSet<Integer>();
 	static HashMap<Integer, double[]> sensorSpeedPattern = new HashMap<Integer, double[]>();
+	// connect
+	// two nodes decide one link
+	static HashMap<String, LinkInfo> nodeToLink = new HashMap<String, LinkInfo>();
+	// adj node list
+	static HashMap<Integer, ArrayList<Integer>> adjNodeList = new HashMap<Integer, ArrayList<Integer>>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -87,7 +93,7 @@ public class highwayPatternGeneration {
 					}
 				}
 				
-				String patternStr = "null";
+				String patternStr = "";
 				int showIndex = UtilClass.getIndex(time);
 				double[] speedArray = null;
 				
@@ -95,9 +101,9 @@ public class highwayPatternGeneration {
 					speedArray = sensorSpeedPattern.get(sensorId);
 					for(int j = 0; j < speedArray.length; j++) {
 						if(j == 0)
-							patternStr = UtilClass.getStartTime(j) + " " + speedArray[j];
+							patternStr = "\r\n" + UtilClass.getStartTime(j) + " : " + speedArray[j];
 						else {
-							patternStr = patternStr + "\r\n" + UtilClass.getStartTime(j) + " " + speedArray[j];
+							patternStr = patternStr + "\r\n" + UtilClass.getStartTime(j) + " : " + speedArray[j];
 						}
 					}
 				}
@@ -126,7 +132,7 @@ public class highwayPatternGeneration {
 				kmlStr += "</coordinates></LineString>";
 				kmlStr += "<Style><LineStyle>";
 				kmlStr += "<color>" + colorStr + "</color>";
-				kmlStr += "<width>5</width>";
+				kmlStr += "<width>2</width>";
 				kmlStr += "</LineStyle></Style></Placemark>\n";
 				out.write(kmlStr);
 			}
@@ -139,12 +145,12 @@ public class highwayPatternGeneration {
 	}
 	
 	private static String getColor(double speed) {
-		if(speed < 30)
-			return "#FF0000FF";
-		else if(speed >= 30 && speed < 55)
-			return "#FFE11EFF";
-		else if(speed >= 55)
-			return "#0DFF82FF";
+		if(speed < 30) // red
+			return "#FF1400FF";
+		else if(speed >= 30 && speed < 55) // yellow
+			return "#FF14F0FF";
+		else if(speed >= 55) // green
+			return "#FF00FF14";
 		return "#FFFFFFFF";
 	}
 
@@ -246,8 +252,11 @@ public class highwayPatternGeneration {
 		firstRoundMatch();
 		// 2) match direction 0 to 3, 1 to 2
 		secondRoundMatch();
-		// 3) match smallest distance
-		// thirdRoundMatch();
+		// 3) match nearest link
+		for(int i = 0; i < thirdRoundTime; i++)
+			thirdRoundMatch();
+		// 4) match smallest distance
+		// forthRoundMatch();
 		System.out.println("match Sensors finish!");
 	}
 
@@ -343,9 +352,65 @@ public class highwayPatternGeneration {
 		}
 		System.out.println("second round finish!");
 	}
-
+	
 	private static void thirdRoundMatch() {
 		System.out.println("third round...");
+		for(int i = 0; i < linkList.size(); i++) {
+			LinkInfo link = linkList.get(i);
+			ArrayList<SensorInfo> linkSensorList = link.getSensorList();
+			if (linkSensorList.size() == 0)
+				continue;
+			int refNode = link.getStartNode();
+			ArrayList<Integer> refAdjList = adjNodeList.get(refNode);
+			for(int j = 0; j < refAdjList.size(); j++) {
+				String nodesStr = refNode + "," + refAdjList.get(j);
+				PairInfo nearNode = nodePositionMap.get(refAdjList.get(j));
+				if(nodeToLink.containsKey(nodesStr)) {
+					LinkInfo nearLink = nodeToLink.get(nodesStr);
+					if(nearLink.getSensorList().size() == 0) {
+						// match
+						SensorInfo nearestSensor = linkSensorList.get(0);
+						double minDis = DistanceCalculator.CalculationByDistance(nearNode, nearestSensor.getNode());
+						for(int k = 1; k < linkSensorList.size(); k++) {
+							SensorInfo otherSensor = linkSensorList.get(k);
+							double dis = DistanceCalculator.CalculationByDistance(nearNode, otherSensor.getNode());
+							if(dis < minDis) {
+								nearestSensor = otherSensor;
+							}
+						}
+						nearLink.addSensor(nearestSensor);
+					}
+				}
+			}
+			
+			int nrefNode = link.getEndNode();
+			ArrayList<Integer> nrefAdjList = adjNodeList.get(nrefNode);
+			for(int j = 0; j < nrefAdjList.size(); j++) {
+				String nodesStr = nrefNode + "," + nrefAdjList.get(j);
+				PairInfo nearNode = nodePositionMap.get(nrefAdjList.get(j));
+				if(nodeToLink.containsKey(nodesStr)) {
+					LinkInfo nearLink = nodeToLink.get(nodesStr);
+					if(nearLink.getSensorList().size() == 0) {
+						// match
+						SensorInfo nearestSensor = linkSensorList.get(0);
+						double minDis = DistanceCalculator.CalculationByDistance(nearNode, nearestSensor.getNode());
+						for(int k = 1; k < linkSensorList.size(); k++) {
+							SensorInfo otherSensor = linkSensorList.get(k);
+							double dis = DistanceCalculator.CalculationByDistance(nearNode, otherSensor.getNode());
+							if(dis < minDis) {
+								nearestSensor = otherSensor;
+							}
+						}
+						nearLink.addSensor(nearestSensor);
+					}
+				}
+			}
+		}
+		System.out.println("third round finish!");
+	}
+
+	private static void forthRoundMatch() {
+		System.out.println("forth round...");
 		for (int i = 0; i < linkList.size(); i++) {
 			LinkInfo link = linkList.get(i);
 			if (link.getSensorList().size() > 0)
@@ -376,7 +441,7 @@ public class highwayPatternGeneration {
 			if (i % 1000 == 0 || i == linkList.size())
 				System.out.println((float) i / linkList.size() * 100 + "%");
 		}
-		System.out.println("third round finish!");
+		System.out.println("forth round finish!");
 	}
 
 	private static void generateSensorKML() {
@@ -459,6 +524,28 @@ public class highwayPatternGeneration {
 				String dirTravel = nodes[6];
 				int refNode = Integer.parseInt(nodes[7]);
 				int nrefNode = Integer.parseInt(nodes[8]);
+				
+				if(adjNodeList.containsKey(refNode)) {
+					ArrayList<Integer> tempList = adjNodeList.get(refNode);
+					if(!tempList.contains(nrefNode))
+						tempList.add(nrefNode);
+				}
+				else {
+					ArrayList<Integer> newList = new ArrayList<Integer>();
+					newList.add(nrefNode);
+					adjNodeList.put(refNode, newList);
+				}
+				
+				if(adjNodeList.containsKey(nrefNode)) {
+					ArrayList<Integer> tempList = adjNodeList.get(nrefNode);
+					if(!tempList.contains(refNode))
+						tempList.add(refNode);
+				}
+				else {
+					ArrayList<Integer> newList = new ArrayList<Integer>();
+					newList.add(refNode);
+					adjNodeList.put(nrefNode, newList);
+				}
 
 				if (!nodePositionMap.containsKey(refNode))
 					nodePositionMap.put(refNode, nodeList.get(0));
@@ -469,6 +556,13 @@ public class highwayPatternGeneration {
 						nrefNode, nodeList, dirTravel, speedCat, dir);
 				linkList.add(link);
 				linkMap.put(linkId, link);
+				
+				String nodesStr1 = refNode + "," + nrefNode;
+				String nodesStr2 = nrefNode + "," + refNode;
+				if(!nodeToLink.containsKey(nodesStr1))
+					nodeToLink.put(nodesStr1, link);
+				if(!nodeToLink.containsKey(nodesStr2))
+					nodeToLink.put(nodesStr2, link);
 
 			}
 		} catch (Exception e) {
@@ -649,19 +743,42 @@ public class highwayPatternGeneration {
 				}
 
 				int num = nodeList.size();
+				
+				if(adjNodeList.containsKey(refNode)) {
+					ArrayList<Integer> tempList = adjNodeList.get(refNode);
+					if(!tempList.contains(nrefNode))
+						tempList.add(nrefNode);
+				}
+				else {
+					ArrayList<Integer> newList = new ArrayList<Integer>();
+					newList.add(nrefNode);
+					adjNodeList.put(refNode, newList);
+				}
+				
+				if(adjNodeList.containsKey(nrefNode)) {
+					ArrayList<Integer> tempList = adjNodeList.get(nrefNode);
+					if(!tempList.contains(refNode))
+						tempList.add(refNode);
+				}
+				else {
+					ArrayList<Integer> newList = new ArrayList<Integer>();
+					newList.add(refNode);
+					adjNodeList.put(nrefNode, newList);
+				}
 
 				if (!nodePositionMap.containsKey(refNode))
 					nodePositionMap.put(refNode, nodeList.get(0));
 				if (!nodePositionMap.containsKey(nrefNode))
 					nodePositionMap.put(nrefNode, nodeList.get(num - 1));
 
+				LinkInfo link = null;
 				if (dirTravel.equals("B")) {
 					int dir1 = DistanceCalculator.getDirection(nodeList.get(0),
 							nodeList.get(num - 1));
 					int dir2 = DistanceCalculator.getDirection(
 							nodeList.get(num - 1), nodeList.get(0));
 					String dir = dir1 + "," + dir2;
-					LinkInfo link = new LinkInfo(linkId, func_class, stName,
+					link = new LinkInfo(linkId, func_class, stName,
 							refNode, nrefNode, nodeList, dirTravel, speedCat,
 							dir);
 					linkList.add(link);
@@ -670,7 +787,7 @@ public class highwayPatternGeneration {
 					int dir = DistanceCalculator.getDirection(
 							nodeList.get(num - 1), nodeList.get(0));
 					String sDir = String.valueOf(dir);
-					LinkInfo link = new LinkInfo(linkId, func_class, stName,
+					link = new LinkInfo(linkId, func_class, stName,
 							refNode, nrefNode, nodeList, dirTravel, speedCat,
 							sDir);
 					linkList.add(link);
@@ -679,12 +796,19 @@ public class highwayPatternGeneration {
 					int dir = DistanceCalculator.getDirection(nodeList.get(0),
 							nodeList.get(num - 1));
 					String sDir = String.valueOf(dir);
-					LinkInfo link = new LinkInfo(linkId, func_class, stName,
+					link = new LinkInfo(linkId, func_class, stName,
 							refNode, nrefNode, nodeList, dirTravel, speedCat,
 							sDir);
 					linkList.add(link);
 					linkMap.put(linkId, link);
 				}
+				
+				String nodesStr1 = refNode + "," + nrefNode;
+				String nodesStr2 = nrefNode + "," + refNode;
+				if(!nodeToLink.containsKey(nodesStr1))
+					nodeToLink.put(nodesStr1, link);
+				if(!nodeToLink.containsKey(nodesStr2))
+					nodeToLink.put(nodesStr2, link);
 
 				if (i % 250 == 0) {
 					res.close();
