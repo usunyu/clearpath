@@ -19,6 +19,7 @@ public class highwayPatternGeneration {
 	static String highwayLinkFile = "Highway_Link_List.txt";
 	static String highwayLinkKML = "Highway_Link_List.kml";
 	static String highwaySensorKML = "Highway_Sensor_List.kml";
+	static String allHighwaySensorKML = "All_Highway_Sensor_List.kml";
 	// param
 	static double searchDistance = 0.05;
 	static int devide = 10;
@@ -50,6 +51,7 @@ public class highwayPatternGeneration {
 		matchLinkSensor();
 		generateLinkKML();
 		generateSensorKML();
+//		generateAllSensorKML();
 	}
 	
 	private static void matchLinkSensor() {
@@ -114,6 +116,32 @@ public class highwayPatternGeneration {
 			e.printStackTrace();
 		}
 		System.out.println("generate sensor kml finish!");
+	}
+	
+	private static void generateAllSensorKML() {
+		System.out.println("generate all sensor kml...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + allHighwaySensorKML);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			for (int i = 0; i < sensorList.size(); i++) {
+				SensorInfo sensor = sensorList.get(i);
+				int id = sensor.getSensorId();
+				double lati = sensor.getNode().getLati();
+				double longi = sensor.getNode().getLongi();
+				out.write("<Placemark><name>" + id + "</name><description>On:"
+						+ sensor.getOnStreet() + ", From: "
+						+ sensor.getFromStreet() + ", Dir:"
+						+ sensor.getDirection()
+						+ "</description><Point><coordinates>" + longi + ","
+						+ lati + ",0</coordinates></Point></Placemark>");
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate all sensor kml finish!");
 	}
 
 	private static void readLinkFile() {
@@ -210,13 +238,16 @@ public class highwayPatternGeneration {
 			for (int i = 0; i < linkList.size(); i++) {
 				LinkInfo link = linkList.get(i);
 				int intId = link.getIntLinkId();
-				SensorInfo sensor = link.getSensor();
-				String sensorStr = "NULL";
-				ArrayList<PairInfo> nodeList = link.getNodeList();
-				if (sensor != null) {
-					sensorStr = String.valueOf(sensor.getSensorId());
-				}
+				ArrayList<SensorInfo> sensorList = link.getSensorList();
+				String sensorStr = "null";
+				
+				for(int j = 0; j < sensorList.size(); j++)
+					if(j == 0) 
+						sensorStr = String.valueOf(sensorList.get(j).getSensorId());
+					else
+						sensorStr = sensorStr + "," + String.valueOf(sensorList.get(j).getSensorId());
 
+				ArrayList<PairInfo> nodeList = link.getNodeList();
 				String kmlStr = "<Placemark><name>Link:" + intId + "</name>";
 				kmlStr += "<description>";
 				kmlStr += "Sensor:" + sensorStr;
