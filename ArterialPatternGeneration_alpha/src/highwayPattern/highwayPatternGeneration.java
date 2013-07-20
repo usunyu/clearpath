@@ -67,7 +67,7 @@ public class highwayPatternGeneration {
 		// generateAllSensorKML();
 		// writeAverageFile(days[0]);
 		readAverageFile();
-		generatePatternKML(UtilClass.getStartTime(9));
+		generatePatternKML(UtilClass.getStartTime(14));
 	}
 
 	private static void generatePatternKML(String time) {
