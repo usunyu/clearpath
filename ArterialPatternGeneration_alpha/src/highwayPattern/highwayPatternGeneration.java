@@ -31,7 +31,8 @@ public class highwayPatternGeneration {
 	static String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday",
 			"Friday", "Saturday", "Sunday" };
 	// database
-	static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
+	// static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
+	static String urlHome = "jdbc:oracle:thin:@gd.usc.edu:1521/adms";
 	static String userName = "clearp";
 	static String password = "clearp";
 	static Connection connHome = null;
@@ -59,15 +60,15 @@ public class highwayPatternGeneration {
 		// fetchLinkId();
 		// fetchLink();
 		// writeLinkFile();
-		readLinkFile();
-		fetchSensor();
-		matchLinkSensor();
+		// readLinkFile();
+		// fetchSensor();
+		// matchLinkSensor();
 		// generateLinkKML();
 		// generateSensorKML();
 		// generateAllSensorKML();
-		// writeAverageFile(days[0]);
-		readAverageFile();
-		generatePatternKML(14);
+		writeAverageFile(0);
+		// readAverageFile();
+		// generatePatternKML(14);
 	}
 
 	private static void generatePatternKML(int timeIndex) {
@@ -79,21 +80,21 @@ public class highwayPatternGeneration {
 			for (int i = 0; i < linkList.size(); i++) {
 				LinkInfo link = linkList.get(i);
 				int intId = link.getIntLinkId();
-				ArrayList<SensorInfo> sensorList = link.getSensorList();
+
+				ArrayList<SensorInfo> localSensorList = link.getSensorList();
 				String sensorStr = "null";
 
 				ArrayList<double[]> speedArrayList = new ArrayList<double[]>();
 
-				for (int j = 0; j < sensorList.size(); j++) {
+				for (int j = 0; j < localSensorList.size(); j++) {
 					if (j == 0) {
-						int sensorId = sensorList.get(j).getSensorId();
+						int sensorId = localSensorList.get(j).getSensorId();
 						double[] speedArray = sensorSpeedPattern.get(sensorId);
 						speedArrayList.add(speedArray);
 						sensorStr = String.valueOf(sensorId);
 					} else {
-						int sensorId = sensorList.get(j).getSensorId();
-						sensorStr = sensorStr + ","
-								+ String.valueOf(sensorList.get(j));
+						int sensorId = localSensorList.get(j).getSensorId();
+						sensorStr = sensorStr + "," + String.valueOf(sensorId);
 						double[] speedArray = sensorSpeedPattern.get(sensorId);
 						speedArrayList.add(speedArray);
 					}
@@ -106,7 +107,7 @@ public class highwayPatternGeneration {
 					int num = 0;
 					for (int k = 0; k < speedArrayList.size(); k++) {
 						double speed = speedArrayList.get(k)[j];
-						if (speed > 0) {
+						if (speed > 0 && speed != 70) {
 							allSpeed += speed;
 							num++;
 						}
@@ -123,15 +124,21 @@ public class highwayPatternGeneration {
 
 				String patternStr = "";
 
-				for (int j = 0; j < finalSpeedArray.length; j++) {
-					if (j == 0)
-						patternStr = "\r\n" + UtilClass.getStartTime(j) + " : " + finalSpeedArray[j];
-					else {
-						patternStr = patternStr + "\r\n" + UtilClass.getStartTime(j) + " : " + finalSpeedArray[j];
+				if (localSensorList.size() > 0)
+					for (int j = 0; j < finalSpeedArray.length; j++) {
+						if (j == 0)
+							patternStr = "\r\n" + UtilClass.getStartTime(j)
+									+ " : " + finalSpeedArray[j];
+						else {
+							patternStr = patternStr + "\r\n"
+									+ UtilClass.getStartTime(j) + " : "
+									+ finalSpeedArray[j];
+						}
 					}
-				}
 
-				String colorStr = getColor(finalSpeedArray[timeIndex]);
+				String colorStr = "#FFFFFFFF";
+				if (localSensorList.size() > 0)
+					colorStr = getColor(finalSpeedArray[timeIndex]);
 
 				ArrayList<PairInfo> nodeList = link.getNodeList();
 				String kmlStr = "<Placemark><name>Link:" + intId + "</name>";
@@ -211,8 +218,9 @@ public class highwayPatternGeneration {
 		System.out.println("read average file finish!");
 	}
 
-	private static void writeAverageFile(String day) {
+	private static void writeAverageFile(int dayIndex) {
 		System.out.println("fetch average speed...");
+		int errorNo = 0;
 		try {
 			FileWriter fstream = new FileWriter(root + "/" + averageSpeedFile);
 			BufferedWriter out = new BufferedWriter(fstream);
@@ -222,14 +230,25 @@ public class highwayPatternGeneration {
 			PreparedStatement pstatement = null;
 			ResultSet res = null;
 			con = getConnection();
-			sql = "SELECT * FROM highway_averages3_new4 WHERE day = '" + day
-					+ "'";
+			String day = days[dayIndex];
+			// sql = "SELECT * FROM highway_averages3_new4 WHERE day = '" + day
+			// + "'";
+			sql = "SELECT * FROM DING.HIGHWAY_AVERAGES3_CUBE WHERE day = '"
+					+ day + "'";
 			pstatement = con.prepareStatement(sql,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
 			int i = 0;
 			while (res.next()) {
+				errorNo++;
+				if (errorNo == 10082) {
+					System.err.println("Error Here");
+				}
+				String strId = res.getString(1);
+				if (!isNumeric(strId)) {
+					continue;
+				}
 				int sensorId = res.getInt(1);
 				double speed = res.getDouble(2);
 				String time = res.getString(5);
@@ -251,8 +270,10 @@ public class highwayPatternGeneration {
 						+ ";" + time + "\r\n";
 				out.write(strLine);
 
-				if (i % 1000 == 0)
-					System.out.println((float) i / 121920 * 100 + "%");
+				if (i % 1000 == 0) {
+					// System.out.println((float) i / 121920 * 100 + "%");
+					System.out.println((float) i / 5429845 * 100 + "%");
+				}
 				i++;
 			}
 
@@ -264,8 +285,18 @@ public class highwayPatternGeneration {
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
+			System.err.println("Error Code: " + errorNo);
 		}
 		System.out.println("fetch average speed finish!");
+	}
+
+	public static boolean isNumeric(String str) {
+		for (int i = str.length(); --i >= 0;) {
+			if (!Character.isDigit(str.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private static void matchLinkSensor() {

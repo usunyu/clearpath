@@ -15,7 +15,7 @@ public class highwayPatternGeneration2 {
 	 * @param args
 	 */
 	// param
-	static String highwayName = "I-110";
+	static String highwayName = "CA-91";
 	static String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday",
 			"Friday", "Saturday", "Sunday" };
 	// file
@@ -45,15 +45,18 @@ public class highwayPatternGeneration2 {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		readLinkFile();
-		findLinkPath();
+		// findLinkPath();
 		fetchSensor();
 		matchLinkSensor();
-		findSensorPath();
+		// findSensorPath();
+		findAllSensorPath();
 		// generateLinkKML();
+		generateAllLinkKML();
 		// generateSensorKML();
-		readAverageFile();
-		for(int i = 0; i < 60; i++)
-			generatePatternKML(i);
+		generateAllSensorKML();
+		// readAverageFile();
+		// for(int i = 0; i < 60; i++)
+		// generatePatternKML(i);
 	}
 
 	private static void readAverageFile() {
@@ -93,12 +96,13 @@ public class highwayPatternGeneration2 {
 	private static void generatePatternKML(int timeIndex) {
 		System.out.println("generate pattern...");
 		try {
-			FileWriter fstream = new FileWriter(generatedFileRoot + "/" + highwayName + "/"
-					+ highwayName + "_" + UtilClass.getStartTime(timeIndex)
-					+ "_" + highwayPatternKML);
+			FileWriter fstream = new FileWriter(generatedFileRoot + "/"
+					+ highwayName + "/" + highwayName + "_"
+					+ UtilClass.getStartTime(timeIndex) + "_"
+					+ highwayPatternKML);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
-			
+
 			for (int i = 0; i < pathList.size(); i++) {
 
 				LinkInfo link = pathList.get(i);
@@ -108,13 +112,13 @@ public class highwayPatternGeneration2 {
 				String sensorStr = "null";
 
 				ArrayList<double[]> speedArrayList = new ArrayList<double[]>();
-				
+
 				boolean noSensor = false;
 
 				for (int j = 0; j < sensorList.size(); j++) {
 					if (j == 0) {
 						int sensorId = sensorList.get(j);
-						if(sensorId == -1) {
+						if (sensorId == -1) {
 							noSensor = true;
 							break;
 						}
@@ -123,11 +127,12 @@ public class highwayPatternGeneration2 {
 						sensorStr = String.valueOf(sensorId);
 					} else {
 						int sensorId = sensorList.get(j);
-						if(sensorId == -1) {
+						if (sensorId == -1) {
 							noSensor = true;
 							break;
 						}
-						sensorStr = sensorStr + "," + String.valueOf(sensorList.get(j));
+						sensorStr = sensorStr + ","
+								+ String.valueOf(sensorList.get(j));
 						double[] speedArray = sensorSpeedPattern.get(sensorId);
 						speedArrayList.add(speedArray);
 					}
@@ -145,7 +150,7 @@ public class highwayPatternGeneration2 {
 						}
 					}
 					double finalSpeed = 0;
-					
+
 					if (allSpeed > 0) {
 						finalSpeed = allSpeed / num;
 						finalSpeedArray[j] = finalSpeed;
@@ -156,11 +161,11 @@ public class highwayPatternGeneration2 {
 
 				String patternStr = "";
 
-				if(!noSensor)
+				if (!noSensor)
 					for (int j = 0; j < finalSpeedArray.length; j++) {
 						if (j == 0)
-							patternStr = "\r\n" + UtilClass.getStartTime(j) + " : "
-									+ finalSpeedArray[j];
+							patternStr = "\r\n" + UtilClass.getStartTime(j)
+									+ " : " + finalSpeedArray[j];
 						else {
 							patternStr = patternStr + "\r\n"
 									+ UtilClass.getStartTime(j) + " : "
@@ -169,7 +174,7 @@ public class highwayPatternGeneration2 {
 					}
 
 				String colorStr = "#FFFFFFFF";
-				if(!noSensor)
+				if (!noSensor)
 					colorStr = getColor(finalSpeedArray[timeIndex]);
 
 				PairInfo[] nodeList = link.getNodes();
@@ -210,6 +215,19 @@ public class highwayPatternGeneration2 {
 		return "#FFFFFFFF";
 	}
 
+	private static void findAllSensorPath() {
+		System.out.println("generate sensor path...");
+		for (int i = 0; i < linkList.size(); i++) {
+			LinkInfo link = linkList.get(i);
+			ArrayList<Integer> sensors = link.getSensors();
+			for (int j = 0; j < sensors.size(); j++) {
+				if (!allSensorList.contains(sensors.get(j)))
+					allSensorList.add(sensors.get(j));
+			}
+		}
+		System.out.println("generate sensor path finish!");
+	}
+
 	private static void findSensorPath() {
 		System.out.println("generate sensor path...");
 		for (int i = 0; i < pathList.size(); i++) {
@@ -221,6 +239,35 @@ public class highwayPatternGeneration2 {
 			}
 		}
 		System.out.println("generate sensor path finish!");
+	}
+
+	private static void generateAllSensorKML() {
+		System.out.println("generate sensor kml...");
+		try {
+			FileWriter fstream = new FileWriter(generatedFileRoot + "/"
+					+ highwaySensorKML);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			for (int i = 0; i < allSensorList.size(); i++) {
+				SensorInfo sensor = sensorMap.get(allSensorList.get(i));
+				if (sensor == null)
+					continue;
+				int id = sensor.getSensorId();
+				double lati = sensor.getNode().getLati();
+				double longi = sensor.getNode().getLongi();
+				out.write("<Placemark><name>" + id + "</name><description>On:"
+						+ sensor.getOnStreet() + ", From: "
+						+ sensor.getFromStreet() + ", Dir:"
+						+ sensor.getDirection()
+						+ "</description><Point><coordinates>" + longi + ","
+						+ lati + ",0</coordinates></Point></Placemark>");
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate sensor kml finish!");
 	}
 
 	private static void generateSensorKML() {
@@ -289,6 +336,62 @@ public class highwayPatternGeneration2 {
 			e.printStackTrace();
 		}
 		System.out.println("fetch sensor finish!");
+	}
+
+	private static void generateAllLinkKML() {
+		System.out.println("generate link kml...");
+		try {
+			FileWriter fstream = new FileWriter(generatedFileRoot + "/"
+					+ highwayLinkKML);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			for (int i = 0; i < linkList.size(); i++) {
+				LinkInfo link = linkList.get(i);
+				if(link.getFunc_class() != 1 && link.getFunc_class() != 2) {
+					continue;
+				}
+				String linkId = link.getLinkId();
+
+				ArrayList<Integer> sensorList = link.getSensors();
+				String sensorStr = "null";
+
+				for (int j = 0; j < sensorList.size(); j++)
+					if (j == 0) {
+						sensorStr = String.valueOf(sensorList.get(j));
+					} else
+						sensorStr = sensorStr + ","
+								+ String.valueOf(sensorList.get(j));
+
+				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "Sensor:" + sensorStr;
+				// kmlStr += ", Name:" + link.getSt_name();
+				// kmlStr += ", Start:" + link.getStartNode();
+				// kmlStr += ", End:" + link.getEndNode();
+				// kmlStr += ", Dir:" + link.getAllDir();
+				// kmlStr += ", Func:" + link.getFunc_class();
+				// kmlStr += ", Speed:" + link.getSpeedCat();
+				kmlStr += "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				PairInfo[] nodes = link.getNodes();
+				kmlStr += nodes[0].getLongi() + "," + nodes[0].getLati()
+						+ ",0 ";
+				kmlStr += nodes[1].getLongi() + "," + nodes[1].getLati()
+						+ ",0 ";
+				kmlStr += "</coordinates></LineString>";
+				kmlStr += "<Style><LineStyle>";
+				kmlStr += "<width>2</width>";
+				kmlStr += "</LineStyle></Style>";
+				kmlStr += "</Placemark>\n";
+
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate link kml finish!");
 	}
 
 	private static void generateLinkKML() {
