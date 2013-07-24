@@ -271,6 +271,26 @@ public class UtilClass {
 		}
 		return null;
 	}
+	
+	public static String getFullStartTime(int j) {
+
+		switch (j) {
+		case 0:
+			return "00:00";
+		case 1:
+			return "00:05";
+		case 2:
+			return "00:10";
+		case 3:
+			return "00:15";
+		case 4:
+			return "00:20";
+		case 5:
+			return "00:25";
+
+		}
+		return null;
+	}
 
 	public static int getIndex(String string) {
 		int hh = Integer.parseInt(string.substring(0, 2));

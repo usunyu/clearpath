@@ -60,15 +60,15 @@ public class highwayPatternGeneration {
 		// fetchLinkId();
 		// fetchLink();
 		// writeLinkFile();
-		// readLinkFile();
-		// fetchSensor();
-		// matchLinkSensor();
+		readLinkFile();
+		fetchSensor();
+		matchLinkSensor();
 		// generateLinkKML();
 		// generateSensorKML();
 		// generateAllSensorKML();
-		writeAverageFile(0);
-		// readAverageFile();
-		// generatePatternKML(14);
+		// writeAverageFile(0);
+		readAverageFile();
+		generatePatternKML(14);
 	}
 
 	private static void generatePatternKML(int timeIndex) {
@@ -234,7 +234,7 @@ public class highwayPatternGeneration {
 			// sql = "SELECT * FROM highway_averages3_new4 WHERE day = '" + day
 			// + "'";
 			sql = "SELECT * FROM DING.HIGHWAY_AVERAGES3_CUBE WHERE day = '"
-					+ day + "'";
+					+ day + "' ORDER BY link_id";
 			pstatement = con.prepareStatement(sql,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
@@ -243,13 +243,15 @@ public class highwayPatternGeneration {
 			while (res.next()) {
 				errorNo++;
 				if (errorNo == 10082) {
-					System.err.println("Error Here");
+					// System.err.println("Error Here");
 				}
 				String strId = res.getString(1);
 				if (!isNumeric(strId)) {
 					continue;
 				}
 				int sensorId = res.getInt(1);
+				// if (sensorId <= 769359)
+				// continue;
 				double speed = res.getDouble(2);
 				String time = res.getString(5);
 
