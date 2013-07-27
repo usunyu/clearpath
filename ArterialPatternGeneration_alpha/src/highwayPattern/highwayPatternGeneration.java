@@ -31,8 +31,8 @@ public class highwayPatternGeneration {
 	static String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday",
 			"Friday", "Saturday", "Sunday" };
 	// database
-	// static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
-	static String urlHome = "jdbc:oracle:thin:@gd.usc.edu:1521/adms";
+	static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
+	// static String urlHome = "jdbc:oracle:thin:@gd.usc.edu:1521/adms";
 	static String userName = "clearp";
 	static String password = "clearp";
 	static Connection connHome = null;
@@ -68,7 +68,7 @@ public class highwayPatternGeneration {
 		// generateAllSensorKML();
 		// writeAverageFile(0);
 		readAverageFile();
-		generatePatternKML(14);
+		generatePatternKML(10);
 	}
 
 	private static void generatePatternKML(int timeIndex) {
@@ -231,10 +231,10 @@ public class highwayPatternGeneration {
 			ResultSet res = null;
 			con = getConnection();
 			String day = days[dayIndex];
-			// sql = "SELECT * FROM highway_averages3_new4 WHERE day = '" + day
-			// + "'";
-			sql = "SELECT * FROM DING.HIGHWAY_AVERAGES3_CUBE WHERE day = '"
-					+ day + "' ORDER BY link_id";
+			sql = "SELECT * FROM highway_averages3_new4 WHERE day = '" + day
+					+ "'";
+			// sql = "SELECT * FROM DING.HIGHWAY_AVERAGES3_CUBE WHERE day = '"
+			// + day + "' ORDER BY link_id";
 			pstatement = con.prepareStatement(sql,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);

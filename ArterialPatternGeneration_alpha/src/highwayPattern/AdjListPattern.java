@@ -38,7 +38,7 @@ public class AdjListPattern {
 		readLinkFile();
 		readAdjListFile();
 		findLinkPath();
-		generatePatternKML(44);
+		generatePatternKML(42);
 	}
 
 	public static void generatePatternKML(int timeIndex) {
@@ -61,7 +61,7 @@ public class AdjListPattern {
 				PairInfo[] nodeList = link.getNodes();
 
 				String patternStr = "";
-				if(speedArray != null)
+				if(speedArray != null) {
 					for (int j = 0; j < speedArray.length; j++) {
 						if (j == 0)
 							patternStr = "\r\n" + UtilClass.getStartTime(j) + " : " + speedArray[j];
@@ -69,6 +69,10 @@ public class AdjListPattern {
 							patternStr = patternStr + "\r\n" + UtilClass.getStartTime(j) + " : " + speedArray[j];
 						}
 					}
+				}
+				else {
+					System.err.println("no speed array");
+				}
 				
 				String colorStr = "#FFFFFFFF";
 				if(speedArray != null)
@@ -124,10 +128,12 @@ public class AdjListPattern {
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 			while ((strLine = br.readLine()) != null) {
-				if (i == 13827)
+				i++;
+				if (i == 13828)
 					System.err.println("Error Here");
-				if (strLine.equals("NA"))
+				if (strLine.equals("NA")) {
 					continue;
+				}
 
 				String[] strList = strLine.split(";");
 				for (int j = 0; j < strList.length; j++) {
@@ -136,11 +142,20 @@ public class AdjListPattern {
 					String nrefNode = headList[0].substring(1);
 					String[] timeList = nodes[1].split(",");
 
-					String nodeId = i + nrefNode;
+					int refNodeId = i - 1;
+					if (refNodeId == 457)
+						System.err.println("Error Here");
+					String nodeId = refNodeId + "," + nrefNode;
 
 					LinkInfo link = nodesStrToLink.get(nodeId);
-					double[] speedArray = new double[60];
+					
+					if (link == null) {
+						nodeId = nrefNode+ "," + refNodeId;
+						link = nodesStrToLink.get(nodeId);
+					}
+					
 					if(link != null) {
+						double[] speedArray = new double[60];
 						for (int k = 0; k < 60; k++) {
 							PairInfo[] pairNodes = link.getNodes();
 							double dis = DistanceCalculator.CalculationByDistance(
@@ -152,7 +167,6 @@ public class AdjListPattern {
 						linkPatternMap.put(link, speedArray);
 					}
 				}
-				i++;
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -188,6 +202,8 @@ public class AdjListPattern {
 				String name = nodes[2];
 				String refId = nodes[3].substring(1);
 				String nrefId = nodes[4].substring(1);
+				if(refId.equals("457") || nrefId.equals("457"))
+					System.err.println("Error Here");
 				String idStr = linkId + refId + nrefId;
 				PairInfo[] pairNodes = new PairInfo[2];
 				pairNodes[0] = new PairInfo(Double.parseDouble(nodes[5]),
@@ -199,9 +215,9 @@ public class AdjListPattern {
 						refId, nrefId, pairNodes, 2);
 				linkList.add(link);
 				linkMap.put(idStr, link);
-				String nodeId = refId + nrefId;
+				String nodeId = refId + "," + nrefId;
 				nodesStrToLink.put(nodeId, link);
-				nodeId = nrefId + refId;
+				nodeId = nrefId + "," + refId;
 				nodesStrToLink.put(nodeId, link);
 			}
 		} catch (Exception e) {
