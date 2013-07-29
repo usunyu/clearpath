@@ -21,6 +21,7 @@ public class highwayPatternGeneration {
 	static String highwaySensorKML = "Highway_Sensor_List.kml";
 	static String allHighwaySensorKML = "All_Highway_Sensor_List.kml";
 	static String averageSpeedFile = "Average_Speed_List.txt";
+	static String averageSpeedCleanFile = "Average_Speed_List_Clean.txt";
 	static String highwayPatternKML = "Highway_Pattern.kml";
 	// param
 	static double searchDistance = 0.15;
@@ -187,8 +188,8 @@ public class highwayPatternGeneration {
 	private static void readAverageFile() {
 		System.out.println("read average file...");
 		try {
-			FileInputStream fstream = new FileInputStream(root + "/"
-					+ averageSpeedFile);
+//			FileInputStream fstream = new FileInputStream(root + "/" + averageSpeedFile);
+			FileInputStream fstream = new FileInputStream(root + "/" + "Monday_" + averageSpeedCleanFile);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -211,6 +212,7 @@ public class highwayPatternGeneration {
 					sensorSpeedPattern.put(sensorId, newArray);
 				}
 			}
+			br.close();
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
