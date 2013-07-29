@@ -17,7 +17,7 @@ public class CleanTable {
 	// file
 	static String root = "file";
 	static String closeSensorKML = "Close_Sensor.kml";
-	
+	static String averageSpeedFile = "Average_Speed_List.txt";
 	// database
 	static String urlHome = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
 	// static String urlHome = "jdbc:oracle:thin:@gd.usc.edu:1521/adms";
@@ -26,16 +26,65 @@ public class CleanTable {
 	static Connection connHome = null;
 	// param
 	static double closeDistance = 1;
+	static String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 	// sensor
 	static HashSet<Integer> checkSensor = new HashSet<Integer>();
 	static ArrayList<SensorInfo> sensorList = new ArrayList<SensorInfo>();
 	static HashMap<SensorInfo, ArrayList<SensorInfo>> closeSensorMap = new HashMap<SensorInfo, ArrayList<SensorInfo>>();
+	// pattern
+	static HashMap<Integer, double[]> sensorSpeedPattern = new HashMap<Integer, double[]>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		fetchSensor();
 		mapCloseSensor();
-		generateSensorKML();
+//		generateSensorKML();
+		writeAverageFile(0);
+		
+	}
+	
+	private static void writeAverageFile(int dayIndex) {
+		System.out.println("write average speed...");
+		int errorNo = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + days[dayIndex] + "_" + averageSpeedFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			String day = days[dayIndex];
+			sql = "SELECT * FROM highway_averages3_new4 WHERE day = '" + day + "'";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			int i = 0;
+			while (res.next()) {
+				errorNo++;
+				int sensorId = res.getInt(1);
+				double speed = res.getDouble(2);
+				String time = res.getString(5);
+
+				String strLine = res.getString(1) + ";" + res.getString(2) + ";" + time + "\r\n";
+				out.write(strLine);
+				
+				if(i % 10000 == 0)
+					System.out.println("No." + i + " finish");
+				i++;
+			}
+
+			out.close();
+
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("Error Code: " + errorNo);
+		}
+		System.out.println("write average speed finish!");
 	}
 
 	private static void mapCloseSensor() {
