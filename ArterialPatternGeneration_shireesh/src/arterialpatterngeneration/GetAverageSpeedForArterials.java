@@ -17,8 +17,9 @@ import java.sql.SQLException;
 import Objects.UtilClass;
 
 public class GetAverageSpeedForArterials {
-
-	static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
+	// params
+	static String root = "../GeneratedFile";
+	// database
 	static String url_home = "jdbc:oracle:thin:@geodb.usc.edu:1521/geodbs";
 	static String userName = "clearp";
 	static String password = "clearp";
@@ -27,7 +28,6 @@ public class GetAverageSpeedForArterials {
 	public static void main(String[] args) throws SQLException,
 			NumberFormatException, IOException {
 
-		// AverageSpeeds_Arterials.txt
 		createPatterns();
 
 	}
@@ -42,6 +42,7 @@ public class GetAverageSpeedForArterials {
 			System.out.println(e.getMessage());
 		}
 		return connHome;
+
 	}
 
 	private static void createPatterns() {
@@ -51,12 +52,10 @@ public class GetAverageSpeedForArterials {
 		try {
 
 			System.out.println("Getting Averages now");
-//			fstream = new FileWriter("H:\\Jiayunge\\AverageSpeeds_Arterials.txt");
 			fstream = new FileWriter(root + "/AverageSpeeds_Arterials.txt");
 			out = new BufferedWriter(fstream);
 			// MOD(TO_CHAR(t2.date_and_time, 'J'), 7) + 1 NOT IN (6, 7) and
-			// Only May?
-			String sql = "SELECT avg(t2.SPEED) FROM arterial_Averages3_full3 T2 where month = 'May' GROUP BY TIME ORDER BY TIME";
+			String sql = "SELECT avg(t2.SPEED) FROM arterial_Averages3_full3 T2 where month = 'May' GROUP BY  TIME ORDER BY TIME";
 			System.out.println(sql);
 			Connection con = getConnection();
 			PreparedStatement f = con.prepareStatement(sql,

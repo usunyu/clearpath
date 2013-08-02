@@ -57,7 +57,7 @@ public class CreateListForArterials {
 	static ArrayList<Integer> check = new ArrayList<Integer>();
 	private static int links_with_sensor_count;
 	//private static String FILE_LINK ="H:\\clearp_arterial\\links_all_2.csv";
-	private static String FILE_LINK = "H:\\Jiayunge\\Edges_G_1234_final_withextranames.csv";
+	private static String FILE_LINK = "../GeneratedFile/Edges_G_1234_final_withextranames.csv";
 		//"H:\\clearp\\links_all.csv";
         private static String [] days = {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","All"};
     static HashMap<String,String> links_funcAndspeedcat = new HashMap<String,String>();

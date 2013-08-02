@@ -24,15 +24,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class CreateAdjList1to5New {
+	// params
+	static String root = "../GeneratedFile";
 
 	static HashMap<String, LinkInfo> links = new HashMap<String, LinkInfo>();
-	static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
-	static String FILE_LINK = "Edges_G_12345_final_extraStnames.csv";
+	static String FILE_LINK = root + "/Edges_G_12345_final_extraStnames.csv";
 	static HashMap<Integer, ArrayList<TimeShot>> SpeedNodes = new HashMap<Integer, ArrayList<TimeShot>>();
 	// static TimeShot [] SpeedArray;
 	// private static String [] days =
 	// {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
-	private static String[] days = { "Sunday" };
+	private static String[] days = { "Monday" };
 	private static double[] ArterialAverages;
 	private static double[] HighwayAverages;
 	static ArrayList<HashMap<String, String>> speedsinfo = new ArrayList<HashMap<String, String>>();
@@ -44,21 +45,9 @@ public class CreateAdjList1to5New {
 
 	public static void main(String args[]) {
 
-		for (int i = 0; i < days.length; i++) {
-			// from AverageEdgeSpeed_(day).txt	HighwayEdgeSpeed_(day).txt
-			// speed(HashMap<String, String>):
-			// speedsinfo(ArrayList<HashMap<String, String>>)
-			// speed
+		for (int i = 0; i < days.length; i++)
 			readPreprocessedFiles(i, days[i]);
-		}
-		// from Edges_G_12345_final_extraStnames.csv
-		// links(HashMap<String, LinkInfo>):
-		// LinkIdIndex: LinkInfo(index2, FuncClass, st_name, st_node, end_node, pairs, count)
 		readFileInMemory();
-		// from AverageSpeeds_Highways.txt
-		// HighwayAverages(double[]): avg
-		// from AverageSpeeds_Arterials
-		// ArterialAverages(double[]): avg
 		getHighwayArterialAverageSpeeds();
 
 		for (int i = 0; i < days.length; i++) {
@@ -68,15 +57,9 @@ public class CreateAdjList1to5New {
 				public void run() {
 					try {
 						System.out.println("Getting Speeds for " + days[index]);
-						// SpeedNodes(HashMap<Integer, ArrayList<TimeShot>>):
-						// day, speeds
-						// speeds(ArrayList<TimeShot>):
-						// TimeShot(link.getStart_node(), link.getEnd_node(), 
-						// link.getFunc_class(), getDistance(link), travelTime)
 						fillAdjList(index, days[index]);
-						System.out.println("Creating patterns for " + days[index]);
-						// AdjList_day.txt
-						// 
+						System.out.println("Creating patterns for "
+								+ days[index]);
 						putListToArray(index, days[index]);
 
 					} catch (Exception ex) {
@@ -153,7 +136,8 @@ public class CreateAdjList1to5New {
 			String strLine;
 			int count = 0;
 			while ((strLine = br.readLine()) != null) {
-				HighwayAverages[count++] = Double.parseDouble(strLine.split(",")[1]);
+				HighwayAverages[count++] = Double.parseDouble(strLine
+						.split(",")[1]);
 			}
 			in.close();
 			fstream.close();
@@ -164,7 +148,8 @@ public class CreateAdjList1to5New {
 			br = new BufferedReader(new InputStreamReader(in));
 			count = 0;
 			while ((strLine = br.readLine()) != null) {
-				ArterialAverages[count++] = Double.parseDouble(strLine.split(",")[1]);
+				ArterialAverages[count++] = Double.parseDouble(strLine
+						.split(",")[1]);
 			}
 			in.close();
 			fstream.close();
@@ -215,7 +200,8 @@ public class CreateAdjList1to5New {
 				for (int k = 0; k < 60; k++) {
 					if (travelTime[k] == 1000.0) {
 						double distance = ts.getDistance();
-						double speed = getAverageTravelTime(ts.getFuncClass(), k);
+						double speed = getAverageTravelTime(ts.getFuncClass(),
+								k);
 						int time = (int) ((distance * 60.0 * 60.0 * 1000.0) / speed);
 						if (time == 0)
 							time = 1;
@@ -239,6 +225,7 @@ public class CreateAdjList1to5New {
 											+ ";");
 					}
 				}
+
 			}
 
 			// output the Adjst File
@@ -367,7 +354,7 @@ public class CreateAdjList1to5New {
 
 		System.out.println("READING LINK FILE AND GENERATING NODES");
 		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + FILE_LINK);
+			FileInputStream fstream = new FileInputStream(FILE_LINK);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -448,7 +435,8 @@ public class CreateAdjList1to5New {
 					return travelTime;
 				}
 
-				travelTime[count++] = distance / Double.parseDouble(enodes[i]) * 60.0;
+				travelTime[count++] = distance / Double.parseDouble(enodes[i])
+						* 60.0;
 			}
 
 			return travelTime;

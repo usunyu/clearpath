@@ -32,6 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class CreateListForArterials1to5New {
+	// params
+	static String root = "../GeneratedFile";
 
 	static int numElem = 4575;
 	static HashMap<String, LinkInfo> links = new HashMap<String, LinkInfo>();
@@ -58,35 +60,22 @@ public class CreateListForArterials1to5New {
 	static ArrayList<Integer> check = new ArrayList<Integer>();
 	private static int links_with_sensor_count;
 	// private static String FILE_LINK ="H:\\clearp_arterial\\links_all_2.csv";
-	private static String root = "/Users/Sun/Documents/workspace/CleanPath/GeneratedFile";
-	private static String FILE_LINK = "Edges.csv";
+	private static String FILE_LINK = root + "/Edges.csv";
 	// "H:\\clearp\\links_all.csv";
-	private static String[] days = { "Monday", "Tuesday", "Wednesday",
-			"Thursday", "Friday", "Saturday", "Sunday" };
-	// private static String [] days = {"Monday"};
+	// private static String [] days = {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
+	private static String[] days = { "Monday" };
 	static HashMap<String, String> links_funcAndspeedcat = new HashMap<String, String>();
 	static HashMap<Integer, Double> speedcat = new HashMap<Integer, Double>();
 
 	public static void main(String[] args) throws SQLException,
 			NumberFormatException, IOException {
 
-		// from Edges.csv:
-		// links(HashMap<String, LinkInfo>):
-		// LinkIdIndex: LinkInfo(LinkIdIndex, FuncClass, st_name, st_node, end_node, pairs, count)
 		readFileInMemory();
-		// From Arterial_Sensor_close.csv:
-		// links(HashMap<String, LinkInfo>): add sensors
 		readEdgeSensors();
-		// links_with_sensors(LinkInfo[1100000]): link has sensors
-		// check(ArrayList<Integer>): total sensors
 		GetLinkWithSensors();
 
 		// add
-		// speedcat(HashMap<Integer, Double>):
 		getSpeedcatInfo();
-		// from Edges_withSpeedCat_12345.csv
-		// links_funcAndspeedcat(HashMap<String, String>):
-		// LinkIdIndex: FuncClass, SpeedCat
 		getlinksFuncAndSpeedcatInfo();
 
 		// add ends
@@ -98,18 +87,13 @@ public class CreateListForArterials1to5New {
 				@Override
 				public void run() {
 					try {
-						System.out.println("Getting Speeds for " + days[index]);
-						// speeds(HashMap<Integer, Double[]>) (local)
-						// LinkIds: speed
-						// links_speed(HashMap<Integer, HashMap<Integer, Double[]>>):
-						// day, speeds
-						getArterialSensorAverages(index, days[index]);
+						// System.out.println("Getting Speeds for " +
+						// days[index]);
+						// getArterialSensorAverages(index, days[index]);
 						System.out.println("Creating patterns for " + days[index]);
-						// AverageEdgeSpeed_day.txt:
-						// LinkIdIndex, distance, 
 						createPatterns_new(index, days[index]);
 
-					} catch (SQLException ex) {
+					} catch (Exception ex) {
 						Logger.getLogger(CreateListForArterials.class.getName()).log(Level.SEVERE, null, ex);
 					}
 				}
@@ -139,16 +123,19 @@ public class CreateListForArterials1to5New {
 
 		double penalty = 1.;
 		if ((k >= 3 && k <= 12) || (k >= 43 && k <= 52)) {
-			penalty *= 0.5;
-			if (links_funcAndspeedcat.get(link.getLinkId()).split(",")[0].equals("4")) {
-				penalty += 0.1;
-			}
+			// penalty *= 0.5;
+			// if(links_funcAndspeedcat.get(link.getLinkId()).split(",")[0].equals("4")){
+			// penalty += 0.1;
+			// }
+			penalty = 0.9;
 
 		}
 
-		penalty *= 0.85;
+		// penalty *= 0.85;
 
-		return penalty * speedcat.get(Integer.parseInt(links_funcAndspeedcat.get(link.getLinkId()).split(",")[1]));
+		return penalty
+				* speedcat.get(Integer.parseInt(links_funcAndspeedcat.get(
+						link.getLinkId()).split(",")[1]));
 
 	}
 
@@ -227,50 +214,53 @@ public class CreateListForArterials1to5New {
 				for (int k = 0; k < 60; k++) {
 					double avg = 0.0;
 					int count_valid = 0;
-					for (j = 0; j < count; j++) {
-						try {
+					/*
+					 * for(j = 0;j<count;j++) { try{
+					 * 
+					 * if(links_speed.get(index).containsKey(link.sensors.get(j))
+					 * )
+					 * avg+=links_speed.get(index).get(link.sensors.get(j))[k];
+					 * 
+					 * }catch(Exception e){ System.out.println("error");
+					 * System.out
+					 * .println("index = "+index+" k= "+k+" sensorid = "
+					 * +link.sensors.get(j));
+					 * if(links_speed.get(index).get(link.sensors.get(j))==null)
+					 * System.out.println("error"); else{ for(int g=0;g<60;g++)
+					 * System
+					 * .out.println(g+": "+links_speed.get(index).get(link.
+					 * sensors.get(j))[k]); } }
+					 * 
+					 * 
+					 * if(links_speed.get(index).get(link.sensors.get(j))[k]>0.)
+					 * count_valid++;
+					 * 
+					 * }
+					 * 
+					 * 
+					 * if(avg!=0.0){ avg/=count_valid; avg *= 0.85; //Double
+					 * TravelTime = distance / avg * 60; //out.write(k + "," +
+					 * avg + "," + TravelTime); //out.write("\n");
+					 * out.write(avg+","); } else { double sudu =
+					 * approximation(link,k); if(sudu>0.){ //out.write(k + "," +
+					 * sudu + "," + distance / sudu * 60.); //out.write("\n");
+					 * out.write(sudu+","); } else{ out.write("Average");
+					 * //out.write("\n"); //out.close(); //fstream.close();
+					 * break; } }
+					 */
 
-							if (links_speed.get(index).containsKey(link.sensors.get(j)))
-								avg += links_speed.get(index).get(link.sensors.get(j))[k];
-
-						} catch (Exception e) {
-							System.out.println("error");
-							System.out.println("index = " + index + " k= " + k + " sensorid = " + link.sensors.get(j));
-							if (links_speed.get(index).get(link.sensors.get(j)) == null)
-								System.out.println("error");
-							else {
-								for (int g = 0; g < 60; g++)
-									System.out.println(g + ": " + links_speed.get(index).get(link.sensors.get(j))[k]);
-							}
-						}
-
-						if (links_speed.get(index).get(link.sensors.get(j))[k] > 0.)
-							count_valid++;
-
-					}
-
-					if (avg != 0.0) {
-						avg /= count_valid;
-						avg *= 0.85;
-						// Double TravelTime = distance / avg * 60;
-						// out.write(k + "," + avg + "," + TravelTime);
+					double sudu = approximation(link, k);
+					if (sudu > 0.) {
+						// out.write(k + "," + sudu + "," + distance / sudu *
+						// 60.);
 						// out.write("\n");
-						out.write(avg + ",");
+						out.write(sudu + ",");
 					} else {
-						// 
-						double sudu = approximation(link, k);
-						if (sudu > 0.) {
-							// out.write(k + "," + sudu + "," + distance / sudu
-							// * 60.);
-							// out.write("\n");
-							out.write(sudu + ",");
-						} else {
-							out.write("Average");
-							// out.write("\n");
-							// out.close();
-							// fstream.close();
-							break;
-						}
+						out.write("Average");
+						// out.write("\n");
+						// out.close();
+						// fstream.close();
+						break;
 					}
 
 				}
@@ -342,7 +332,7 @@ public class CreateListForArterials1to5New {
 	private static void readFileInMemory() {
 
 		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + FILE_LINK);
+			FileInputStream fstream = new FileInputStream(FILE_LINK);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -355,7 +345,8 @@ public class CreateListForArterials1to5New {
 					String st_name = nodes[2];
 					String st_node = nodes[3];
 					String end_node = nodes[4];
-					String index = st_node.substring(1) + "" + end_node.substring(1);
+					String index = st_node.substring(1) + ""
+							+ end_node.substring(1);
 					String LinkIdIndex = LinkId + "" + index;
 					String index2 = LinkIdIndex;
 
@@ -369,9 +360,11 @@ public class CreateListForArterials1to5New {
 						i = i + 2;
 					}
 					if (links.get(index2) != null)
-						System.out.println(links.get(index2) + "Duplicate LinkIds");
+						System.out.println(links.get(index2)
+								+ "Duplicate LinkIds");
 
-					links.put(index2, new LinkInfo(index2, FuncClass, st_name, st_node, end_node, pairs, count));
+					links.put(index2, new LinkInfo(index2, FuncClass, st_name,
+							st_node, end_node, pairs, count));
 
 				}
 			}
@@ -416,9 +409,7 @@ public class CreateListForArterials1to5New {
 			while (i < links_with_sensor_count) {
 
 				if (i % 200 == 0) {
-					System.out
-							.println(((double) i / links_with_sensor_count * 100.0)
-									+ "% of Links Completed");
+					System.out.println(((double) i / links_with_sensor_count * 100.0) + "% of Links Completed");
 				}
 
 				LinkInfo link = links_with_sensors[i];
@@ -472,7 +463,8 @@ public class CreateListForArterials1to5New {
 		PairInfo[] pairs = link.getNodes();
 		double distance = 0.0;
 		for (int i = 0; i < link.getPairCount() - 1; i++) {
-			distance += DistanceCalculator.CalculationByDistance(pairs[i], pairs[i + 1]);
+			distance += DistanceCalculator.CalculationByDistance(pairs[i],
+					pairs[i + 1]);
 		}
 		return distance;
 	}
@@ -480,10 +472,10 @@ public class CreateListForArterials1to5New {
 	private static void getArterialSensorAverages(int index, String day)
 			throws SQLException {
 
-		// sensor id
 		String sql = "select link_id from arterial_congestion_config";
 		Connection con = getConnection();
-		PreparedStatement f = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement f = con.prepareStatement(sql,
+				ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		ResultSet rs = f.executeQuery();
 
 		int sensorhitcount = 0;
@@ -498,7 +490,8 @@ public class CreateListForArterials1to5New {
 		f.close();
 		con.close();
 		int c2 = 0, c3 = 0;
-		System.out.println(count + " Sensors Successfully Imported from Config");
+		System.out
+				.println(count + " Sensors Successfully Imported from Config");
 		con = getConnection();
 		HashMap<Integer, Double[]> speeds = new HashMap<Integer, Double[]>();
 		for (int i = 0; i < count; i++) {
@@ -509,7 +502,7 @@ public class CreateListForArterials1to5New {
 			}
 
 			// System.out.println("the currecnt linkid id : "+LinkIds[i] );
-			// only May?
+
 			if (day.equals("All"))
 				sql = "select avg(speed) from arterial_averages3_full where link_id="
 						+ LinkIds[i] + " group by time order by time";
@@ -525,7 +518,6 @@ public class CreateListForArterials1to5New {
 			Double speed[] = new Double[60];
 
 			if (!rs.next()) {
-				// no result
 				for (int t = 0; t < 60;)
 					speed[t++] = 0.;
 			} else {
