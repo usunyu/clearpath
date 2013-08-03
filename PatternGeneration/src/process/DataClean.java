@@ -37,11 +37,144 @@ public class DataClean {
 	static ArrayList<SensorInfo> sensorList = new ArrayList<SensorInfo>();
 	static HashMap<Integer, SensorInfo> sensorMap = new HashMap<Integer, SensorInfo>();
 	static HashMap<Integer, ArrayList<Integer>> closeSensorMap = new HashMap<Integer, ArrayList<Integer>>();
+	/**
+	 * @param pattern
+	 */
+	static HashMap<Integer, double[]> sensorSpeedPattern = new HashMap<Integer, double[]>();
+	static ArrayList<Integer> sensorPatternList = new ArrayList<Integer>();
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		fetchSensor();
 		mapCloseSensor();
+		//generateSensorKML();
+		for(int i = 0; i < days.length; i++) {
+			// August
+			System.out.println("clean data for " + months[7] + ", " + days[i] + "...");
+			readAverageCube(7, i);
+			cleanData();
+			
+			System.out.println("clean data for " + months[7] + ", " + days[i] + " finish!");
+		}
+		
+		readAverageCube(7, 0);
+		cleanData();
+	}
+	
+	private static void cleanData() {
+		System.out.println("clean data...");
+		int error = 0;
+		try {
+			for(int i = 0; i < sensorPatternList.size(); i++) {
+				error++;
+				int sensorId = sensorPatternList.get(i);
+				double[] speedArray = sensorSpeedPattern.get(sensorId);
+				for(int j = 0; j < speedArray.length; j++) {
+					if(speedArray[j] == 0) {
+						// find close sensor
+						ArrayList<Integer> closeSensorList = closeSensorMap.get(sensorId);
+						if(closeSensorList == null) {
+							System.err.println("close sensor list is null, it should not happen, error code: " + error + ", sensor id:" + sensorId);
+							continue;
+						}
+						for(int k = 0; k < closeSensorList.size(); k++) {
+							int closeSensorId = closeSensorList.get(k);
+							double[] closeSpeedArray = sensorSpeedPattern.get(closeSensorId);
+							if(closeSpeedArray[j] != 0) {
+								speedArray[j] = closeSpeedArray[j];
+								break;
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("Error Code: " + error);
+		}
+		System.out.println("clean data finish!");
+	}
+	
+	private static void readAverageCube(int month, int day) {
+		System.out.println("read average file...");
+		// initial again
+		sensorPatternList = new ArrayList<Integer>();
+		sensorSpeedPattern = new HashMap<Integer, double[]>();
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + months[month] + "_" + days[day] + "_" + averageSpeedFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			while ((strLine = br.readLine()) != null) {
+				String[] nodes = strLine.split(";");
+				int sensorId = Integer.parseInt(nodes[0]);
+				double speed = Double.parseDouble(nodes[1]);
+				String time = nodes[2];
+				
+				if(!sensorPatternList.contains(sensorId))
+					sensorPatternList.add(sensorId);
+
+				if (sensorSpeedPattern.containsKey(sensorId)) {
+					double[] tempArray = sensorSpeedPattern.get(sensorId);
+					int index = UtilClass.getIndex(time);
+					if (index >= 0 && index <= 59)
+						tempArray[index] = speed;
+				} else {
+					double[] newArray = new double[60];
+					int index = UtilClass.getIndex(time);
+					if (index >= 0 && index <= 59)
+						newArray[index] = speed;
+					sensorSpeedPattern.put(sensorId, newArray);
+				}
+			}
+			br.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("read average file finish!");
+	}
+	
+	private static void generateSensorKML() {
+		System.out.println("generate sensor kml...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + closeSensorKML);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			for (int i = 0; i < sensorList.size(); i++) {
+				SensorInfo sensor = sensorList.get(i);
+				int id = sensor.getSensorId();
+				double lati = sensor.getNode().getLati();
+				double longi = sensor.getNode().getLongi();
+				String closeSensorStr = "";
+				ArrayList<Integer> closeList = closeSensorMap.get(sensor.getSensorId());
+				if(closeList != null) {
+					for(int j = 0; j < closeList.size(); j++) {
+						int tempSensor = closeList.get(j);
+						if(j == 0) {
+							closeSensorStr = Integer.toString(tempSensor);
+						}
+						else {
+							closeSensorStr += ";" + tempSensor;
+						}
+					}
+					closeSensorStr += "\r\n";
+				}
+				out.write("<Placemark><name>" + id + "</name><description>"
+						+ "Close:" + closeSensorStr
+						//+ ", On:" + sensor.getOnStreet()
+						//+ ", From: " + sensor.getFromStreet()
+						+ ", Dir:" + sensor.getDirection()
+						+ "</description><Point><coordinates>" + longi + ","
+						+ lati + ",0</coordinates></Point></Placemark>");
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate sensor kml finish!");
 	}
 	
 	private static void mapCloseSensor() {

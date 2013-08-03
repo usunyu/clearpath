@@ -67,6 +67,159 @@ public class HighwayPatternGeneration {
 		readLinkFile();
 		fetchSensor();
 		matchLinkSensor();
+		readAverageFile(7, 0);
+		generatePatternKML(102, 7, 0);
+	}
+	
+	private static void generatePatternKML(int time, int month, int day) {
+		System.out.println("generate pattern...");
+		int error = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + UtilClass.getFullTime(time) + "_" + months[month] + "_" + days[day] + "_" + highwayPatternKML);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			for (int i = 0; i < linkList.size(); i++) {
+				error++;
+				LinkInfo link = linkList.get(i);
+				int intId = link.getIntLinkId();
+
+				ArrayList<SensorInfo> localSensorList = link.getSensorList();
+				String sensorStr = "null";
+
+				ArrayList<double[]> speedArrayList = new ArrayList<double[]>();
+
+				for (int j = 0; j < localSensorList.size(); j++) {
+					if (j == 0) {
+						int sensorId = localSensorList.get(j).getSensorId();
+						double[] speedArray = sensorSpeedPattern.get(sensorId);
+						if(speedArray != null)
+							speedArrayList.add(speedArray);
+						sensorStr = String.valueOf(sensorId);
+					} else {
+						int sensorId = localSensorList.get(j).getSensorId();
+						sensorStr = sensorStr + "," + String.valueOf(sensorId);
+						double[] speedArray = sensorSpeedPattern.get(sensorId);
+						if(speedArray != null)
+							speedArrayList.add(speedArray);
+					}
+				}
+
+				double[] finalSpeedArray = new double[288];
+
+				for (int j = 0; j < finalSpeedArray.length; j++) {
+					double allSpeed = 0;
+					int num = 0;
+					for (int k = 0; k < speedArrayList.size(); k++) {
+						double speed = speedArrayList.get(k)[j];
+						if (speed > 0) {
+							allSpeed += speed;
+							num++;
+						}
+					}
+					double finalSpeed = 0;
+
+					if (allSpeed > 0) {
+						finalSpeed = allSpeed / num;
+						finalSpeedArray[j] = finalSpeed;
+					} else {
+						finalSpeedArray[j] = finalSpeed;
+					}
+				}
+
+				String patternStr = "";
+
+				if (localSensorList.size() > 0)
+					for (int j = 0; j < finalSpeedArray.length; j++) {
+						if (j == 0) {
+							if(finalSpeedArray[j] > 0)
+								patternStr = "\r\n" + UtilClass.getFullTime(j) + " : " + finalSpeedArray[j];
+						}
+						else {
+							if(finalSpeedArray[j] > 0)
+								patternStr = patternStr + "\r\n" + UtilClass.getFullTime(j) + " : " + finalSpeedArray[j];
+						}
+					}
+
+				String colorStr = "#FFFFFFFF";
+				if (localSensorList.size() > 0)
+					colorStr = getColor(finalSpeedArray[time]);
+
+				ArrayList<PairInfo> nodeList = link.getNodeList();
+				String kmlStr = "<Placemark><name>Link:" + intId + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "Sensor:" + sensorStr;
+				kmlStr += ", Name:" + link.getStreetName();
+				kmlStr += patternStr;
+				// kmlStr += ", Start:" + link.getStartNode();
+				// kmlStr += ", End:" + link.getEndNode();
+				// kmlStr += ", Dir:" + link.getAllDir();
+				// kmlStr += ", Func:" + link.getFuncClass();
+				// kmlStr += ", Speed:" + link.getSpeedCat();
+				kmlStr += "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				for (int j = 0; j < nodeList.size(); j++) {
+					PairInfo node = nodeList.get(j);
+					kmlStr += node.getLongi() + "," + node.getLati() + ",0 ";
+				}
+				kmlStr += "</coordinates></LineString>";
+				kmlStr += "<Style><LineStyle>";
+				kmlStr += "<color>" + colorStr + "</color>";
+				kmlStr += "<width>2</width>";
+				kmlStr += "</LineStyle></Style></Placemark>\n";
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Error Code: " + error);
+		}
+		System.out.println("generate pattern finish!");
+	}
+	
+	private static String getColor(double speed) {
+		if (speed < 10) // blue
+			return "64000000";
+		else if (speed >= 10 && speed < 25) // red
+			return "FF1400FF";
+		else if (speed >= 25 && speed < 50) // yellow
+			return "FF14F0FF";
+		else if (speed >= 50) // green
+			return "#FF00FF14";
+		return "#FFFFFFFF";
+	}
+	
+	private static void readAverageFile(int month, int day) {
+		System.out.println("read average file...");
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + months[month] + "_" + days[day] + "_" + averageSpeedFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			while ((strLine = br.readLine()) != null) {
+				String[] nodes = strLine.split(";");
+				int sensorId = Integer.parseInt(nodes[0]);
+				double speed = Double.parseDouble(nodes[1]);
+				String time = nodes[2];
+
+				if (sensorSpeedPattern.containsKey(sensorId)) {
+					double[] tempArray = sensorSpeedPattern.get(sensorId);
+					int index = UtilClass.getFullTimeIndex(time);
+					if (index >= 0 && index <= 287)
+						tempArray[index] = speed;
+				} else {
+					double[] newArray = new double[288];
+					int index = UtilClass.getFullTimeIndex(time);
+					if (index >= 0 && index <= 287)
+						newArray[index] = speed;
+					sensorSpeedPattern.put(sensorId, newArray);
+				}
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("read average file finish!");
 	}
 	
 	private static void firstRoundMatch() {

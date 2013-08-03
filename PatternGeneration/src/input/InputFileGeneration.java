@@ -38,19 +38,167 @@ public class InputFileGeneration {
 	static ArrayList<LinkInfo> linkList = new ArrayList<LinkInfo>();
 	static HashMap<Integer, LinkInfo> linkMap = new HashMap<Integer, LinkInfo>();
 	/**
-	 * @param node
+	 * @param pattern
 	 */
+	static ArrayList<Integer> sensorIdList = new ArrayList<Integer>();
+	/**
+	 * @param pattern
+	 */
+	static HashMap<Integer, double[]> sensorSpeedPattern = new HashMap<Integer, double[]>();
+	static HashMap<Integer, double[]> sensorSpeed15Pattern = new HashMap<Integer, double[]>();
+	
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		// write link file
-		fetchLinkId();
-		fetchLink();
-		writeLinkFile();
+		/* write link file */
+		//fetchLinkId();
+		//fetchLink();
+		//writeLinkFile();
 		
-		// write average file for cube
+		/* write average file for cube */
 		//for(int i = 0; i < days.length; i++)
 		//	writeAverageCube(7, i); // August
+		//writeAverageCube(7, 0);
+		
+		/* change the interval to 15 min */
+		for(int i = 0; i < days.length; i++) {
+			// August
+			System.out.println("change the interval for " + months[7] + ", " + days[i] + "...");
+			readAverageCube(7, i);
+			changeInterval();
+			writeAverage15Cube(7, i);
+			renameAverageFile(7, i);
+			System.out.println("change the interval for " + months[7] + ", " + days[i] + " finish!");
+		}
+		//readAverageCube(7, 0);
+		//changeInterval();
+		//writeAverage15Cube(7, 0);
+		//renameAverageFile(7, 0);
+	}
+	
+	private static void renameAverageFile(int month, int day) {
+		System.out.println("rename average file...");
+		File file = new File(root + "/" + months[month] + "_" + days[day] + "_15_" + averageSpeedFile);
+		if (!file.exists() || file.isDirectory()) {
+			System.err.println("file does not exist: " + file);
+			return;
+		}
+		File newFile = new File(root + "/" + months[month] + "_" + days[day] + "_" + averageSpeedFile);
+		//Rename
+		if (file.renameTo(newFile)) {
+			System.out.println("rename average file finish!");
+		} else {
+			System.err.println("error renmaing file");
+		}
+	}
+	
+	private static void writeAverage15Cube(int month, int day) {
+		System.out.println("write average speed for " + months[month] + ", " + days[day] + "...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + months[month] + "_" + days[day] + "_15_" + averageSpeedFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			for(int i = 0; i < sensorIdList.size(); i++) {
+				int sensorId = sensorIdList.get(i);
+				double[] speed15Array = sensorSpeed15Pattern.get(sensorId);
+				for(int j = 0; j < speed15Array.length; j++) {
+					
+					String strLine = sensorId + ";" + speed15Array[j] + ";" + UtilClass.getStartTime(j) + "\r\n";
+					out.write(strLine);
+				}
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("write average speed for " + months[month] + ", " + days[day] + " finish!");
+	}
+	
+	private static void changeInterval() {
+		System.out.println("change time interval...");
+		int error = 0;
+		try {
+			for(int i = 0; i < sensorIdList.size(); i++) {
+				error++;
+				int sensorId = sensorIdList.get(i);
+				double[] speedArray = sensorSpeedPattern.get(sensorId);
+				double[] speed15Array;
+				if(!sensorSpeed15Pattern.containsKey(sensorId))
+					speed15Array = new double[60];
+				else
+					speed15Array = sensorSpeed15Pattern.get(sensorId);
+				// from 06:00 to 20:45
+				for(int j = 72, k = 0; j < 250; j += 3, k++) {
+					speed15Array[k] = speedArray[j];
+				}
+				// fill near time
+				for(int k = 0; k < speed15Array.length; k++) {
+					if(speed15Array[k] == 0) {
+						int oIndex = 72 + k * 3;
+						int lIndex = oIndex - 1;
+						int rIndex = oIndex + 1;
+						if(speedArray[lIndex] != 0 && speedArray[rIndex] != 0) {
+							speed15Array[k] = (speedArray[lIndex] + speedArray[rIndex]) / 2;
+						}
+						else if(speedArray[lIndex] != 0) {
+							speed15Array[k] = speedArray[lIndex];
+						}
+						else if(speedArray[rIndex] != 0) {
+							speed15Array[k] = speedArray[rIndex];
+						}
+					}
+				}
+				if(!sensorSpeed15Pattern.containsKey(sensorId))
+					sensorSpeed15Pattern.put(sensorId, speed15Array);
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("Error Code: " + error);
+		}
+		System.out.println("change time interval finish!");
+	}
+	
+	private static void readAverageCube(int month, int day) {
+		System.out.println("read average file...");
+		// initial again
+		sensorIdList = new ArrayList<Integer>();
+		sensorSpeedPattern = new HashMap<Integer, double[]>();
+		sensorSpeed15Pattern = new HashMap<Integer, double[]>();
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + months[month] + "_" + days[day] + "_" + averageSpeedFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			while ((strLine = br.readLine()) != null) {
+				String[] nodes = strLine.split(";");
+				int sensorId = Integer.parseInt(nodes[0]);
+				
+				if(!sensorIdList.contains(sensorId))
+					sensorIdList.add(sensorId);
+				
+				double speed = Double.parseDouble(nodes[1]);
+				String time = nodes[2];
+
+				if (sensorSpeedPattern.containsKey(sensorId)) {
+					double[] tempArray = sensorSpeedPattern.get(sensorId);
+					int index = UtilClass.getFullTimeIndex(time);
+					if (index >= 0 && index <= 287)
+						tempArray[index] = speed;
+				} else {
+					double[] newArray = new double[288];
+					int index = UtilClass.getFullTimeIndex(time);
+					if (index >= 0 && index <= 287)
+						newArray[index] = speed;
+					sensorSpeedPattern.put(sensorId, newArray);
+				}
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("read average file finish!");
 	}
 	
 	private static void writeLinkFile() {
