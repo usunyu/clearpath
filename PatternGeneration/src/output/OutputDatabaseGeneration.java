@@ -77,7 +77,7 @@ public class OutputDatabaseGeneration {
 				if(i % 100 == 0)
 					System.out.println((double)i / sensorPatternList.size() * 100 + "% finish!");
 				
-				System.out.println("No." + i + " finish!");
+				System.out.println("record " + i + " finish!");
 			}
 			stmt.close();
 			con.close();
