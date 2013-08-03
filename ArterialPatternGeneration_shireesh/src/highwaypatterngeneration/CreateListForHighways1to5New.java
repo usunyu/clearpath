@@ -43,8 +43,10 @@ public class CreateListForHighways1to5New {
 	// static String password = "clearp";
 
 	static String url_home = "jdbc:oracle:thin:@gd.usc.edu:1521/ADMS";
-	static String userName = "DING";
-	static String password = "rth323";
+//	static String userName = "DING";
+//	static String password = "rth323";
+	static String userName = "clearp";
+	static String password = "clearp";
 
 	static Connection connHome = null;
 	static BufferedWriter out;
@@ -467,8 +469,8 @@ public class CreateListForHighways1to5New {
 			else
 				// sql =
 				// "select speed from highway_averages3_new4 where day='"+day+"' and month = 'July' and link_id= '"+LinkIds[i]+"' order by time";
-				sql = "select speed from highway_2012_July where day='" + day
-						+ "' and month = 'July' and link_id= '" + LinkIds[i]
+				sql = "select speed from HIGHWAU_AVERAGES_AUGUST_CLEAN where day='" + day
+						+ "' and month = 'August' and link_id= '" + LinkIds[i]
 						+ "' order by time";
 
 			f = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
