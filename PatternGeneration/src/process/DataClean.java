@@ -16,7 +16,8 @@ public class DataClean {
 	 */
 	static String root = "file";
 	static String closeSensorKML = "Close_Sensor.kml";
-	static String averageSpeedFile = "Average_Speed_List.txt";
+	static String averageSpeedFile = "Average_Speed.txt";
+	static String averageSpeedCleanFile = "Average_Speed_Clean.txt";
 	/**
 	 * @param database
 	 */
@@ -53,17 +54,41 @@ public class DataClean {
 			System.out.println("clean data for " + months[7] + ", " + days[i] + "...");
 			readAverageCube(7, i);
 			cleanData();
-			
+			writeCleanFile(7, i);
 			System.out.println("clean data for " + months[7] + ", " + days[i] + " finish!");
 		}
-		
-		readAverageCube(7, 0);
-		cleanData();
+		/* test */
+		//readAverageCube(7, 0);
+		//cleanData();
+		//writeCleanFile(7, 0);
+	}
+	
+	private static void writeCleanFile(int month, int day) {
+		System.out.println("write clean file...");
+		int errorNo = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + months[month] + "_" + days[day] + "_" + averageSpeedCleanFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			for(int i = 0; i < sensorPatternList.size(); i++) {
+				int sensorId = sensorPatternList.get(i);
+				double[] speedArray = sensorSpeedPattern.get(sensorId);
+				for(int j = 0; j < speedArray.length; j++) {
+					String strLine = sensorId + ";" + speedArray[j] + ";" + UtilClass.getStartTime(j) + "\r\n";
+					out.write(strLine);
+				}
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("Error Code: " + errorNo);
+		}
+		System.out.println("write clean file finish!");
 	}
 	
 	private static void cleanData() {
-		System.out.println("clean data...");
-		int error = 0;
+ 		System.out.println("clean data...");
+		int error = 0, lastError = 0;
 		try {
 			for(int i = 0; i < sensorPatternList.size(); i++) {
 				error++;
@@ -74,16 +99,38 @@ public class DataClean {
 						// find close sensor
 						ArrayList<Integer> closeSensorList = closeSensorMap.get(sensorId);
 						if(closeSensorList == null) {
-							System.err.println("close sensor list is null, it should not happen, error code: " + error + ", sensor id:" + sensorId);
+							if(lastError != error)
+								System.err.println("error code: " + error + ", error sensor id:" + sensorId);
+							lastError = error;
 							continue;
 						}
+						// find nearest sensor which has value
+						ArrayList<Integer> closeSensorFound = new ArrayList<Integer>();
 						for(int k = 0; k < closeSensorList.size(); k++) {
 							int closeSensorId = closeSensorList.get(k);
 							double[] closeSpeedArray = sensorSpeedPattern.get(closeSensorId);
-							if(closeSpeedArray[j] != 0) {
-								speedArray[j] = closeSpeedArray[j];
+							if(closeSpeedArray != null)
+								if(closeSpeedArray[j] != 0) {
+									closeSensorFound.add(closeSensorId);
+								}
+							if(closeSensorFound.size() == 2)
 								break;
-							}
+						}
+						if(closeSensorFound.size() == 1) {
+							int closeSensorId =  closeSensorFound.get(0);
+							double[] closeSpeedArray = sensorSpeedPattern.get(closeSensorId);
+							speedArray[j] = closeSpeedArray[j];
+						} else if(closeSensorFound.size() == 2) {
+							int closeSensorIdA =  closeSensorFound.get(0);
+							int closeSensorIdB =  closeSensorFound.get(1);
+							SensorInfo currentSensor = sensorMap.get(sensorId);
+							SensorInfo sensorInfoA = sensorMap.get(closeSensorIdA);
+							SensorInfo sensorInfoB = sensorMap.get(closeSensorIdB);
+							double disA = DistanceCalculator.CalculationByDistance(currentSensor.getNode(), sensorInfoA.getNode());
+							double disB = DistanceCalculator.CalculationByDistance(currentSensor.getNode(), sensorInfoB.getNode());
+							double[] speedArrayA = sensorSpeedPattern.get(closeSensorIdA);
+							double[] speedArrayB = sensorSpeedPattern.get(closeSensorIdB);
+							speedArray[j] = (speedArrayA[j] * disB + speedArrayB[j]* disA) / (disB + disA); 
 						}
 					}
 				}
