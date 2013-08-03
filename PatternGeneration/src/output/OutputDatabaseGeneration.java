@@ -28,7 +28,7 @@ public class OutputDatabaseGeneration {
 	/**
 	 * @param table
 	 */
-	static String tableName = "HIGHWAU_AVERAGES_AUGUST_CLEAN";
+	static String tableName = "HIGHWAY_AVERAGES_AUGUST_CLEAN";
 	/**
 	 * @param arguments
 	 */
@@ -42,17 +42,17 @@ public class OutputDatabaseGeneration {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		//createTable(tableName);
+		createTable(tableName);
 		//dropTable(tableName);
-		//for(int i = 0; i < days.length; i++) {
-		//	System.out.println("output the data for " + months[7] + ", " + days[i] + "...");
-		//	readAverageClean(7, i);
-		//	insertTable(tableName, 7, i);
-		//	System.out.println("output the data for " + months[7] + ", " + days[i] + " finish!");
-		//}
+		for(int i = 0; i < days.length; i++) {
+			System.out.println("output the data for " + months[7] + ", " + days[i] + "...");
+			readAverageClean(7, i);
+			insertTable(tableName, 7, i);
+			System.out.println("output the data for " + months[7] + ", " + days[i] + " finish!");
+		}
 		/* test */
-		readAverageClean(7, 0);
-		insertTable(tableName, 7, 0);
+		//readAverageClean(7, 0);
+		//insertTable(tableName, 7, 0);
 	}
 	
 	private static void insertTable(String table, int month, int day) {

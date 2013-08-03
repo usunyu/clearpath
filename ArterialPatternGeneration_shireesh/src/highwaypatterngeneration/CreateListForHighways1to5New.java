@@ -469,7 +469,7 @@ public class CreateListForHighways1to5New {
 			else
 				// sql =
 				// "select speed from highway_averages3_new4 where day='"+day+"' and month = 'July' and link_id= '"+LinkIds[i]+"' order by time";
-				sql = "select speed from HIGHWAU_AVERAGES_AUGUST_CLEAN where day='" + day
+				sql = "select speed from HIGHWAY_AVERAGES_AUGUST_CLEAN where day='" + day
 						+ "' and month = 'August' and link_id= '" + LinkIds[i]
 						+ "' order by time";
 

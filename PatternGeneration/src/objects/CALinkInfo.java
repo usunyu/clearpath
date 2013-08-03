@@ -22,7 +22,7 @@ public class CALinkInfo {
 	PairInfo minLoc;
 	PairInfo maxLoc;
 	ArrayList<PairInfo> pathPoints;
-	String encodedPolyline;
+	// String encodedPolyline;
 	double fromProjCompassAngle;
 	double toProjCompassAngle;
 	String sourceId;
@@ -35,7 +35,7 @@ public class CALinkInfo {
 			int primaryRoadwayId, String linkDesc, String fromDesc,
 			String toDesc, double speedLimitKmh, PairInfo startLoc,
 			PairInfo endLoc, PairInfo minLoc, PairInfo maxLoc,
-			ArrayList<PairInfo> pathPoints, String encodedPolyline,
+			ArrayList<PairInfo> pathPoints, /* String encodedPolyline, */
 			double fromProjCompassAngle, double toProjCompassAngle,
 			String sourceId, String sourceRef, String tmcCode) {
 		this.linkId = linkId;
@@ -57,7 +57,7 @@ public class CALinkInfo {
 		this.minLoc = minLoc;
 		this.maxLoc = maxLoc;
 		this.pathPoints = pathPoints;
-		this.encodedPolyline = encodedPolyline;
+		// this.encodedPolyline = encodedPolyline;
 		this.fromProjCompassAngle = fromProjCompassAngle;
 		this.toProjCompassAngle = toProjCompassAngle;
 		this.sourceId = sourceId;
@@ -203,9 +203,9 @@ public class CALinkInfo {
 	/**
 	 * Encoded polyline string for Google Maps
 	 */
-	public String getEncodedPolyline() {
-		return encodedPolyline;
-	}
+	// public String getEncodedPolyline() {
+	// return encodedPolyline;
+	//	}
 
 	/**
 	 * What angle to project the from (start) node of this link?
