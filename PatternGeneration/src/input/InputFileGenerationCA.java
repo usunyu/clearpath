@@ -43,65 +43,8 @@ public class InputFileGenerationCA {
 		
 		readNodeFileCA();
 		
-		//fetchLinkCA();
-		//writeLinkFileCA();
-		
-		readLinkFileCA();
-	}
-	
-	private static void readLinkFileCA() {
-		System.out.println("read link file...");
-		int debug = 0;
-		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + nodeFileCA);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine;
-			
-			while ((strLine = br.readLine()) != null) {
-				debug++;
-				String[] nodes = strLine.split("\\|\\|");
-				int linkId = Integer.parseInt(nodes[0]);
-				int networkId = Integer.parseInt(nodes[1]);
-				int linkClass = Integer.parseInt(nodes[2]);
-				boolean rampFlag = getBoolean(nodes[3]);
-				boolean internalFlag = getBoolean(nodes[4]);
-				boolean activeFlag = getBoolean(nodes[5]);
-				int fromNodeId = Integer.parseInt(nodes[6]);
-				int toNodeId = Integer.parseInt(nodes[7]);
-				double linkLengthKm;
-				int primaryRoadwayId = Integer.parseInt(nodes[9]);
-				String linkDesc;
-				String fromDesc;
-				String toDesc;
-				double speedLimitKmh;
-				PairInfo startLoc;
-				PairInfo endLoc;
-				PairInfo minLoc;
-				PairInfo maxLoc;
-				ArrayList<PairInfo> pathPoints;
-				double fromProjCompassAngle;
-				double toProjCompassAngle;
-				String sourceId;
-				String sourceRef;
-				String tmcCode;
-				
-				if (debug % 100000 == 0)
-					System.out.println("record " + debug + " finish!");
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("Error Code: " + debug);
-		}
-		System.out.println("read link file finish!");
-	}
-
-	private static boolean getBoolean(String str) {
-		if(str.equals("true"))
-			return true;
-		else
-			return false;
+		fetchLinkCA();
+		writeLinkFileCA();
 	}
 
 	private static void writeLinkFileCA() {
@@ -180,7 +123,7 @@ public class InputFileGenerationCA {
 
 			con = getConnection();
 
-			sql = "SELECT * FROM gn_links";
+			sql = "SELECT * FROM gn_links WHERE tmc_code IS NOT NULL";
 
 			pstatement = con.prepareStatement(sql,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -247,7 +190,7 @@ public class InputFileGenerationCA {
 				double toProjCompassAngle = res.getDouble(26);
 				String sourceId = res.getString(27);
 				String sourceRef = res.getString(28);
-				String tmcCode = res.getString(29);
+				String tmcCode = transTMCCode(res.getString(29));
 
 				CALinkInfo CALink = new CALinkInfo(linkId, networkId,
 						linkClass, rampFlag, internalFlag, activeFlag,
@@ -275,6 +218,16 @@ public class InputFileGenerationCA {
 			System.err.println("Error Code: " + debug);
 		}
 		System.out.println("fetch link finish!");
+	}
+	
+	private static String transTMCCode(String oldTMC) {
+		String newTMC = oldTMC;
+		String sign = newTMC.substring(3, 4);
+		if(sign.equals("P"))
+			newTMC = oldTMC.substring(0, 3) + "+" + oldTMC.substring(4);
+		else if(sign.equals("N"))
+			newTMC = oldTMC.substring(0, 3) + "-" + oldTMC.substring(4);
+		return newTMC;
 	}
 	
 	private static void readNodeFileCA() {

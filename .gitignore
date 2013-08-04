@@ -3,9 +3,6 @@
 *.txt
 *.csv
 *.zip
-
-*.class
-
 *.class
 
 ArterialPatternGeneration_alpha/bin/Objects/DistanceCalculator.class
