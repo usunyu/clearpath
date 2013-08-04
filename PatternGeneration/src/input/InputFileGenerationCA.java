@@ -34,14 +34,74 @@ public class InputFileGenerationCA {
 	 * @param node
 	 */
 	static ArrayList<CANodeInfo> CANodeList = new ArrayList<CANodeInfo>();
+	static HashMap<Integer, Integer> oldToNewNodeMap = new HashMap<Integer, Integer>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		fetchNodeCA();
-		writeNodeFileCA();
+		//fetchNodeCA();
+		//writeNodeFileCA();
 		
-//		fetchLinkCA();
-//		writeLinkFileCA();
+		readNodeFileCA();
+		
+		//fetchLinkCA();
+		//writeLinkFileCA();
+		
+		readLinkFileCA();
+	}
+	
+	private static void readLinkFileCA() {
+		System.out.println("read link file...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + nodeFileCA);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split("\\|\\|");
+				int linkId = Integer.parseInt(nodes[0]);
+				int networkId = Integer.parseInt(nodes[1]);
+				int linkClass = Integer.parseInt(nodes[2]);
+				boolean rampFlag = getBoolean(nodes[3]);
+				boolean internalFlag = getBoolean(nodes[4]);
+				boolean activeFlag = getBoolean(nodes[5]);
+				int fromNodeId = Integer.parseInt(nodes[6]);
+				int toNodeId = Integer.parseInt(nodes[7]);
+				double linkLengthKm;
+				int primaryRoadwayId = Integer.parseInt(nodes[9]);
+				String linkDesc;
+				String fromDesc;
+				String toDesc;
+				double speedLimitKmh;
+				PairInfo startLoc;
+				PairInfo endLoc;
+				PairInfo minLoc;
+				PairInfo maxLoc;
+				ArrayList<PairInfo> pathPoints;
+				double fromProjCompassAngle;
+				double toProjCompassAngle;
+				String sourceId;
+				String sourceRef;
+				String tmcCode;
+				
+				if (debug % 100000 == 0)
+					System.out.println("record " + debug + " finish!");
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("Error Code: " + debug);
+		}
+		System.out.println("read link file finish!");
+	}
+
+	private static boolean getBoolean(String str) {
+		if(str.equals("true"))
+			return true;
+		else
+			return false;
 	}
 
 	private static void writeLinkFileCA() {
@@ -97,7 +157,7 @@ public class InputFileGenerationCA {
 				strLine += fromNodeId + "||" + toNodeId + "||" + linkLengthKm + "||" + primaryRoadwayId + "||" + linkDesc + "||";
 				strLine += fromDesc + "||" + toDesc + "||" + speedLimitKmh + "||" + startLocStr + "||" + endLocStr + "||";
 				strLine += minLocStr + "||" + maxLocStr + "||" + pathPointsStr + "||" + fromProjCompassAngle + "||" + toProjCompassAngle + "||";
-				strLine += sourceId + "||" + sourceRef + "||" + tmcCode;
+				strLine += sourceId + "||" + sourceRef + "||" + tmcCode + "\r\n";
 
 				out.write(strLine);
 			}
@@ -138,6 +198,8 @@ public class InputFileGenerationCA {
 				boolean activeFlag = res.getBoolean(6);
 				int fromNodeId = res.getInt(7);
 				int toNodeId = res.getInt(8);
+				int fromNodeIdNew = oldToNewNodeMap.get(fromNodeId);
+				int toNodeIdNew = oldToNewNodeMap.get(toNodeId);
 
 				double linkLengthKm = res.getDouble(9);
 				int primaryRoadwayId = res.getInt(10);
@@ -189,7 +251,7 @@ public class InputFileGenerationCA {
 
 				CALinkInfo CALink = new CALinkInfo(linkId, networkId,
 						linkClass, rampFlag, internalFlag, activeFlag,
-						fromNodeId, toNodeId, linkLengthKm, primaryRoadwayId,
+						fromNodeIdNew, toNodeIdNew, linkLengthKm, primaryRoadwayId,
 						linkDesc, fromDesc, toDesc, speedLimitKmh, startLoc,
 						endLoc, minLoc, maxLoc, pathPoints,
 						fromProjCompassAngle, toProjCompassAngle, sourceId,
@@ -199,6 +261,9 @@ public class InputFileGenerationCA {
 
 				if (debug % 1000 == 0)
 					System.out.println("record " + debug + " finish!");
+				
+				if(debug == 10000)
+					break;
 			}
 
 			res.close();
@@ -210,6 +275,49 @@ public class InputFileGenerationCA {
 			System.err.println("Error Code: " + debug);
 		}
 		System.out.println("fetch link finish!");
+	}
+	
+	private static void readNodeFileCA() {
+		System.out.println("read node file...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + nodeFileCA);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split("\\|\\|");
+				int nodeId = Integer.parseInt(nodes[0]);
+				int newNodeId = Integer.parseInt(nodes[1]);
+				int networkId = Integer.parseInt(nodes[2]);
+				String nodeType = nodes[3];
+				int minLinkClass = Integer.parseInt(nodes[4]);
+				String nodeName = nodes[5];
+				String locationStr = nodes[6];
+				String[] locNode = locationStr.split(",");
+				double lat = Double.parseDouble(locNode[0]);
+				double lng = Double.parseDouble(locNode[1]);
+				PairInfo location = new PairInfo(lat, lng);
+				String sourceId1 = nodes[7];
+				String sourceRef1 = nodes[8];
+				
+				CANodeInfo CANode = new CANodeInfo(nodeId, newNodeId,
+						networkId, nodeType, minLinkClass, nodeName, location,
+						sourceId1, sourceRef1);
+				
+				CANodeList.add(CANode);
+				oldToNewNodeMap.put(nodeId, newNodeId);
+				if (debug % 100000 == 0)
+					System.out.println("record " + debug + " finish!");
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("Error Code: " + debug);
+		}
+		System.out.println("read node file finish!");
 	}
 	
 	private static void writeNodeFileCA() {
@@ -231,8 +339,8 @@ public class InputFileGenerationCA {
 				String sourceId1 = CANode.getSourceId1();
 				String sourceRef1 = CANode.getSourceRef1();
 				
-				String strLine = nodeId + "||" + newNodeId + "||" + networkId + "||" + nodeType + "||" + minLinkClass;
-				strLine += nodeName + "||" + locationStr + "||" + sourceId1 + "||" + sourceRef1;
+				String strLine = nodeId + "||" + newNodeId + "||" + networkId + "||" + nodeType + "||" + minLinkClass + "||";
+				strLine += nodeName + "||" + locationStr + "||" + sourceId1 + "||" + sourceRef1 + "\r\n";
 				
 				out.write(strLine);
 			}
