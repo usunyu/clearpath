@@ -16,7 +16,9 @@ public class InputFileGenerationCA {
 	 */
 	static String root = "file";
 	// for write link file
-	static String LinkFileCA = "CA_Link.txt";
+	static String linkFileCA = "CA_Link.txt";
+	// for write node file
+	static String nodeFileCA = "CA_Node.txt";
 	/**
 	 * @param database
 	 */
@@ -28,21 +30,28 @@ public class InputFileGenerationCA {
 	 * @param link
 	 */
 	static ArrayList<CALinkInfo> CALinkList = new ArrayList<CALinkInfo>();
+	/**
+	 * @param node
+	 */
+	static ArrayList<CANodeInfo> CANodeList = new ArrayList<CANodeInfo>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		fetchLinkCA();
-		writeLinkFileCA();
+		fetchNodeCA();
+		writeNodeFileCA();
+		
+//		fetchLinkCA();
+//		writeLinkFileCA();
 	}
-	
+
 	private static void writeLinkFileCA() {
 		System.out.println("write link file...");
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + LinkFileCA);
+			FileWriter fstream = new FileWriter(root + "/" + linkFileCA);
 			BufferedWriter out = new BufferedWriter(fstream);
 			for (int i = 0; i < CALinkList.size(); i++) {
 				CALinkInfo link = CALinkList.get(i);
-				
+
 				int linkId = link.getLinkId();
 				int networkId = link.getNetworkId();
 				int linkClass = link.getLinkClass();
@@ -69,34 +78,27 @@ public class InputFileGenerationCA {
 				String sourceRef = link.getSourceRef();
 				String tmcCode = link.getTmcCode();
 
-				String startLocStr = startLoc.getLati() + "," + startLoc.getLongi();
+				String startLocStr = startLoc.getLati() + ","
+						+ startLoc.getLongi();
 				String endLocStr = endLoc.getLati() + "," + endLoc.getLongi();
 				String minLocStr = minLoc.getLati() + "," + minLoc.getLongi();
 				String maxLocStr = maxLoc.getLati() + "," + maxLoc.getLongi();
 
 				String pathPointsStr = "";
-				for(int j = 0; j < pathPoints.size(); j++) {
+				for (int j = 0; j < pathPoints.size(); j++) {
 					PairInfo pair = pathPoints.get(j);
+					if (j == 0)
+						pathPointsStr += pair.getLati() + "," + pair.getLongi();
+					else
+						pathPointsStr += ";" + pair.getLati() + "," + pair.getLongi();
 				}
-				
+
 				String strLine = linkId + "||" + networkId + "||" + linkClass + "||" + rampFlag + "||" + internalFlag + "||" + activeFlag + "||";
 				strLine += fromNodeId + "||" + toNodeId + "||" + linkLengthKm + "||" + primaryRoadwayId + "||" + linkDesc + "||";
 				strLine += fromDesc + "||" + toDesc + "||" + speedLimitKmh + "||" + startLocStr + "||" + endLocStr + "||";
-				strLine += minLocStr + "||" + maxLocStr + "||";
+				strLine += minLocStr + "||" + maxLocStr + "||" + pathPointsStr + "||" + fromProjCompassAngle + "||" + toProjCompassAngle + "||";
+				strLine += sourceId + "||" + sourceRef + "||" + tmcCode;
 
-//				String nodeListString = "";
-//				for (int j = 0; j < num; j++) {
-//					String nodeString = nodeList.get(j).getLongi() + "," + nodeList.get(j).getLati();
-//					if (nodeListString.equals(""))
-//						nodeListString = nodeString;
-//					else
-//						nodeListString = nodeListString + ":" + nodeString;
-//				}
-//				strLine = strLine + nodeListString + ";";
-//				strLine = strLine + link.getSpeedCat() + ";";
-//				strLine = strLine + link.getDirTravel() + ";";
-//				strLine = strLine + link.getStartNode() + ";";
-//				strLine = strLine + link.getEndNode() + "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -106,9 +108,10 @@ public class InputFileGenerationCA {
 		}
 		System.out.println("write link file finish!");
 	}
-	
+
 	private static void fetchLinkCA() {
 		System.out.println("fetch link...");
+		int debug = 0;
 		try {
 			Connection con = null;
 			String sql = null;
@@ -117,12 +120,15 @@ public class InputFileGenerationCA {
 
 			con = getConnection();
 
-			sql = "SELECT * FROM gn_links WHERE";
+			sql = "SELECT * FROM gn_links";
 
-			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			pstatement = con.prepareStatement(sql,
+					ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
 
 			while (res.next()) {
+				debug++;
 
 				int linkId = res.getInt(1);
 				int networkId = res.getInt(2);
@@ -132,6 +138,7 @@ public class InputFileGenerationCA {
 				boolean activeFlag = res.getBoolean(6);
 				int fromNodeId = res.getInt(7);
 				int toNodeId = res.getInt(8);
+
 				double linkLengthKm = res.getDouble(9);
 				int primaryRoadwayId = res.getInt(10);
 				String linkDesc = res.getString(11);
@@ -155,15 +162,22 @@ public class InputFileGenerationCA {
 				double maxLng = res.getDouble(22);
 				PairInfo maxLoc = new PairInfo(maxLat, maxLng);
 
-				String pathPointsStr = res.getString(23);
+				Clob pathPointsClob = res.getClob(23);
 				ArrayList<PairInfo> pathPoints = new ArrayList<PairInfo>();
-				String[] pathPointNode = pathPointsStr.split(";");
-				for (int i = 0; i < pathPointNode.length; i++) {
-					String[] loc = pathPointNode[i].split(",");
-					double lat = Double.parseDouble(loc[0]);
-					double lng = Double.parseDouble(loc[1]);
-					PairInfo pair = new PairInfo(lat, lng);
-					pathPoints.add(pair);
+				if (pathPointsClob != null) {
+					String pathPointsStr = pathPointsClob.getSubString(1,
+							(int) pathPointsClob.length());
+					String[] pathPointNode = pathPointsStr.split(";");
+					for (int i = 0; i < pathPointNode.length; i++) {
+						String[] loc = pathPointNode[i].split(",");
+						double lat = Double.parseDouble(loc[0]);
+						double lng = Double.parseDouble(loc[1]);
+						PairInfo pair = new PairInfo(lat, lng);
+						pathPoints.add(pair);
+					}
+				} else {
+					pathPoints.add(startLoc);
+					pathPoints.add(endLoc);
 				}
 
 				// String encodedPolyline = res.getString(24);
@@ -180,9 +194,11 @@ public class InputFileGenerationCA {
 						endLoc, minLoc, maxLoc, pathPoints,
 						fromProjCompassAngle, toProjCompassAngle, sourceId,
 						sourceRef, tmcCode);
-				
+
 				CALinkList.add(CALink);
 
+				if (debug % 1000 == 0)
+					System.out.println("record " + debug + " finish!");
 			}
 
 			res.close();
@@ -191,8 +207,94 @@ public class InputFileGenerationCA {
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
+			System.err.println("Error Code: " + debug);
 		}
 		System.out.println("fetch link finish!");
+	}
+	
+	private static void writeNodeFileCA() {
+		System.out.println("write node file...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + nodeFileCA);
+			BufferedWriter out = new BufferedWriter(fstream);
+			for (int i = 0; i < CANodeList.size(); i++) {
+				CANodeInfo CANode = CANodeList.get(i);
+				
+				int nodeId = CANode.getNodeId();
+				int newNodeId = CANode.getNewNodeId();
+				int networkId = CANode.getNetworkId();
+				String nodeType = CANode.getNodeType();
+				int minLinkClass = CANode.getMinLinkClass();
+				String nodeName = CANode.getNodeName();
+				PairInfo location = CANode.getLocation();
+				String locationStr = location.getLati() + "," + location.getLongi();
+				String sourceId1 = CANode.getSourceId1();
+				String sourceRef1 = CANode.getSourceRef1();
+				
+				String strLine = nodeId + "||" + newNodeId + "||" + networkId + "||" + nodeType + "||" + minLinkClass;
+				strLine += nodeName + "||" + locationStr + "||" + sourceId1 + "||" + sourceRef1;
+				
+				out.write(strLine);
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("write node file finish!");
+	}
+
+	private static void fetchNodeCA() {
+		System.out.println("fetch node...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+
+			con = getConnection();
+
+			sql = "SELECT * FROM gn_nodes";
+
+			pstatement = con.prepareStatement(sql,
+					ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+
+			int nodeNo = 0;
+
+			while (res.next()) {
+				debug++;
+
+				int nodeId = res.getInt(1);
+				int newNodeId = nodeNo++;
+				int networkId = res.getInt(2);
+				String nodeType = res.getString(3);
+				int minLinkClass = res.getInt(4);
+				String nodeName = res.getString(5);
+				double lat = res.getDouble(6);
+				double lng = res.getDouble(7);
+				PairInfo location = new PairInfo(lat, lng);
+				String sourceId1 = res.getString(8);
+				String sourceRef1 = res.getString(9);
+
+				CANodeInfo CANode = new CANodeInfo(nodeId, newNodeId,
+						networkId, nodeType, minLinkClass, nodeName, location,
+						sourceId1, sourceRef1);
+				
+				CANodeList.add(CANode);
+				
+				if (debug % 1000 == 0)
+					System.out.println("record " + debug + " finish!");
+			}
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("Error Code: " + debug);
+		}
+		System.out.println("fetch node finish!");
 	}
 
 	private static Connection getConnection() {
