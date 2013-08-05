@@ -29,6 +29,13 @@ public class CALinkInfo {
 	String sourceRef;
 	String tmcCode;
 
+	double[] minSpeedArrayWeekday;
+	double[] maxSpeedArrayWeekday;
+	double[] averageSpeedArrayWeekday;
+	double[] minSpeedArrayWeekend;
+	double[] maxSpeedArrayWeekend;
+	double[] averageSpeedArrayWeekend;
+
 	public CALinkInfo(int linkId, int networkId, int linkClass,
 			boolean rampFlag, boolean internalFlag, boolean activeFlag,
 			int fromNodeId, int toNodeId, double linkLengthKm,
@@ -63,6 +70,54 @@ public class CALinkInfo {
 		this.sourceId = sourceId;
 		this.sourceRef = sourceRef;
 		this.tmcCode = tmcCode;
+	}
+
+	public void setMinSpeedArrayWeekday(double[] array) {
+		minSpeedArrayWeekday = array;
+	}
+
+	public double[] getMinSpeedArrayWeekday() {
+		return minSpeedArrayWeekday;
+	}
+
+	public void setMaxSpeedArrayWeekday(double[] array) {
+		maxSpeedArrayWeekday = array;
+	}
+
+	public double[] getMaxSpeedArrayWeekday() {
+		return maxSpeedArrayWeekday;
+	}
+
+	public void setAverageSpeedArrayWeekday(double[] array) {
+		averageSpeedArrayWeekday = array;
+	}
+
+	public double[] getAverageSpeedArrayWeekday() {
+		return averageSpeedArrayWeekday;
+	}
+
+	public void setMinSpeedArrayWeekend(double[] array) {
+		minSpeedArrayWeekend = array;
+	}
+
+	public double[] getMinSpeedArrayWeekend() {
+		return minSpeedArrayWeekend;
+	}
+
+	public void setMaxSpeedArrayWeekend(double[] array) {
+		maxSpeedArrayWeekend = array;
+	}
+
+	public double[] getMaxSpeedArrayWeekend() {
+		return maxSpeedArrayWeekend;
+	}
+
+	public void setAverageSpeedArrayWeekend(double[] array) {
+		maxSpeedArrayWeekend = array;
+	}
+
+	public double[] getAverageSpeedArrayWeekend() {
+		return maxSpeedArrayWeekend;
 	}
 
 	/**

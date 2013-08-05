@@ -349,7 +349,9 @@ public class InputFileGenerationCA {
 				if (debug % 1000 == 0)
 					System.out.println("record " + debug + " finish!");
 			}
-
+			res.close();
+			pstatement.close();
+			con.close();
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
