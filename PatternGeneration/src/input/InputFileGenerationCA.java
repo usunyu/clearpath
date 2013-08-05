@@ -123,7 +123,7 @@ public class InputFileGenerationCA {
 
 			con = getConnection();
 
-			sql = "SELECT * FROM gn_links WHERE tmc_code IS NOT NULL";
+			sql = "SELECT * FROM gn_links";
 
 			pstatement = con.prepareStatement(sql,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -205,7 +205,7 @@ public class InputFileGenerationCA {
 				if (debug % 1000 == 0)
 					System.out.println("record " + debug + " finish!");
 				
-				if(debug == 10000)
+				if(debug == 1000)
 					break;
 			}
 
@@ -222,11 +222,16 @@ public class InputFileGenerationCA {
 	
 	private static String transTMCCode(String oldTMC) {
 		String newTMC = oldTMC;
-		String sign = newTMC.substring(3, 4);
-		if(sign.equals("P"))
-			newTMC = oldTMC.substring(0, 3) + "+" + oldTMC.substring(4);
-		else if(sign.equals("N"))
-			newTMC = oldTMC.substring(0, 3) + "-" + oldTMC.substring(4);
+		if(newTMC == null) {
+			newTMC = "106-06203";
+		}
+		else {
+			String sign = newTMC.substring(3, 4);
+			if(sign.equals("P"))
+				newTMC = oldTMC.substring(0, 3) + "+" + oldTMC.substring(4);
+			else if(sign.equals("N"))
+				newTMC = oldTMC.substring(0, 3) + "-" + oldTMC.substring(4);
+		}
 		return newTMC;
 	}
 	

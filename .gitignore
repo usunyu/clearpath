@@ -34,3 +34,21 @@ PatternGeneration/bin/objects/DistanceCalculator.class
 PatternGeneration/bin/objects/inputConfig.class
 
 PatternGeneration/bin/pattern/HighwayPatternGeneration.class
+
+inputFileGeneration/bin/CreateCSVForArterials1to5.class
+
+inputFileGeneration/bin/CreateCSVForArterials1to5.class
+
+inputFileGeneration/bin/CreateCSVForHighwaysFinal1to5.class
+
+inputFileGeneration/bin/CreateHighwayGridFile.class
+
+inputFileGeneration/bin/GenerateEdgesFile.class
+
+inputFileGeneration/bin/Objects/DistanceCalculator.class
+
+inputFileGeneration/bin/Objects/inputConfig.class
+
+inputFileGeneration/bin/createOutputFiles.class
+
+inputFileGeneration/bin/library/FibonacciHeap.class
