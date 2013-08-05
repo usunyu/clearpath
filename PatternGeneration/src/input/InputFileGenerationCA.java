@@ -56,36 +56,35 @@ public class InputFileGenerationCA {
 				CALinkInfo link = CALinkList.get(i);
 
 				int linkId = link.getLinkId();
-				int networkId = link.getNetworkId();
+				//int networkId = link.getNetworkId();
 				int linkClass = link.getLinkClass();
-				boolean rampFlag = link.getRampFlag();
-				boolean internalFlag = link.getInternalFlag();
-				boolean activeFlag = link.getActiveFlag();
+				//boolean rampFlag = link.getRampFlag();
+				//boolean internalFlag = link.getInternalFlag();
+				//boolean activeFlag = link.getActiveFlag();
 				int fromNodeId = link.getFromNodeId();
 				int toNodeId = link.getToNodeId();
-				double linkLengthKm = link.getLinkLengthKm();
-				int primaryRoadwayId = link.getPrimaryRoadwayId();
-				String linkDesc = link.getLinkDesc();
-				String fromDesc = link.getFromDesc();
-				String toDesc = link.getToDesc();
-				double speedLimitKmh = link.getSpeedLimitKmh();
+				//double linkLengthKm = link.getLinkLengthKm();
+				//int primaryRoadwayId = link.getPrimaryRoadwayId();
+				//String linkDesc = link.getLinkDesc();
+				//String fromDesc = link.getFromDesc();
+				//String toDesc = link.getToDesc();
+				//double speedLimitKmh = link.getSpeedLimitKmh();
 				PairInfo startLoc = link.getStartLoc();
 				PairInfo endLoc = link.getEndLoc();
-				PairInfo minLoc = link.getMinLoc();
-				PairInfo maxLoc = link.getMaxLoc();
+				//PairInfo minLoc = link.getMinLoc();
+				//PairInfo maxLoc = link.getMaxLoc();
 				ArrayList<PairInfo> pathPoints = link.getPathPoints();
 				// String encodedPolyline;
-				double fromProjCompassAngle = link.getFromProjCompassAngle();
-				double toProjCompassAngle = link.getToProjCompassAngle();
-				String sourceId = link.getSourceId();
-				String sourceRef = link.getSourceRef();
+				//double fromProjCompassAngle = link.getFromProjCompassAngle();
+				//double toProjCompassAngle = link.getToProjCompassAngle();
+				//String sourceId = link.getSourceId();
+				//String sourceRef = link.getSourceRef();
 				String tmcCode = link.getTmcCode();
 
-				String startLocStr = startLoc.getLati() + ","
-						+ startLoc.getLongi();
+				String startLocStr = startLoc.getLati() + "," + startLoc.getLongi();
 				String endLocStr = endLoc.getLati() + "," + endLoc.getLongi();
-				String minLocStr = minLoc.getLati() + "," + minLoc.getLongi();
-				String maxLocStr = maxLoc.getLati() + "," + maxLoc.getLongi();
+				//String minLocStr = minLoc.getLati() + "," + minLoc.getLongi();
+				//String maxLocStr = maxLoc.getLati() + "," + maxLoc.getLongi();
 
 				String pathPointsStr = "";
 				for (int j = 0; j < pathPoints.size(); j++) {
@@ -96,11 +95,14 @@ public class InputFileGenerationCA {
 						pathPointsStr += ";" + pair.getLati() + "," + pair.getLongi();
 				}
 
-				String strLine = linkId + "||" + networkId + "||" + linkClass + "||" + rampFlag + "||" + internalFlag + "||" + activeFlag + "||";
-				strLine += fromNodeId + "||" + toNodeId + "||" + linkLengthKm + "||" + primaryRoadwayId + "||" + linkDesc + "||";
-				strLine += fromDesc + "||" + toDesc + "||" + speedLimitKmh + "||" + startLocStr + "||" + endLocStr + "||";
-				strLine += minLocStr + "||" + maxLocStr + "||" + pathPointsStr + "||" + fromProjCompassAngle + "||" + toProjCompassAngle + "||";
-				strLine += sourceId + "||" + sourceRef + "||" + tmcCode + "\r\n";
+				//String strLine = linkId + "||" + networkId + "||" + linkClass + "||" + rampFlag + "||" + internalFlag + "||" + activeFlag + "||";
+				//strLine += fromNodeId + "||" + toNodeId + "||" + linkLengthKm + "||" + primaryRoadwayId + "||" + linkDesc + "||";
+				//strLine += fromDesc + "||" + toDesc + "||" + speedLimitKmh + "||" + startLocStr + "||" + endLocStr + "||";
+				//strLine += minLocStr + "||" + maxLocStr + "||" + pathPointsStr + "||" + fromProjCompassAngle + "||" + toProjCompassAngle + "||";
+				//strLine += sourceId + "||" + sourceRef + "||" + tmcCode + "\r\n";
+				
+				String strLine = linkId + "||" + linkClass + "||" + fromNodeId + "||" + toNodeId + "||" + startLocStr + "||";
+				strLine += endLocStr + "||" + pathPointsStr + "||" + tmcCode + "\r\n";
 
 				out.write(strLine);
 			}
@@ -134,22 +136,22 @@ public class InputFileGenerationCA {
 				debug++;
 
 				int linkId = res.getInt(1);
-				int networkId = res.getInt(2);
+				//int networkId = res.getInt(2);
 				int linkClass = res.getInt(3);
-				boolean rampFlag = res.getBoolean(4);
-				boolean internalFlag = res.getBoolean(5);
-				boolean activeFlag = res.getBoolean(6);
+				//boolean rampFlag = res.getBoolean(4);
+				//boolean internalFlag = res.getBoolean(5);
+				//boolean activeFlag = res.getBoolean(6);
 				int fromNodeId = res.getInt(7);
 				int toNodeId = res.getInt(8);
 				int fromNodeIdNew = oldToNewNodeMap.get(fromNodeId);
 				int toNodeIdNew = oldToNewNodeMap.get(toNodeId);
 
-				double linkLengthKm = res.getDouble(9);
-				int primaryRoadwayId = res.getInt(10);
-				String linkDesc = res.getString(11);
-				String fromDesc = res.getString(12);
-				String toDesc = res.getString(13);
-				double speedLimitKmh = res.getDouble(14);
+				//double linkLengthKm = res.getDouble(9);
+				//int primaryRoadwayId = res.getInt(10);
+				//String linkDesc = res.getString(11);
+				//String fromDesc = res.getString(12);
+				//String toDesc = res.getString(13);
+				//double speedLimitKmh = res.getDouble(14);
 
 				double startLat = res.getDouble(15);
 				double startLng = res.getDouble(16);
@@ -159,13 +161,13 @@ public class InputFileGenerationCA {
 				double endLng = res.getDouble(18);
 				PairInfo endLoc = new PairInfo(endLat, endLng);
 
-				double minLat = res.getDouble(19);
-				double minLng = res.getDouble(20);
-				PairInfo minLoc = new PairInfo(minLat, minLng);
+				//double minLat = res.getDouble(19);
+				//double minLng = res.getDouble(20);
+				//PairInfo minLoc = new PairInfo(minLat, minLng);
 
-				double maxLat = res.getDouble(21);
-				double maxLng = res.getDouble(22);
-				PairInfo maxLoc = new PairInfo(maxLat, maxLng);
+				//double maxLat = res.getDouble(21);
+				//double maxLng = res.getDouble(22);
+				//PairInfo maxLoc = new PairInfo(maxLat, maxLng);
 
 				Clob pathPointsClob = res.getClob(23);
 				ArrayList<PairInfo> pathPoints = new ArrayList<PairInfo>();
@@ -186,19 +188,14 @@ public class InputFileGenerationCA {
 				}
 
 				// String encodedPolyline = res.getString(24);
-				double fromProjCompassAngle = res.getDouble(25);
-				double toProjCompassAngle = res.getDouble(26);
-				String sourceId = res.getString(27);
-				String sourceRef = res.getString(28);
+				//double fromProjCompassAngle = res.getDouble(25);
+				//double toProjCompassAngle = res.getDouble(26);
+				//String sourceId = res.getString(27);
+				//String sourceRef = res.getString(28);
 				String tmcCode = transTMCCode(res.getString(29));
 
-				CALinkInfo CALink = new CALinkInfo(linkId, networkId,
-						linkClass, rampFlag, internalFlag, activeFlag,
-						fromNodeIdNew, toNodeIdNew, linkLengthKm, primaryRoadwayId,
-						linkDesc, fromDesc, toDesc, speedLimitKmh, startLoc,
-						endLoc, minLoc, maxLoc, pathPoints,
-						fromProjCompassAngle, toProjCompassAngle, sourceId,
-						sourceRef, tmcCode);
+				CALinkInfo CALink = new CALinkInfo(linkId, linkClass, fromNodeIdNew, toNodeIdNew, 
+						startLoc, endLoc,  pathPoints, tmcCode);
 
 				CALinkList.add(CALink);
 
@@ -247,21 +244,19 @@ public class InputFileGenerationCA {
 				String[] nodes = strLine.split("\\|\\|");
 				int nodeId = Integer.parseInt(nodes[0]);
 				int newNodeId = Integer.parseInt(nodes[1]);
-				int networkId = Integer.parseInt(nodes[2]);
-				String nodeType = nodes[3];
-				int minLinkClass = Integer.parseInt(nodes[4]);
-				String nodeName = nodes[5];
-				String locationStr = nodes[6];
+				//int networkId = Integer.parseInt(nodes[2]);
+				//String nodeType = nodes[3];
+				//int minLinkClass = Integer.parseInt(nodes[4]);
+				//String nodeName = nodes[5];
+				String locationStr = nodes[2];
 				String[] locNode = locationStr.split(",");
 				double lat = Double.parseDouble(locNode[0]);
 				double lng = Double.parseDouble(locNode[1]);
 				PairInfo location = new PairInfo(lat, lng);
-				String sourceId1 = nodes[7];
-				String sourceRef1 = nodes[8];
+				//String sourceId1 = nodes[7];
+				//String sourceRef1 = nodes[8];
 				
-				CANodeInfo CANode = new CANodeInfo(nodeId, newNodeId,
-						networkId, nodeType, minLinkClass, nodeName, location,
-						sourceId1, sourceRef1);
+				CANodeInfo CANode = new CANodeInfo(nodeId, newNodeId, location);
 				
 				CANodeList.add(CANode);
 				oldToNewNodeMap.put(nodeId, newNodeId);
@@ -286,17 +281,19 @@ public class InputFileGenerationCA {
 				
 				int nodeId = CANode.getNodeId();
 				int newNodeId = CANode.getNewNodeId();
-				int networkId = CANode.getNetworkId();
-				String nodeType = CANode.getNodeType();
-				int minLinkClass = CANode.getMinLinkClass();
-				String nodeName = CANode.getNodeName();
+				//int networkId = CANode.getNetworkId();
+				//String nodeType = CANode.getNodeType();
+				//int minLinkClass = CANode.getMinLinkClass();
+				//String nodeName = CANode.getNodeName();
 				PairInfo location = CANode.getLocation();
 				String locationStr = location.getLati() + "," + location.getLongi();
-				String sourceId1 = CANode.getSourceId1();
-				String sourceRef1 = CANode.getSourceRef1();
+				//String sourceId1 = CANode.getSourceId1();
+				//String sourceRef1 = CANode.getSourceRef1();
 				
-				String strLine = nodeId + "||" + newNodeId + "||" + networkId + "||" + nodeType + "||" + minLinkClass + "||";
-				strLine += nodeName + "||" + locationStr + "||" + sourceId1 + "||" + sourceRef1 + "\r\n";
+				//String strLine = nodeId + "||" + newNodeId + "||" + networkId + "||" + nodeType + "||" + minLinkClass + "||";
+				//strLine += nodeName + "||" + locationStr + "||" + sourceId1 + "||" + sourceRef1 + "\r\n";
+				
+				String strLine = nodeId + "||" + newNodeId + "||" + locationStr + "\r\n";
 				
 				out.write(strLine);
 			}
@@ -333,19 +330,17 @@ public class InputFileGenerationCA {
 
 				int nodeId = res.getInt(1);
 				int newNodeId = nodeNo++;
-				int networkId = res.getInt(2);
-				String nodeType = res.getString(3);
-				int minLinkClass = res.getInt(4);
-				String nodeName = res.getString(5);
+				//int networkId = res.getInt(2);
+				//String nodeType = res.getString(3);
+				//int minLinkClass = res.getInt(4);
+				//String nodeName = res.getString(5);
 				double lat = res.getDouble(6);
 				double lng = res.getDouble(7);
 				PairInfo location = new PairInfo(lat, lng);
-				String sourceId1 = res.getString(8);
-				String sourceRef1 = res.getString(9);
+				//String sourceId1 = res.getString(8);
+				//String sourceRef1 = res.getString(9);
 
-				CANodeInfo CANode = new CANodeInfo(nodeId, newNodeId,
-						networkId, nodeType, minLinkClass, nodeName, location,
-						sourceId1, sourceRef1);
+				CANodeInfo CANode = new CANodeInfo(nodeId, newNodeId, location);
 				
 				CANodeList.add(CANode);
 				

@@ -72,6 +72,19 @@ public class CALinkInfo {
 		this.tmcCode = tmcCode;
 	}
 
+	public CALinkInfo(int linkId, int linkClass,
+			int fromNodeId, int toNodeId, PairInfo startLoc,
+			PairInfo endLoc, ArrayList<PairInfo> pathPoints, String tmcCode) {
+		this.linkId = linkId;
+		this.linkClass = linkClass;
+		this.fromNodeId = fromNodeId;
+		this.toNodeId = toNodeId;
+		this.startLoc = startLoc;
+		this.endLoc = endLoc;
+		this.pathPoints = pathPoints;
+		this.tmcCode = tmcCode;
+	}
+
 	public void setMinSpeedArrayWeekday(double[] array) {
 		minSpeedArrayWeekday = array;
 	}

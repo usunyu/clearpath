@@ -25,6 +25,12 @@ public class CANodeInfo {
 		this.sourceRef1 = sourceRef1;
 	}
 
+	public CANodeInfo(int nodeId, int newNodeId, PairInfo location) {
+		this.nodeId = nodeId;
+		this.newNodeId = newNodeId;
+		this.location = location;
+	}
+
 	/**
 	 * Unique identifier
 	 */
