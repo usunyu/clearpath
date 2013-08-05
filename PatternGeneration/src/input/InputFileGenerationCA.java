@@ -205,8 +205,6 @@ public class InputFileGenerationCA {
 				if (debug % 1000 == 0)
 					System.out.println("record " + debug + " finish!");
 				
-				if(debug == 1000)
-					break;
 			}
 
 			res.close();
