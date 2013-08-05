@@ -195,7 +195,6 @@ public class AdjListPattern {
 					System.out.println((double)i / CALinkList.size() * 100 + "% finish!");
 				}
 				
-				System.out.println("record " + i + " finish!");
 			}
 			
 			res.close();
@@ -231,24 +230,24 @@ public class AdjListPattern {
 				//boolean rampFlag = getBooleanFromStr(nodes[2]);
 				//boolean internalFlag = getBooleanFromStr(nodes[4]);
 				//boolean activeFlag = getBooleanFromStr(nodes[5]);
-				int fromNodeIdNew = Integer.parseInt(nodes[3]);
-				int toNodeIdNew = Integer.parseInt(nodes[4]);
+				int fromNodeIdNew = Integer.parseInt(nodes[2]);
+				int toNodeIdNew = Integer.parseInt(nodes[3]);
 				//double linkLengthKm = Double.parseDouble(nodes[8]);
 				//int primaryRoadwayId = Integer.parseInt(nodes[9]);
 				//String linkDesc = nodes[10];
 				//String fromDesc = nodes[11];
 				//String toDesc = nodes[12];
 				//double speedLimitKmh = Double.parseDouble(nodes[13]);
-				PairInfo startLoc = getPairFromStr(nodes[14]);
-				PairInfo endLoc = getPairFromStr(nodes[15]);
+				PairInfo startLoc = getPairFromStr(nodes[4]);
+				PairInfo endLoc = getPairFromStr(nodes[5]);
 				//PairInfo minLoc = getPairFromStr(nodes[16]);
 				//PairInfo maxLoc = getPairFromStr(nodes[17]);
-				ArrayList<PairInfo> pathPoints = getPairListFromStr(nodes[18]);
+				ArrayList<PairInfo> pathPoints = getPairListFromStr(nodes[6]);
 				//double fromProjCompassAngle = Double.parseDouble(nodes[19]);
 				//double toProjCompassAngle = Double.parseDouble(nodes[20]);
 				//String sourceId = nodes[21];
 				//String sourceRef = nodes[22];
-				String tmcCode = nodes[23];
+				String tmcCode = nodes[7];
 
 				//CALinkInfo CALink = new CALinkInfo(linkId, networkId,
 				//	linkClass, rampFlag, internalFlag, activeFlag,

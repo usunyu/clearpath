@@ -33,7 +33,7 @@ public class CreateAdjList1to5New {
 	// static TimeShot [] SpeedArray;
 	// private static String [] days =
 	// {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
-	private static String[] days = { "Monday" };
+	private static String[] days = { "Friday" };
 	private static double[] ArterialAverages;
 	private static double[] HighwayAverages;
 	static ArrayList<HashMap<String, String>> speedsinfo = new ArrayList<HashMap<String, String>>();

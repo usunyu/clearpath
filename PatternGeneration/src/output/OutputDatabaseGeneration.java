@@ -42,7 +42,7 @@ public class OutputDatabaseGeneration {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		createTable(tableName);
+		//createTable(tableName);
 		//dropTable(tableName);
 		for(int i = 0; i < days.length; i++) {
 			System.out.println("output the data for " + months[7] + ", " + days[i] + "...");
