@@ -58,9 +58,9 @@ public class AdjListPatternCA {
 		fetchPattern();
 		buildAdjList();
 		// weekday
-		createAdjList(true, 1);
+		createAdjList(true, 3);
 		// weekend
-		createAdjList(false, 1);
+		createAdjList(false, 3);
 	}
 	
 	// interval: 1 for every 5 min, 3 for every 15 min
@@ -81,29 +81,44 @@ public class AdjListPatternCA {
 				else {
 					for(int j = 0; j < toList.size(); j++) {
 						int toNodeId = toList.get(j);
-						strLine += "n" + toNodeId + "(V):";
+						
 						String nodesStr = nodeId + "-" + toNodeId;
 						CALinkInfo CALink = nodesToLink.get(nodesStr);
+						
 						double dis = DistanceCalculator.CalculationByDistance(CALink.getStartLoc(), CALink.getEndLoc());
-						double[] speedArray = weekday ? CALink.getAverageSpeedArrayWeekday() : CALink.getAverageSpeedArrayWeekend();
-						// time from 06:00 to 20:55 , every 5 min, index from 72 to 251
-						for(int t = 72; t <= 251; t += interval) {
-							double speed = speedArray[t];
-							// assign the 0 value
-							if(speed == 0)
-								speed = 50;
-							long costTime = Math.round(dis / speed * 60 * 60);
+						// convert mile to km
+						dis *= 1.609344;
+						// use 10mph and fix for linkclass = 5 
+						if(CALink.getLinkClass() == 5) {
+							strLine += "n" + toNodeId + "(F):";
+							long costTime = Math.round(dis / 10 * 60 * 60);
 							if(costTime == 0)
 								costTime = 1;
-							strLine += costTime;
-							strLine += (t == 251 ? ";" : ",");
+							strLine += costTime + ";";
+						}
+						else {
+							strLine += "n" + toNodeId + "(V):";
+							double[] speedArray = weekday ? CALink.getAverageSpeedArrayWeekday() : CALink.getAverageSpeedArrayWeekend();
+							// time from 06:00 to 20:55 , every 5 min, index from 72 to 251
+							for(int t = 72; t <= 251; t += interval) {
+								double speed = speedArray[t];
+								// assign the 0 value
+								if(speed == 0)
+									speed = 50;
+								long costTime = Math.round(dis / speed * 60 * 60);
+								if(costTime == 0)
+									costTime = 1;
+								strLine += costTime;
+								strLine += (t == 251 ? ";" : ",");
+							}
 						}
 					}
 				}
 				strLine += "\r\n";
 				out.write(strLine);
 				
-				System.out.println((double)i / CANodeList.size() * 100 + "% finish!");
+				if(i % 10000 == 0)
+					System.out.println((double)i / CANodeList.size() * 100 + "% finish!");
 			}
 			out.close();
 		} catch (Exception e) {
