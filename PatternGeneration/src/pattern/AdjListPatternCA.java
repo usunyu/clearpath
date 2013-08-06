@@ -89,6 +89,9 @@ public class AdjListPatternCA {
 						// time from 06:00 to 20:55 , every 5 min, index from 72 to 251
 						for(int t = 72; t <= 251; t += interval) {
 							double speed = speedArray[t];
+							// assign the 0 value
+							if(speed == 0)
+								speed = 50;
 							long costTime = Math.round(dis / speed * 60 * 60);
 							if(costTime == 0)
 								costTime = 1;
