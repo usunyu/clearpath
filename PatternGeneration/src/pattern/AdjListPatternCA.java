@@ -189,9 +189,9 @@ public class AdjListPatternCA {
 				
 				if (i % 250 == 0) {
 					// reconnect
-					con = null;
-					pstatement = null;
-					res = null;
+					res.close();
+					pstatement.close();
+					con.close();
 					con = getConnection();
 					
 					System.out.println((double)i / CALinkList.size() * 100 + "% finish!");
