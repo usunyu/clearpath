@@ -81,7 +81,7 @@ public class HighwayPatternGeneration {
 			for (int i = 0; i < linkList.size(); i++) {
 				error++;
 				LinkInfo link = linkList.get(i);
-				int intId = link.getIntLinkId();
+				int intId = link.getLinkId();
 
 				ArrayList<SensorInfo> localSensorList = link.getSensorList();
 				String sensorStr = "null";

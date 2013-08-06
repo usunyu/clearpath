@@ -212,7 +212,7 @@ public class InputFileGeneration {
 				LinkInfo link = linkList.get(i);
 				ArrayList<PairInfo> nodeList = link.getNodeList();
 				int num = nodeList.size();
-				String str = Integer.toString(link.getIntLinkId()) + ";";
+				String str = Integer.toString(link.getLinkId()) + ";";
 				str = str + link.getAllDir() + ";" + link.getStreetName() + ";";
 				str = str + link.getFuncClass() + ";";
 				String nodeListString = "";

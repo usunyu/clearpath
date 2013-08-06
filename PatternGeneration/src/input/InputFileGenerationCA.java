@@ -38,13 +38,13 @@ public class InputFileGenerationCA {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		//fetchNodeCA();
-		//writeNodeFileCA();
+		fetchNodeCA();
+		writeNodeFileCA();
 		
-		readNodeFileCA();
+		//readNodeFileCA();
 		
-		fetchLinkCA();
-		writeLinkFileCA();
+		//fetchLinkCA();
+		//writeLinkFileCA();
 	}
 
 	private static void writeLinkFileCA() {

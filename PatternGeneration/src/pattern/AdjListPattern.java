@@ -15,341 +15,208 @@ public class AdjListPattern {
 	 * @param file
 	 */
 	static String root = "file";
-	// for write link file
-	static String linkFileCA = "CA_Link.txt";
-	// for write node file
-	static String nodeFileCA = "CA_Node.txt";
-	// for write adjlist
-	static String adjlistFileWeekdayCA = "CA_AdjList_Weekday.txt";
-	static String adjlistFileWeekendCA = "CA_AdjList_Weekend.txt";
-	/**
-	 * @param database
-	 */
-	static String urlHome = "jdbc:oracle:thin:@gd2.usc.edu:1521/navteq";
-	static String userName = "GNDEMO";
-	static String password = "GNDEMO";
-	static Connection connHome = null;
+	static String generatedFileRoot = "../GeneratedFile";
+	static String edgeFile = "Edges.csv";
+	static String adjListFile = "AdjList_Tuesday.txt";
+	static String adjListPatternKML = "AdjList_Pattern.kml";
 	/**
 	 * @param link
 	 */
-	static ArrayList<CALinkInfo> CALinkList = new ArrayList<CALinkInfo>();
-	static HashMap<Integer, CALinkInfo> CALinkMap = new HashMap<Integer, CALinkInfo>();
-	/**
-	 * @param node
-	 */
-	static ArrayList<CANodeInfo> CANodeList = new ArrayList<CANodeInfo>();
-	static HashMap<Integer, CANodeInfo> CANodeMap = new HashMap<Integer, CANodeInfo>();
-	/**
-	 * @param pattern
-	 */
-	static HashMap<String, double[]> tmcCacheWeekday = new HashMap<String, double[]>();
-	static HashMap<String, double[]> tmcCacheWeekend = new HashMap<String, double[]>();
-	/**
-	 * @param connect
-	 */
-	static HashMap<Integer, ArrayList<Integer>> AdjList = new HashMap<Integer, ArrayList<Integer>>();
-	// two nodes determine one link
-	static HashMap<String, CALinkInfo> nodesToLink = new HashMap<String, CALinkInfo>();
+	static ArrayList<LinkInfo> linkList = new ArrayList<LinkInfo>();
+	static ArrayList<LinkInfo> pathList = new ArrayList<LinkInfo>();
+	static HashMap<String, LinkInfo> linkMap = new HashMap<String, LinkInfo>();
+	static HashMap<String, LinkInfo> nodesStrToLink = new HashMap<String, LinkInfo>();
+	static HashMap<LinkInfo, double[]> linkPatternMap = new HashMap<LinkInfo, double[]>();
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		readNodeFileCA();
-		readLinkFileCA();
-		fetchPattern();
-		buildAdjList();
-		// weekday
-		createAdjList(true);
-		// weekend
-		createAdjList(false);
+		readLinkFile();
+		readAdjListFile();
+		findLinkPath();
+		//generatePatternKML(6);
+		//generatePatternKML(8);
+		//generatePatternKML(10);
+		//generatePatternKML(12);
+		//generatePatternKML(14);
+		//generatePatternKML(42);
+		//generatePatternKML(44);
+		//generatePatternKML(46);
+		//generatePatternKML(48);
+		generatePatternKML(53);
 	}
 	
-	private static void createAdjList(boolean weekday) {
-		System.out.println("create adj list...");
+	public static void generatePatternKML(int time) {
+		System.out.println("generate pattern kml...");
+		int error = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + (weekday ? adjlistFileWeekdayCA : adjlistFileWeekendCA));
+			FileWriter fstream = new FileWriter(root + "/" + UtilClass.getStartTime(time) + "_" + adjListPatternKML);
 			BufferedWriter out = new BufferedWriter(fstream);
-			for(int i = 0; i < CANodeList.size(); i++) {
-				CANodeInfo CANode = CANodeList.get(i);
-				int nodeId = CANode.getNewNodeId();
+			out.write("<kml><Document>");
+
+			for (int i = 0; i < pathList.size(); i++) {
+				error++;
 				
-				String strLine = "";
-				ArrayList<Integer> toList = AdjList.get(nodeId);
-				if(toList == null || toList.isEmpty()) {
-					strLine = "NA";
-				}
-				else {
-					for(int j = 0; j < toList.size(); j++) {
-						int toNodeId = toList.get(j);
-						strLine += "n" + toNodeId + "(V):";
-						String nodesStr = nodeId + "-" + toNodeId;
-						CALinkInfo CALink = nodesToLink.get(nodesStr);
-						double dis = DistanceCalculator.CalculationByDistance(CALink.getStartLoc(), CALink.getEndLoc());
-						double[] speedArray = weekday ? CALink.getAverageSpeedArrayWeekday() : CALink.getAverageSpeedArrayWeekend();
-						// time from 06:00 to 20:55 , every 5 min, index from 72 to 251
-						// if want every 15 min, change t++ to t+=3
-						for(int t = 72; t <= 251; t++) {
-							double speed = speedArray[t];
-							long costTime = Math.round(dis / speed * 60 * 60 * 1000);
-							if(costTime == 0)
-								costTime = 1;
-							strLine += costTime;
-							strLine += (t == 251 ? ";" : ",");
+				LinkInfo link = pathList.get(i);
+				int linkId = link.getLinkId();
+				double[] speedArray = linkPatternMap.get(link);
+				PairInfo[] nodeList = link.getNodes();
+
+				String patternStr = "";
+				if(speedArray != null) {
+					for (int j = 0; j < speedArray.length; j++) {
+						if (j == 0)
+							patternStr = "\r\n" + UtilClass.getStartTime(j) + " : " + speedArray[j];
+						else {
+							patternStr = patternStr + "\r\n" + UtilClass.getStartTime(j) + " : " + speedArray[j];
 						}
 					}
 				}
-				strLine += "\r\n";
-				out.write(strLine);
+				else {
+					System.err.println("no speed array");
+				}
+				
+				String colorStr = "#FFFFFFFF";
+				if(speedArray != null)
+					colorStr = getColor(speedArray[time]);
+
+				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "Pattern:";
+				kmlStr += patternStr;
+				kmlStr += "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				for (int j = 0; j < nodeList.length; j++) {
+					PairInfo node = nodeList[j];
+					kmlStr += node.getLongi() + "," + node.getLati() + ",0 ";
+				}
+				kmlStr += "</coordinates></LineString>";
+				kmlStr += "<Style><LineStyle>";
+				kmlStr += "<color>" + colorStr + "</color>";
+				kmlStr += "<width>2</width>";
+				kmlStr += "</LineStyle></Style></Placemark>\n";
+				out.write(kmlStr);
 			}
+
+			out.write("</Document></kml>");
 			out.close();
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
+			System.err.println("Error Code: " + error);
 		}
-		System.out.println("create adj list finish!");
+		System.out.println("generate pattern kml finish!");
 	}
 	
-	private static void buildAdjList() {
-		System.out.println("build adj list...");
-		for(int i = 0; i < CALinkList.size(); i++) {
-			CALinkInfo CALink = CALinkList.get(i);
-			int fromNodeId = CALink.getFromNodeId();
-			int toNodeId = CALink.getToNodeId();
-			if(!AdjList.containsKey(fromNodeId)) {
-				ArrayList<Integer> toList = new ArrayList<Integer>();
-				toList.add(toNodeId);
-				AdjList.put(fromNodeId, toList);
-			}
-			else {
-				ArrayList<Integer> toList = AdjList.get(fromNodeId);
-				toList.add(toNodeId);
-			}
-			String nodesStr = fromNodeId + "-" + toNodeId;
-			nodesToLink.put(nodesStr, CALink);
-		}
-		System.out.println("build adj list finish!");
+	private static String getColor(double speed) {
+		if (speed < 10) // blue
+			return "64000000";
+		else if (speed >= 10 && speed < 25) // red
+			return "FF1400FF";
+		else if (speed >= 25 && speed < 50) // yellow
+			return "FF14F0FF";
+		else if (speed >= 50) // green
+			return "#FF00FF14";
+		return "#FFFFFFFF";
 	}
 	
-	private static void fetchPattern() {
-		System.out.println("fetch pattern...");
-		int debug = 0;
+	private static void findLinkPath() {
+		System.out.println("find link path...");
+		for (int i = 0; i < linkList.size(); i++) {
+			LinkInfo link = linkList.get(i);
+			if (link.getFuncClass() == 1 || link.getFuncClass() == 2) {
+				pathList.add(link);
+			}
+		}
+		System.out.println("find link path finish!");
+	}
+	
+	public static void readAdjListFile() {
+		System.out.println("read adjlist file...");
+		int i = 0;
 		try {
-			Connection con = null;
-			String sql = null;
-			PreparedStatement pstatement = null;
-			ResultSet res = null;
-			
-			con = getConnection();
-			
-			for(int i = 0; i < CALinkList.size(); i++) {
-				debug++;
-				
-				CALinkInfo CALink = CALinkList.get(i);
-				String tmcCode = CALink.getTmcCode();
-				
-				double[] avgArrayWeekday = null;
-				double[] avgArrayWeekend = null;
-				
-				if(tmcCacheWeekday.containsKey(tmcCode)) {// search in cache
-					avgArrayWeekday = tmcCacheWeekday.get(tmcCode);
-					avgArrayWeekend = tmcCacheWeekend.get(tmcCode);
-				}
-				else {// search in database
-					sql = "SELECT * FROM tmc_monthly_5min WHERE tmc_path_id = '" + tmcCode + "'";
-					
-					pstatement = con.prepareStatement(sql,
-							ResultSet.TYPE_SCROLL_INSENSITIVE,
-							ResultSet.CONCUR_READ_ONLY);
-					res = pstatement.executeQuery();
-					
-					avgArrayWeekday = new double[288];
-					avgArrayWeekend = new double[288];
-					
-					while (res.next()) {
-						int minute = shiftFromUTCtoPDT(res.getInt("minute"));
-						double avgSpeed = res.getDouble("avg_speed");
-						boolean weekday = res.getBoolean("weekday");
-						int index = minute / 5;
-						if(weekday) {
-							// weekday
-							avgArrayWeekday[index] = avgSpeed;
-						}
-						else {
-							// weekend
-							avgArrayWeekend[index] = avgSpeed;
-						}
-					}
-					tmcCacheWeekday.put(tmcCode, avgArrayWeekday);
-					tmcCacheWeekend.put(tmcCode, avgArrayWeekend);
-				}
-				
-				CALink.setAverageSpeedArrayWeekday(avgArrayWeekday);
-				CALink.setAverageSpeedArrayWeekend(avgArrayWeekend);
-				
-				if (i % 250 == 0) {
-					// reconnect
-					con = null;
-					pstatement = null;
-					res = null;
-					con = getConnection();
-					
-					System.out.println((double)i / CALinkList.size() * 100 + "% finish!");
-				}
-				
-			}
-			
-			res.close();
-			pstatement.close();
-			con.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("Error Code: " + debug);
-		}
-		System.out.println("fetch pattern finish!");
-	}
-	
-	private static int shiftFromUTCtoPDT(int utc) {
-		return (utc - 420 + 1440) % 1440;
-	}
-
-	private static void readLinkFileCA() {
-		System.out.println("read link file...");
-		int debug = 0;
-		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + linkFileCA);
+			FileInputStream fstream = new FileInputStream(generatedFileRoot + "/" + adjListFile);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
-			
 			while ((strLine = br.readLine()) != null) {
-				debug++;
-				String[] nodes = strLine.split("\\|\\|");
-				int linkId = Integer.parseInt(nodes[0]);
-				//int networkId = Integer.parseInt(nodes[1]);
-				int linkClass = Integer.parseInt(nodes[1]);
-				//boolean rampFlag = getBooleanFromStr(nodes[2]);
-				//boolean internalFlag = getBooleanFromStr(nodes[4]);
-				//boolean activeFlag = getBooleanFromStr(nodes[5]);
-				int fromNodeIdNew = Integer.parseInt(nodes[2]);
-				int toNodeIdNew = Integer.parseInt(nodes[3]);
-				//double linkLengthKm = Double.parseDouble(nodes[8]);
-				//int primaryRoadwayId = Integer.parseInt(nodes[9]);
-				//String linkDesc = nodes[10];
-				//String fromDesc = nodes[11];
-				//String toDesc = nodes[12];
-				//double speedLimitKmh = Double.parseDouble(nodes[13]);
-				PairInfo startLoc = getPairFromStr(nodes[4]);
-				PairInfo endLoc = getPairFromStr(nodes[5]);
-				//PairInfo minLoc = getPairFromStr(nodes[16]);
-				//PairInfo maxLoc = getPairFromStr(nodes[17]);
-				ArrayList<PairInfo> pathPoints = getPairListFromStr(nodes[6]);
-				//double fromProjCompassAngle = Double.parseDouble(nodes[19]);
-				//double toProjCompassAngle = Double.parseDouble(nodes[20]);
-				//String sourceId = nodes[21];
-				//String sourceRef = nodes[22];
-				String tmcCode = nodes[7];
+				i++;
+				if (strLine.equals("NA")) {
+					continue;
+				}
 
-				//CALinkInfo CALink = new CALinkInfo(linkId, networkId,
-				//	linkClass, rampFlag, internalFlag, activeFlag,
-				//	fromNodeIdNew, toNodeIdNew, linkLengthKm, primaryRoadwayId,
-				//	linkDesc, fromDesc, toDesc, speedLimitKmh, startLoc,
-				//	endLoc, minLoc, maxLoc, pathPoints,
-				//	fromProjCompassAngle, toProjCompassAngle, sourceId,
-				//	sourceRef, tmcCode);
-				
-				CALinkInfo CALink = new CALinkInfo(linkId, linkClass, fromNodeIdNew, toNodeIdNew, 
-						startLoc, endLoc,  pathPoints, tmcCode);
+				String[] strList = strLine.split(";");
+				for (int j = 0; j < strList.length; j++) {
+					String[] nodes = strList[j].split(":");
+					String[] headList = nodes[0].split("\\(");
+					String nrefNode = headList[0].substring(1);
+					String[] timeList = nodes[1].split(",");
 
-				CALinkList.add(CALink);
-				CALinkMap.put(linkId, CALink);
-				
-				if (debug % 100000 == 0)
-					System.out.println("record " + debug + " finish!");
+					int refNodeId = i - 1;
+
+					String nodeId = refNodeId + "," + nrefNode;
+
+					LinkInfo link = nodesStrToLink.get(nodeId);
+					
+					if (link == null) {
+						nodeId = nrefNode+ "," + refNodeId;
+						link = nodesStrToLink.get(nodeId);
+					}
+					
+					if(link != null) {
+						double[] speedArray = new double[60];
+						for (int k = 0; k < 60; k++) {
+							PairInfo[] pairNodes = link.getNodes();
+							double dis = DistanceCalculator.CalculationByDistance(pairNodes[0], pairNodes[1]);
+							double speed = dis / Double.parseDouble(timeList[k]) * 60 * 60 * 1000;
+							speedArray[k] = speed;
+						}
+						linkPatternMap.put(link, speedArray);
+					}
+				}
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			System.err.println("Error Code: " + debug);
+			System.err.println("Error Code: " + i);
+		}
+		System.out.println("read adjlist file finish!");
+	}
+	
+	public static void readLinkFile() {
+		System.out.println("read link file...");
+		try {
+			FileInputStream fstream = new FileInputStream(generatedFileRoot + "/" + edgeFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			while ((strLine = br.readLine()) != null) {
+				String[] nodes = strLine.split(",");
+				//String linkId = nodes[0];
+				int linkId = Integer.parseInt(nodes[0]);
+				int funClass = Integer.parseInt(nodes[1]);
+				String name = nodes[2];
+				int refId = Integer.parseInt(nodes[3].substring(1));
+				int nrefId = Integer.parseInt(nodes[4].substring(1));
+				
+				String idStr = Integer.toString(linkId) + Integer.toString(refId) + Integer.toString(nrefId);
+				PairInfo[] pairNodes = new PairInfo[2];
+				pairNodes[0] = new PairInfo(Double.parseDouble(nodes[5]),
+						Double.parseDouble(nodes[6]));
+				pairNodes[1] = new PairInfo(Double.parseDouble(nodes[7]),
+						Double.parseDouble(nodes[8]));
+
+				LinkInfo link = new LinkInfo(idStr, linkId, funClass, name, refId, nrefId, pairNodes, 2);
+				linkList.add(link);
+				linkMap.put(idStr, link);
+				String nodeId = refId + "," + nrefId;
+				nodesStrToLink.put(nodeId, link);
+				nodeId = nrefId + "," + refId;
+				nodesStrToLink.put(nodeId, link);
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
 		}
 		System.out.println("read link file finish!");
-	}
-
-	private static ArrayList<PairInfo> getPairListFromStr(String str) {
-		String[] nodes = str.split(";");
-		ArrayList<PairInfo> pairList = new ArrayList<PairInfo>();
-		for (int i = 0; i < nodes.length; i++) {
-			PairInfo pair = getPairFromStr(nodes[i]);
-			pairList.add(pair);
-		}
-		return pairList;
-	}
-
-	private static PairInfo getPairFromStr(String str) {
-		String[] nodes = str.split(",");
-		PairInfo pair = new PairInfo(Double.parseDouble(nodes[0]), Double.parseDouble(nodes[1]));
-		return pair;
-	}
-
-	private static boolean getBooleanFromStr(String str) {
-		if(str.equals("true"))
-			return true;
-		else
-			return false;
-	}
-
-	private static void readNodeFileCA() {
-		System.out.println("read node file...");
-		int debug = 0;
-		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + nodeFileCA);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine;
-			
-			while ((strLine = br.readLine()) != null) {
-				debug++;
-				String[] nodes = strLine.split("\\|\\|");
-				int nodeId = Integer.parseInt(nodes[0]);
-				int newNodeId = Integer.parseInt(nodes[1]);
-				//int networkId = Integer.parseInt(nodes[2]);
-				//String nodeType = nodes[3];
-				//int minLinkClass = Integer.parseInt(nodes[4]);
-				//String nodeName = nodes[5];
-				String locationStr = nodes[2];
-				String[] locNode = locationStr.split(",");
-				double lat = Double.parseDouble(locNode[0]);
-				double lng = Double.parseDouble(locNode[1]);
-				PairInfo location = new PairInfo(lat, lng);
-				//String sourceId1 = nodes[7];
-				//String sourceRef1 = nodes[8];
-				
-				//CANodeInfo CANode = new CANodeInfo(nodeId, newNodeId,
-				//	networkId, nodeType, minLinkClass, nodeName, location,
-				//	sourceId1, sourceRef1);
-				
-				CANodeInfo CANode = new CANodeInfo(nodeId, newNodeId, location);
-				
-				CANodeList.add(CANode);
-				CANodeMap.put(newNodeId, CANode);
-				if (debug % 100000 == 0)
-					System.out.println("record " + debug + " finish!");
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("Error Code: " + debug);
-		}
-		System.out.println("read node file finish!");
-	}
-	
-	private static Connection getConnection() {
-		try {
-			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-			connHome = DriverManager.getConnection(urlHome, userName, password);
-			return connHome;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return connHome;
 	}
 }
