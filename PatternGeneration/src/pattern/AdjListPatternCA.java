@@ -58,12 +58,13 @@ public class AdjListPatternCA {
 		fetchPattern();
 		buildAdjList();
 		// weekday
-		createAdjList(true);
+		createAdjList(true, 1);
 		// weekend
-		createAdjList(false);
+		createAdjList(false, 1);
 	}
 	
-	private static void createAdjList(boolean weekday) {
+	// interval: 1 for every 5 min, 3 for every 15 min
+	private static void createAdjList(boolean weekday, int interval) {
 		System.out.println("create adj list...");
 		try {
 			FileWriter fstream = new FileWriter(root + "/" + (weekday ? adjlistFileWeekdayCA : adjlistFileWeekendCA));
@@ -86,10 +87,9 @@ public class AdjListPatternCA {
 						double dis = DistanceCalculator.CalculationByDistance(CALink.getStartLoc(), CALink.getEndLoc());
 						double[] speedArray = weekday ? CALink.getAverageSpeedArrayWeekday() : CALink.getAverageSpeedArrayWeekend();
 						// time from 06:00 to 20:55 , every 5 min, index from 72 to 251
-						// if want every 15 min, change t++ to t+=3
-						for(int t = 72; t <= 251; t++) {
+						for(int t = 72; t <= 251; t += interval) {
 							double speed = speedArray[t];
-							long costTime = Math.round(dis / speed * 60 * 60 * 1000);
+							long costTime = Math.round(dis / speed * 60 * 60);
 							if(costTime == 0)
 								costTime = 1;
 							strLine += costTime;
