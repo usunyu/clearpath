@@ -109,7 +109,8 @@ public class AdjListPatternCA {
 								if(costTime == 0)
 									costTime = 1;
 								strLine += costTime;
-								strLine += (t == 251 ? ";" : ",");
+								
+								strLine += ((t + interval) > 251 ? ";" : ",");
 							}
 						}
 					}
