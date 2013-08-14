@@ -219,6 +219,9 @@ public class AdjListPatternCA {
 			}
 			
 			res.close();
+			
+			
+			
 			pstatement.close();
 			con.close();
 		} catch (Exception e) {
