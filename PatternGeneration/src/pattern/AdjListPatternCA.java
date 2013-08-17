@@ -22,6 +22,8 @@ public class AdjListPatternCA {
 	// for write adjlist
 	static String adjlistFileWeekdayCA = "CA_AdjList_Weekday.txt";
 	static String adjlistFileWeekendCA = "CA_AdjList_Weekend.txt";
+	// for write tmc avg travel time
+	static String tmcAvgTravelTimeCA = "CA_Avg_Travel_Time.txt";
 	/**
 	 * @param database
 	 */
@@ -56,12 +58,40 @@ public class AdjListPatternCA {
 		// TODO Auto-generated method stub
 		readNodeFileCA();
 		readLinkFileCA();
+		readAvgTravelTimeCA();
 		fetchPattern();
 		buildAdjList();
 		// weekday
 		createAdjList(true, 3);
 		// weekend
 		createAdjList(false, 3);
+	}
+	
+	private static void readAvgTravelTimeCA() {
+		System.out.println("read avg travel time...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + tmcAvgTravelTimeCA);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split("\\|\\|");
+				String tmcCode = nodes[0];
+				int avgTravelTime = Integer.parseInt(nodes[1]);
+				tmcAvgTravelTime.put(tmcCode, avgTravelTime);
+				if (debug % 10000 == 0)
+					System.out.println("record " + debug + " finish!");
+			}
+			br.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("Error Code: " + debug);
+		}
+		System.out.println("read avg travel time finish!");
 	}
 	
 	// interval: 1 for every 5 min, 3 for every 15 min
@@ -288,6 +318,7 @@ public class AdjListPatternCA {
 				if (debug % 100000 == 0)
 					System.out.println("record " + debug + " finish!");
 			}
+			br.close();
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -356,6 +387,7 @@ public class AdjListPatternCA {
 				if (debug % 100000 == 0)
 					System.out.println("record " + debug + " finish!");
 			}
+			br.close();
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
