@@ -44,6 +44,7 @@ public class AdjListPatternCA {
 	 */
 	static HashMap<String, double[]> tmcCacheWeekday = new HashMap<String, double[]>();
 	static HashMap<String, double[]> tmcCacheWeekend = new HashMap<String, double[]>();
+	static HashMap<String, Integer> tmcAvgTravelTime = new HashMap<String, Integer>();
 	/**
 	 * @param connect
 	 */

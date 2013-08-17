@@ -19,6 +19,8 @@ public class InputFileGenerationCA {
 	static String linkFileCA = "CA_Link.txt";
 	// for write node file
 	static String nodeFileCA = "CA_Node.txt";
+	// for write tmc avg travel time
+	static String tmcAvgTravelTimeCA = "CA_Avg_Travel_Time.txt";
 	/**
 	 * @param database
 	 */
@@ -35,16 +37,90 @@ public class InputFileGenerationCA {
 	 */
 	static ArrayList<CANodeInfo> CANodeList = new ArrayList<CANodeInfo>();
 	static HashMap<Integer, Integer> oldToNewNodeMap = new HashMap<Integer, Integer>();
+	/**
+	 * @param pattern
+	 */
+	static ArrayList<String> tmcCodeList = new ArrayList<String>();
+	static HashMap<String, Long> tmcAvgTravelTimeMap = new HashMap<String, Long>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//fetchNodeCA();
 		//writeNodeFileCA();
 		
-		readNodeFileCA();
+		//readNodeFileCA();
 		
-		fetchLinkCA();
-		writeLinkFileCA();
+		//fetchLinkCA();
+		//writeLinkFileCA();
+		
+		fetchAvgTravelTimeCA();
+		writeAvgTravelTimeCA();
+	}
+	
+	private static void writeAvgTravelTimeCA() {
+		System.out.println("write avg travel time...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + tmcAvgTravelTimeCA);
+			BufferedWriter out = new BufferedWriter(fstream);
+			for (int i = 0; i < tmcCodeList.size(); i++) {
+				String tmcCode = tmcCodeList.get(i);
+				
+				long avgTravelTime = tmcAvgTravelTimeMap.get(tmcCode);
+				
+				String strLine = tmcCode + "||" + avgTravelTime + "\r\n";
+				
+				out.write(strLine);
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("write avg travel time finish!");
+	}
+	
+	private static void fetchAvgTravelTimeCA() {
+		System.out.println("fetch avg travel time...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+
+			con = getConnection();
+
+			sql = "SELECT tmc_path_id, AVG(avg_travel_time) FROM tmc_monthly_5min GROUP BY tmc_path_id";
+
+			pstatement = con.prepareStatement(sql,
+					ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+
+			while (res.next()) {
+				debug++;
+
+				String tmcCode = res.getString(1);
+				
+				tmcCodeList.add(tmcCode);
+				
+				double avgTravelTime = res.getDouble(2);
+				long avgTravelTimeRound = Math.round(avgTravelTime * 60);
+				
+				tmcAvgTravelTimeMap.put(tmcCode, avgTravelTimeRound);
+				
+				if (debug % 1000 == 0)
+					System.out.println("record " + debug + " finish!");
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("Error Code: " + debug);
+		}
+		System.out.println("fetch avg travel time finish!");
 	}
 
 	private static void writeLinkFileCA() {
