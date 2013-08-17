@@ -125,7 +125,8 @@ public class AdjListPatternCA {
 							long costTime = Math.round(dis / 10 * 60 * 60);
 							if(costTime == 0)
 								costTime = 1;
-							strLine += costTime + ";";
+							//strLine += costTime + ";";
+							strLine += costTime + ",";
 						}
 						else {
 							strLine += "n" + toNodeId + "(V):";
@@ -139,11 +140,15 @@ public class AdjListPatternCA {
 								long costTime = Math.round(dis / speed * 60 * 60);
 								if(costTime == 0)
 									costTime = 1;
-								strLine += costTime;
+								strLine += costTime + ",";
 								
-								strLine += ((t + interval) > 251 ? ";" : ",");
+								//strLine += ((t + interval) > 251 ? ";" : ",");
 							}
 						}
+						
+						// add static value
+						strLine += "(S):" + CALink.getAvgTravelTime() + ";";
+						
 					}
 				}
 				strLine += "\r\n";
@@ -236,6 +241,8 @@ public class AdjListPatternCA {
 				
 				CALink.setAverageSpeedArrayWeekday(avgArrayWeekday);
 				CALink.setAverageSpeedArrayWeekend(avgArrayWeekend);
+				
+				CALink.setAvgTravelTime(tmcAvgTravelTime.get(tmcCode));
 				
 				if (i % 250 == 0) {
 					// reconnect

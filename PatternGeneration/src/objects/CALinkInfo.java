@@ -35,6 +35,7 @@ public class CALinkInfo {
 	double[] minSpeedArrayWeekend;
 	double[] maxSpeedArrayWeekend;
 	double[] averageSpeedArrayWeekend;
+	int avgTravelTime;
 
 	public CALinkInfo(int linkId, int networkId, int linkClass,
 			boolean rampFlag, boolean internalFlag, boolean activeFlag,
@@ -83,6 +84,14 @@ public class CALinkInfo {
 		this.endLoc = endLoc;
 		this.pathPoints = pathPoints;
 		this.tmcCode = tmcCode;
+	}
+	
+	public void setAvgTravelTime(int time) {
+		avgTravelTime = time;
+	}
+	
+	public int getAvgTravelTime() {
+		return avgTravelTime;
 	}
 
 	public void setMinSpeedArrayWeekday(double[] array) {
