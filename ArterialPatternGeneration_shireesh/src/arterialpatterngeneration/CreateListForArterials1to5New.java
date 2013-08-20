@@ -140,7 +140,7 @@ public class CreateListForArterials1to5New {
 	public static double approximation2(LinkInfo link, double v) {
 		int func_class = link.getFunc_class();
 		double penalty = 0.8;
-		if(func_class == 3 || func_class == 5)
+		if(func_class == 3 || func_class == 4)
 			return v * penalty;
 		else
 			return v;
