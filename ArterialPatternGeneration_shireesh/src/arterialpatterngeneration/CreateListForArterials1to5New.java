@@ -133,10 +133,17 @@ public class CreateListForArterials1to5New {
 
 		// penalty *= 0.85;
 
-		return penalty
-				* speedcat.get(Integer.parseInt(links_funcAndspeedcat.get(
-						link.getLinkId()).split(",")[1]));
+		return penalty * speedcat.get(Integer.parseInt(links_funcAndspeedcat.get(link.getLinkId()).split(",")[1]));
 
+	}
+	
+	public static double approximation2(LinkInfo link, double v) {
+		int func_class = link.getFunc_class();
+		double penalty = 0.8;
+		if(func_class == 3 || func_class == 5)
+			return v * penalty;
+		else
+			return v;
 	}
 
 	public static void getlinksFuncAndSpeedcatInfo() {
@@ -214,42 +221,9 @@ public class CreateListForArterials1to5New {
 				for (int k = 0; k < 60; k++) {
 					double avg = 0.0;
 					int count_valid = 0;
-					/*
-					 * for(j = 0;j<count;j++) { try{
-					 * 
-					 * if(links_speed.get(index).containsKey(link.sensors.get(j))
-					 * )
-					 * avg+=links_speed.get(index).get(link.sensors.get(j))[k];
-					 * 
-					 * }catch(Exception e){ System.out.println("error");
-					 * System.out
-					 * .println("index = "+index+" k= "+k+" sensorid = "
-					 * +link.sensors.get(j));
-					 * if(links_speed.get(index).get(link.sensors.get(j))==null)
-					 * System.out.println("error"); else{ for(int g=0;g<60;g++)
-					 * System
-					 * .out.println(g+": "+links_speed.get(index).get(link.
-					 * sensors.get(j))[k]); } }
-					 * 
-					 * 
-					 * if(links_speed.get(index).get(link.sensors.get(j))[k]>0.)
-					 * count_valid++;
-					 * 
-					 * }
-					 * 
-					 * 
-					 * if(avg!=0.0){ avg/=count_valid; avg *= 0.85; //Double
-					 * TravelTime = distance / avg * 60; //out.write(k + "," +
-					 * avg + "," + TravelTime); //out.write("\n");
-					 * out.write(avg+","); } else { double sudu =
-					 * approximation(link,k); if(sudu>0.){ //out.write(k + "," +
-					 * sudu + "," + distance / sudu * 60.); //out.write("\n");
-					 * out.write(sudu+","); } else{ out.write("Average");
-					 * //out.write("\n"); //out.close(); //fstream.close();
-					 * break; } }
-					 */
 
 					double sudu = approximation(link, k);
+					sudu = approximation2(link, sudu);
 					if (sudu > 0.) {
 						// out.write(k + "," + sudu + "," + distance / sudu *
 						// 60.);
