@@ -5,8 +5,6 @@ import java.sql.*;
 import java.text.*;
 import java.util.*;
 
-import org.jfree.data.time.Month;
-
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 import objects.*;
