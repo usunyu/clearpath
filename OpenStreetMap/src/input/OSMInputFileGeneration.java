@@ -68,7 +68,6 @@ public class OSMInputFileGeneration {
 				debug++;
 				WayInfo wayInfo = wayArrayList.get(i);
 				long wayId = wayInfo.getWayId();
-				int version = wayInfo.getVersion();
 				String name = wayInfo.getName();
 				ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
 				String nodeListStr = "";
@@ -78,7 +77,7 @@ public class OSMInputFileGeneration {
 						nodeListStr += ",";
 				}
 				
-				String strLine = wayId + "||" + version + "||" + name + "||" + nodeListStr + "\r\n";
+				String strLine = wayId + "||" + name + "||" + nodeListStr + "\r\n";
 				
 				out.write(strLine);
 			}
@@ -134,7 +133,6 @@ public class OSMInputFileGeneration {
 					Element element = (Element) node;
 					
 					long wayId = Long.parseLong(element.getAttribute("id"));
-					int version = Integer.parseInt(element.getAttribute("version"));
 					String name = "null";
 					ArrayList<Long> localNodeArrayList = new ArrayList<Long>();
 					
@@ -163,7 +161,7 @@ public class OSMInputFileGeneration {
 						}
 					}
 					
-					WayInfo wayInfo = new WayInfo(wayId, version, name, localNodeArrayList);
+					WayInfo wayInfo = new WayInfo(wayId, name, localNodeArrayList);
 					
 					wayArrayList.add(wayInfo);
 				}

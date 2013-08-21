@@ -783,6 +783,7 @@ public class Osm2Wkt {
 				wktstream.append("\n");
 			}
 
+			/*
 			for(Vector<Long> s : streets.values()){
 				wktstream.append(WKT_TAG_BEGIN);
 
@@ -794,6 +795,26 @@ public class Osm2Wkt {
 				}
 
 				wktstream.append(WKT_TAG_END + WKT_TAG_BREAK);
+			}
+			*/
+			
+			/* Yu Sun Modify */
+			for (int i=0; i < streets.size(); i++) {
+				
+				Long wayId = (Long)streets.keySet().toArray()[i];
+				wktstream.append(wayId + "||");
+				Vector<Long> s = streets.get(wayId);
+				
+				String refStr = "";
+				for(int j = 0; j < s.size(); j++) {
+					Long l = s.elementAt(j);
+					Landmark mark = landmarks.get(l);
+					refStr += mark.id;
+					if(j < s.size() - 1)
+						refStr += ",";
+				}
+				wktstream.append(refStr);
+				wktstream.append("\r\n");
 			}
 
 			wktstream.close();
