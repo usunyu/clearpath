@@ -68,6 +68,8 @@ public class OSMInputFileGeneration {
 				debug++;
 				WayInfo wayInfo = wayArrayList.get(i);
 				long wayId = wayInfo.getWayId();
+				int version = wayInfo.getVersion();
+				String name = wayInfo.getName();
 				ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
 				String nodeListStr = "";
 				for(int j = 0; j < localNodeArrayList.size(); j++) {
@@ -76,7 +78,7 @@ public class OSMInputFileGeneration {
 						nodeListStr += ",";
 				}
 				
-				String strLine = wayId + "||" + nodeListStr + "\r\n";
+				String strLine = wayId + "||" + version + "||" + name + "||" + nodeListStr + "\r\n";
 				
 				out.write(strLine);
 			}
@@ -132,6 +134,8 @@ public class OSMInputFileGeneration {
 					Element element = (Element) node;
 					
 					long wayId = Long.parseLong(element.getAttribute("id"));
+					int version = Integer.parseInt(element.getAttribute("version"));
+					String name = "null";
 					ArrayList<Long> localNodeArrayList = new ArrayList<Long>();
 					
 					if(node.hasChildNodes()) {
@@ -146,11 +150,20 @@ public class OSMInputFileGeneration {
 									long nodeId = Long.parseLong(eChildElement.getAttribute("ref"));
 									localNodeArrayList.add(nodeId);
 								}
+								if(child.getNodeName().equals("tag")) {
+									Element eChildElement = (Element) child;
+									
+									String kAttr = eChildElement.getAttribute("k");
+									
+									if(kAttr.equals("name")) {
+										name = eChildElement.getAttribute("v");
+									}
+								}
 							}
 						}
 					}
 					
-					WayInfo wayInfo = new WayInfo(wayId, localNodeArrayList);
+					WayInfo wayInfo = new WayInfo(wayId, version, name, localNodeArrayList);
 					
 					wayArrayList.add(wayInfo);
 				}

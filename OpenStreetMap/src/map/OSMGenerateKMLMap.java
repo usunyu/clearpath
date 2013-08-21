@@ -45,11 +45,20 @@ public class OSMGenerateKMLMap {
 				debug++;
 				WayInfo wayInfo = wayArrayList.get(i);
 				long wayId = wayInfo.getWayId();
+				int version = wayInfo.getVersion();
+				String name = wayInfo.getName();
 				ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
 				
 				String kmlStr = "<Placemark><name>Way:" + wayId + "</name>";
 				kmlStr += "<description>";
-				kmlStr += wayId;
+				kmlStr += "version:" + version + "\r\n";
+				kmlStr += "name:" + name + "\r\n";
+				kmlStr += "ref:\r\n";
+				for(int j = 0; j < localNodeArrayList.size(); j++) {
+					long NodeId = localNodeArrayList.get(j);
+					kmlStr += NodeId + "\r\n";
+				}
+				kmlStr += "\r\n";
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
 				for(int j = 0; j < localNodeArrayList.size(); j++) {
@@ -86,14 +95,16 @@ public class OSMGenerateKMLMap {
 				debug++;
 				String[] splitted = strLine.split("\\|\\|");
 				int wayId = Integer.parseInt(splitted[0]);
-				String nodeListStr = splitted[1];
+				int version = Integer.parseInt(splitted[1]);
+				String name = splitted[2];
+				String nodeListStr = splitted[3];
 				String[] nodeList = nodeListStr.split(",");
 				ArrayList<Long> localNodeArrayList = new ArrayList<Long>(); 
 				for(int i = 0; i < nodeList.length; i++) {
 					long nodeId = Long.parseLong(nodeList[i]);
 					localNodeArrayList.add(nodeId);
 				}
-				WayInfo wayInfo = new WayInfo(wayId, localNodeArrayList);
+				WayInfo wayInfo = new WayInfo(wayId, version, name, localNodeArrayList);
 				wayArrayList.add(wayInfo);
 			}
 			br.close();
