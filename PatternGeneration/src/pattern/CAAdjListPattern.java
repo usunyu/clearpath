@@ -9,7 +9,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 import objects.*;
 
-public class AdjListPatternCA {
+public class CAAdjListPattern {
 
 	/**
 	 * @param file

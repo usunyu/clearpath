@@ -1,9 +1,9 @@
 package object;
 
-public class Location {
+public class LocationInfo {
 	double latitude, longitude;
 	
-	public Location(double latitude, double longitude) {
+	public LocationInfo(double latitude, double longitude) {
 		this.latitude = latitude;
 		this.longitude = longitude;
 	}
