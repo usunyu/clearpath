@@ -65,7 +65,7 @@ public class CreateListForHighways1to5New {
 	// "H:\\clearp\\links_all.csv";
 	// private static String [] days =
 	// {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
-	private static String[] days = { "Friday" };
+	private static String[] days = { "Tuesday" };
 
 	static HashMap<Integer, String> sensors_stNames = new HashMap<Integer, String>();
 	static HashMap<String, Integer> LinkDirection = new HashMap<String, Integer>();
