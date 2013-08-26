@@ -57,6 +57,10 @@ public class Osm2Wkt {
 	private final static String WKT_TAG_MARKSEP1 = ",";
 	private final static String WKT_TAG_MARKSEP2 = " ";
 
+	/* Yu Sun Modify */
+	static ArrayList<Long> extraPointsArrayList = new ArrayList<Long>();
+	static HashMap<Long, Landmark> extraPointsHashMap = new HashMap<Long, Landmark>();
+
 	private WeightedPseudograph<Long, DefaultWeightedEdge> weightedGraph;
 	private WeightedPseudograph<Long, DefaultWeightedEdge> testweightedGraph;
 	private HashSet<Long> fixCompletenessAddedLandmarks = new HashSet<Long>();
@@ -439,6 +443,12 @@ public class Osm2Wkt {
 									streetPointsB.add(indexB, crossing.id);
 									//System.out.println("Adding landmark to street B");
 									changed = true;
+								}
+
+								/* Yu Sun Modify */
+								if(!extraPointsArrayList.contains(crossing.id)) {
+									extraPointsArrayList.add(crossing.id);
+									extraPointsHashMap.put(crossing.id, crossing);
 								}
 
 								if(changed){
@@ -826,6 +836,29 @@ public class Osm2Wkt {
 		}
 
 		System.out.println("writing wkt file done");
+		
+		System.out.println("writing extra points file ...");
+		try {
+			String extrafile = "extra." + FILE_EXT_WKTS;
+			File wkt = new File(extrafile);
+			if(!append){
+				if(wkt.exists()) wkt.delete();
+				wkt.createNewFile();
+			}
+			FileWriter wktstream = new FileWriter(wkt, append);
+			for (int i=0; i < extraPointsArrayList.size(); i++) {
+				long nodeId = extraPointsArrayList.get(i);
+				Landmark point = extraPointsHashMap.get(nodeId);
+				wktstream.append(nodeId + "||" + point.latitude + "," + point.longitude);
+				wktstream.append("\r\n");
+			}
+			wktstream.close();
+		} catch (Exception e) {
+			System.out.println("writing extra points file failed: " + e.getLocalizedMessage());
+			e.printStackTrace();
+			return false;
+		}
+		System.out.println("writing extra points file done");
 		return true;
 	}
 
