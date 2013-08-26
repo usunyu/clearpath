@@ -60,6 +60,7 @@ public class Osm2Wkt {
 	/* Yu Sun Modify */
 	static ArrayList<Long> extraPointsArrayList = new ArrayList<Long>();
 	static HashMap<Long, Landmark> extraPointsHashMap = new HashMap<Long, Landmark>();
+	/* * * * * * * * */
 
 	private WeightedPseudograph<Long, DefaultWeightedEdge> weightedGraph;
 	private WeightedPseudograph<Long, DefaultWeightedEdge> testweightedGraph;
@@ -450,6 +451,7 @@ public class Osm2Wkt {
 									extraPointsArrayList.add(crossing.id);
 									extraPointsHashMap.put(crossing.id, crossing);
 								}
+								/* * * * * * * * */
 
 								if(changed){
 									missingLandmarks++;
@@ -826,6 +828,7 @@ public class Osm2Wkt {
 				wktstream.append(refStr);
 				wktstream.append("\r\n");
 			}
+			/* * * * * * * * */
 
 			wktstream.close();
 
@@ -837,6 +840,7 @@ public class Osm2Wkt {
 
 		System.out.println("writing wkt file done");
 		
+		/* Yu Sun Modify */
 		System.out.println("writing extra points file ...");
 		try {
 			String extrafile = "extra." + FILE_EXT_WKTS;
@@ -859,6 +863,7 @@ public class Osm2Wkt {
 			return false;
 		}
 		System.out.println("writing extra points file done");
+		/* * * * * * * * */
 		return true;
 	}
 
