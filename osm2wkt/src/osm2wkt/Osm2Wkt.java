@@ -843,7 +843,7 @@ public class Osm2Wkt {
 		/* Yu Sun Modify */
 		System.out.println("writing extra points file ...");
 		try {
-			String extrafile = "extra." + FILE_EXT_WKTS;
+			String extrafile = "file/extra." + FILE_EXT_WKTS;
 			File wkt = new File(extrafile);
 			if(!append){
 				if(wkt.exists()) wkt.delete();
