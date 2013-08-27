@@ -562,7 +562,7 @@ public class Osm2Wkt {
 	/* Yu Sun Modify */
 	/* source http://rbrundritt.wordpress.com/2008/10/20/approximate-points-of-intersection-of-two-line-segments/ */
 	private Landmark SimplePolylineIntersection(Landmark latlong1,Landmark latlong2,Landmark latlong3,Landmark latlong4) {
-	    //Line segment 1 (p1, p2)
+		//Line segment 1 (p1, p2)
 	    double A1 = latlong2.latitude - latlong1.latitude;
 	    double B1 = latlong1.longitude - latlong2.longitude;
 	    double C1 = A1*latlong1.longitude + B1*latlong1.latitude;
@@ -580,19 +580,44 @@ public class Osm2Wkt {
 	        double x = (B2*C1 - B1*C2)/determinate;
 	        double y = (A1*C2 - A2*C1)/determinate;
 	        
+	        // keep eight decimal
+	        BigDecimal xb = new BigDecimal(x);
+	        BigDecimal yb = new BigDecimal(y);
+	        x = xb.setScale(8, BigDecimal.ROUND_HALF_UP).doubleValue();
+	        y = yb.setScale(8, BigDecimal.ROUND_HALF_UP).doubleValue();
+	        
 	        Landmark intersect = new Landmark();
 	        intersect.latitude = y;
 	        intersect.longitude = x;
 	        
-	        //if(inBoundedBox(latlong1, latlong2, intersect) && inBoundedBox(latlong3, latlong4, intersect))
+	        if(inBoundedBox(latlong1, latlong2, intersect) && inBoundedBox(latlong3, latlong4, intersect))
 	        	intersection = intersect;
-	        //else
-	        //	intersection = null;
+	        else
+	        	intersection = null;
 	    }
 	    else //lines are parrallel
 	        intersection = null; 
 	        
 	    return intersection;
+	}
+	
+	//latlong1 and latlong2 represent two coordinates that make up the bounded box
+	//latlong3 is a point that we are checking to see is inside the box
+	public static boolean inBoundedBox(Landmark latlong1, Landmark latlong2, Landmark latlong3) {
+	    boolean betweenLats;
+	    boolean betweenLons;
+	    
+	    if(latlong1.latitude < latlong2.latitude)
+	        betweenLats = (latlong1.latitude <= latlong3.latitude && latlong2.latitude >= latlong3.latitude);
+	    else
+	        betweenLats = (latlong1.latitude >= latlong3.latitude && latlong2.latitude <= latlong3.latitude);
+		        
+	    if(latlong1.longitude < latlong2.longitude)
+	        betweenLons = (latlong1.longitude <= latlong3.longitude && latlong2.longitude >= latlong3.longitude);
+	    else
+	        betweenLons = (latlong1.longitude >= latlong3.longitude && latlong2.longitude <= latlong3.longitude);
+	    
+	    return (betweenLats && betweenLons);
 	}
 	/* * * * * * * * */
 
