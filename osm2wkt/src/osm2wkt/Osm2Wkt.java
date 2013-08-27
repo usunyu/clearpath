@@ -446,13 +446,6 @@ public class Osm2Wkt {
 									changed = true;
 								}
 
-								/* Yu Sun Modify */
-								if(!extraPointsArrayList.contains(crossing.id)) {
-									extraPointsArrayList.add(crossing.id);
-									extraPointsHashMap.put(crossing.id, crossing);
-								}
-								/* * * * * * * * */
-
 								if(changed){
 									missingLandmarks++;
 									fixCompletenessAddedLandmarks.add(crossing.id);	
@@ -551,10 +544,57 @@ public class Osm2Wkt {
 			crossing.x = x;
 			crossing.y = y;
 			landmarks.put(crossing.id, crossing);
+
+			/* Yu Sun Modify */
+			Landmark local = SimplePolylineIntersection(a1, a2, b1, b2);
+			crossing.latitude = local.latitude;
+			crossing.longitude = local.longitude;
+			if(!extraPointsArrayList.contains(crossing.id)) {
+				extraPointsArrayList.add(crossing.id);
+				extraPointsHashMap.put(crossing.id, crossing);
+			}
+			/* * * * * * * * */
 		}
 
 		return crossing;
 	}
+
+	/* Yu Sun Modify */
+	/* source http://rbrundritt.wordpress.com/2008/10/20/approximate-points-of-intersection-of-two-line-segments/ */
+	private Landmark SimplePolylineIntersection(Landmark latlong1,Landmark latlong2,Landmark latlong3,Landmark latlong4) {
+	    //Line segment 1 (p1, p2)
+	    double A1 = latlong2.latitude - latlong1.latitude;
+	    double B1 = latlong1.longitude - latlong2.longitude;
+	    double C1 = A1*latlong1.longitude + B1*latlong1.latitude;
+	    
+	    //Line segment 2 (p3,  p4)
+	    double A2 = latlong4.latitude - latlong3.latitude;
+	    double B2 = latlong3.longitude - latlong4.longitude;
+	    double C2 = A2*latlong3.longitude + B2*latlong3.latitude;
+	
+	    double determinate = A1*B2 - A2*B1;
+	
+	    Landmark intersection;
+	    if(determinate != 0)
+	    {
+	        double x = (B2*C1 - B1*C2)/determinate;
+	        double y = (A1*C2 - A2*C1)/determinate;
+	        
+	        Landmark intersect = new Landmark();
+	        intersect.latitude = y;
+	        intersect.longitude = x;
+	        
+	        //if(inBoundedBox(latlong1, latlong2, intersect) && inBoundedBox(latlong3, latlong4, intersect))
+	        	intersection = intersect;
+	        //else
+	        //	intersection = null;
+	    }
+	    else //lines are parrallel
+	        intersection = null; 
+	        
+	    return intersection;
+	}
+	/* * * * * * * * */
 
 	private boolean transformCoordinates(){
 		// in this function we have to restrict the precision we calculate the x, y coordinates
