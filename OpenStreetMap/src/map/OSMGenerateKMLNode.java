@@ -30,11 +30,12 @@ public class OSMGenerateKMLNode {
 		try {
 			FileWriter fstream = new FileWriter(root + "/" + kmlFile);
 			BufferedWriter out = new BufferedWriter(fstream);
-			String strLine = "<kml><Document>";
+
+			out.write("<kml><Document>");
 			for(int i = 0; i < nodeArrayList.size(); i++) {
 				debug++;
 				NodeInfo nodeInfo = nodeArrayList.get(i);
-				strLine += "<Placemark>";
+				String strLine = "<Placemark>";
 				strLine += "<name>" + nodeInfo.getNodeId() + "</name>";
 				strLine += "<description>";
 				strLine += "Id:" + nodeInfo.getNodeId();
@@ -44,11 +45,9 @@ public class OSMGenerateKMLNode {
 				strLine += ",0</coordinates></Point>";
 				strLine += "</Placemark>";
 				
-				if(i % 1000 == 0)
-					System.out.println((double)i / nodeArrayList.size() * 100 + "%");
+				out.write(strLine);
 			}
-			strLine += "</Document></kml>";
-			out.write(strLine);
+			out.write("</Document></kml>");
 			out.close();
 			fstream.close();
 		} catch (Exception e) {

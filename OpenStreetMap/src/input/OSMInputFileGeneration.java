@@ -23,6 +23,7 @@ public class OSMInputFileGeneration {
 	static String osmFile = "map.osm";
 	static String nodeTxtFile = "osm_node.txt";
 	static String wayTxtFile = "osm_way.txt";
+	static String extraNodeFile = "extra.wkts";
 	/**
 	 * @param node
 	 */
@@ -35,7 +36,41 @@ public class OSMInputFileGeneration {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		readOsmFile();
+		// readExtraFile();
 		writeTxtFile();
+	}
+	
+	public static void readExtraFile() {
+		System.out.println("read extra file...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + extraNodeFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] splitted = strLine.split("\\|\\|");
+				long nodeId = Long.parseLong(splitted[0]);
+				String locationStr = splitted[1];
+				String[] location = locationStr.split(",");
+				double latitude = Double.parseDouble(location[0]);
+				double longitude = Double.parseDouble(location[1]);
+				LocationInfo locationInfo = new LocationInfo(latitude, longitude);
+				NodeInfo nodeInfo = new NodeInfo(nodeId, locationInfo);
+				nodeArrayList.add(nodeInfo);
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			e.printStackTrace();
+			System.err.println("readNodeFile: debug code: " + debug);
+		}
+		System.out.println("read extra file finish!");
 	}
 	
 	public static void writeTxtFile() {

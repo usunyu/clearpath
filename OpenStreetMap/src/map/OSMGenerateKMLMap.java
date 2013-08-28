@@ -32,6 +32,34 @@ public class OSMGenerateKMLMap {
 		readWayFile();
 		readWktsFile();
 		generateKML();
+		overwriteNodeFile();
+	}
+	
+	public static void overwriteNodeFile() {
+		System.out.println("overwrite node file...");
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + nodeFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			for (int i = 0; i < nodeArrayList.size(); i++) {
+				debug++;
+				NodeInfo nodeInfo = nodeArrayList.get(i);
+				long nodeId = nodeInfo.getNodeId();
+				LocationInfo location = nodeInfo.getLocation();
+				double latitude = location.getLatitude();
+				double longitude = location.getLongitude();
+				
+				String strLine = nodeId + "||" + latitude + "," + longitude + "\r\n";
+				
+				out.write(strLine);
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("overwriteNodeFile: debug code: " + debug);
+		}
+		System.out.println("overwrite node file finish!");
 	}
 	
 	public static void readWktsFile() {
@@ -97,6 +125,7 @@ public class OSMGenerateKMLMap {
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
 				for(int j = 0; j < localNodeArrayList.size(); j++) {
 					NodeInfo nodeInfo = nodeHashMap.get(localNodeArrayList.get(j));
+					nodeArrayList.add(nodeInfo);
 					LocationInfo location = nodeInfo.getLocation();
 					kmlStr += location.getLongitude() + "," + location.getLatitude() + ",0 ";
 				}
@@ -171,7 +200,6 @@ public class OSMGenerateKMLMap {
 				double longitude = Double.parseDouble(location[1]);
 				LocationInfo locationInfo = new LocationInfo(latitude, longitude);
 				NodeInfo nodeInfo = new NodeInfo(nodeId, locationInfo);
-				nodeArrayList.add(nodeInfo);
 				nodeHashMap.put(nodeId, nodeInfo);
 			}
 			br.close();
