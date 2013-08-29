@@ -103,6 +103,7 @@ public class OSMInputFileGeneration {
 				debug++;
 				WayInfo wayInfo = wayArrayList.get(i);
 				long wayId = wayInfo.getWayId();
+				char isOneway = wayInfo.isOneway() ? 'O' : 'B';
 				String name = wayInfo.getName();
 				ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
 				String nodeListStr = "";
@@ -112,7 +113,8 @@ public class OSMInputFileGeneration {
 						nodeListStr += ",";
 				}
 				
-				String strLine = wayId + "||" + name + "||" + nodeListStr + "\r\n";
+				// String strLine = wayId + "||" + name + "||" + nodeListStr + "\r\n";
+				String strLine = wayId + "||" + isOneway + "||" + name + "\r\n";
 				
 				out.write(strLine);
 			}
@@ -168,6 +170,7 @@ public class OSMInputFileGeneration {
 					Element element = (Element) node;
 					
 					long wayId = Long.parseLong(element.getAttribute("id"));
+					boolean isOneway = false;
 					String name = "null";
 					ArrayList<Long> localNodeArrayList = new ArrayList<Long>();
 					
@@ -191,12 +194,17 @@ public class OSMInputFileGeneration {
 									if(kAttr.equals("name")) {
 										name = eChildElement.getAttribute("v");
 									}
+									
+									if(kAttr.equals("oneway")) {
+										if(eChildElement.getAttribute("v").equals("yes"))
+											isOneway = true;
+									}
 								}
 							}
 						}
 					}
 					
-					WayInfo wayInfo = new WayInfo(wayId, name, localNodeArrayList);
+					WayInfo wayInfo = new WayInfo(wayId, isOneway, name, localNodeArrayList);
 					
 					wayArrayList.add(wayInfo);
 				}

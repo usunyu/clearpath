@@ -2,9 +2,13 @@ package osm2wkt;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -43,10 +47,11 @@ public class Osm2Wkt {
 	private final static String XML_TAG_LON 	= "lon";
 	private final static String XML_TAG_WAY 	= "way";
 	private final static String XML_TAG_ND 		= "nd";
+	private final static String XML_TAG_REF 	= "ref";
+	/* Yu Sun Modify */
 	private final static String XML_TAG_TAG 	= "tag";
 	private final static String XML_TAG_K	 	= "k";
 	private final static String XML_TAG_V	 	= "v";
-	private final static String XML_TAG_REF 	= "ref";
 	private final static String XML_K_HIGHWAY 	= "highway";
 	private final static String XML_V_FOOTWAY 	= "footway";
 	private final static String XML_V_STEPS 	= "steps";
@@ -57,8 +62,10 @@ public class Osm2Wkt {
 	private final static String XML_V_GRASS 	= "grass";
 	private final static String XML_K_BARRIER 	= "barrier";
 	private final static String XML_K_LEISURE 	= "leisure";
-	private final static String FILE_EXT_WKT	= "wkt";
+	private final static String XML_K_RAILWAY 	= "railway";
 	private final static String FILE_EXT_WKTS	= "wkts";
+	/* * * * * * * * */
+	private final static String FILE_EXT_WKT	= "wkt";
 	private final static String FILE_EXT_OSM	= "osm";
 	private final static String WKT_TAG_BEGIN	= "LINESTRING (";
 	private final static String WKT_TAG_IBEGIN  = "LINESTRING";
@@ -204,6 +211,7 @@ public class Osm2Wkt {
 						Element tempElement = (Element) ndNode;
 						String kAttr = tempElement.getAttribute(XML_TAG_K);
 						String vAttr = tempElement.getAttribute(XML_TAG_V);
+						// any kind of streets can be eliminated should be added here 
 						if(kAttr.equals(XML_K_HIGHWAY)) {
 							if(vAttr.equals(XML_V_FOOTWAY) || vAttr.equals(XML_V_STEPS) || vAttr.equals(XML_V_SERVICE)) {
 								eliminate = true;
@@ -227,6 +235,11 @@ public class Osm2Wkt {
 							break;
 						}
 						if(kAttr.equals(XML_K_LEISURE)) {
+							eliminate = true;
+							break;
+						}
+
+						if(kAttr.equals(XML_K_RAILWAY)) {
 							eliminate = true;
 							break;
 						}
@@ -1289,6 +1302,34 @@ public class Osm2Wkt {
 
 		System.out.println("written to new file " + destfile);
 		System.out.println("done!");
+
+		copyFileToOSMProj(destfile);
+	}
+
+	private static void copyFileToOSMProj(String destfile) {
+		try {
+			 File f1 = new File(destfile);
+			 File f2 = new File("../OpenStreetMap/" + destfile);
+			 InputStream in = new FileInputStream(f1);
+
+	          //For Append the file.
+	          //OutputStream out = new FileOutputStream(f2,true);
+
+	          //For Overwrite the file.
+	          OutputStream out = new FileOutputStream(f2);
+
+	          byte[] buf = new byte[1024];
+	          int len;
+	          while ((len = in.read(buf)) > 0){
+	            out.write(buf, 0, len);
+	          }
+	          in.close();
+	          out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("copy " + destfile + " to osm project.");
 	}
 
 }

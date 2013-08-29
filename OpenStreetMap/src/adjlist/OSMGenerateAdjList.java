@@ -162,9 +162,10 @@ public class OSMGenerateAdjList {
 					long nodeId = Long.parseLong(nodeList[i]);
 					localNodeArrayList.add(nodeId);
 				}
-				WayInfo wayInfo = new WayInfo(wayId, name, localNodeArrayList);
+				// TODO
+//				WayInfo wayInfo = new WayInfo(wayId, name, localNodeArrayList);
 				//wayArrayList.add(wayInfo);
-				wayHashMap.put(wayId, wayInfo);
+//				wayHashMap.put(wayId, wayInfo);
 			}
 			br.close();
 			in.close();
