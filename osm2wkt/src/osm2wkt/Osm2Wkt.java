@@ -56,7 +56,7 @@ public class Osm2Wkt {
 	private final static String XML_K_LANDUSE 	= "landuse";
 	private final static String XML_V_GRASS 	= "grass";
 	private final static String XML_K_BARRIER 	= "barrier";
-	private final static String XML_V_FENCE 	= "fence";
+	private final static String XML_K_LEISURE 	= "leisure";
 	private final static String FILE_EXT_WKT	= "wkt";
 	private final static String FILE_EXT_WKTS	= "wkts";
 	private final static String FILE_EXT_OSM	= "osm";
@@ -223,10 +223,12 @@ public class Osm2Wkt {
 							}
 						}
 						if(kAttr.equals(XML_K_BARRIER)) {
-							if(vAttr.equals(XML_V_FENCE)) {
-								eliminate = true;
-								break;
-							}
+							eliminate = true;
+							break;
+						}
+						if(kAttr.equals(XML_K_LEISURE)) {
+							eliminate = true;
+							break;
 						}
 					}
 					if( ndNode.getNodeName() != XML_TAG_ND) continue;
