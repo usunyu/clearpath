@@ -43,7 +43,20 @@ public class Osm2Wkt {
 	private final static String XML_TAG_LON 	= "lon";
 	private final static String XML_TAG_WAY 	= "way";
 	private final static String XML_TAG_ND 		= "nd";
+	private final static String XML_TAG_TAG 	= "tag";
+	private final static String XML_TAG_K	 	= "k";
+	private final static String XML_TAG_V	 	= "v";
 	private final static String XML_TAG_REF 	= "ref";
+	private final static String XML_K_HIGHWAY 	= "highway";
+	private final static String XML_V_FOOTWAY 	= "footway";
+	private final static String XML_V_STEPS 	= "steps";
+	private final static String XML_V_SERVICE 	= "service";
+	private final static String XML_K_BUILDING 	= "building";
+	private final static String XML_V_YES 		= "yes";
+	private final static String XML_K_LANDUSE 	= "landuse";
+	private final static String XML_V_GRASS 	= "grass";
+	private final static String XML_K_BARRIER 	= "barrier";
+	private final static String XML_V_FENCE 	= "fence";
 	private final static String FILE_EXT_WKT	= "wkt";
 	private final static String FILE_EXT_WKTS	= "wkts";
 	private final static String FILE_EXT_OSM	= "osm";
@@ -56,7 +69,6 @@ public class Osm2Wkt {
 	private final static String WKT_TAG_MARKADD	= " ";
 	private final static String WKT_TAG_MARKSEP1 = ",";
 	private final static String WKT_TAG_MARKSEP2 = " ";
-
 	/* Yu Sun Modify */
 	static ArrayList<Long> extraPointsArrayList = new ArrayList<Long>();
 	static HashMap<Long, Landmark> extraPointsHashMap = new HashMap<Long, Landmark>();
@@ -164,6 +176,7 @@ public class Osm2Wkt {
 				landmarks.put(landObj.id, landObj);
 			}
 
+			/* Yu Sun Modify */
 			// read in all streets
 			NodeList wayList = doc.getElementsByTagName(XML_TAG_WAY);
 			for( int s=0; s<wayList.getLength(); s++ ){
@@ -180,12 +193,42 @@ public class Osm2Wkt {
 
 				Long streetId = Long.valueOf(idAttr.getValue());
 				Vector<Long> streetLandmarks = new Vector<Long>();
+				boolean eliminate = false;
 
 				// get landmarks for this street
 				NodeList ndList = wayNode.getChildNodes();
 				for( int t=0; t<ndList.getLength(); t++){
 					Node ndNode = ndList.item(t);
 					if( ndNode.getNodeType() != Node.ELEMENT_NODE ) continue;
+					if(ndNode.getNodeName() == XML_TAG_TAG) {
+						Element tempElement = (Element) ndNode;
+						String kAttr = tempElement.getAttribute(XML_TAG_K);
+						String vAttr = tempElement.getAttribute(XML_TAG_V);
+						if(kAttr.equals(XML_K_HIGHWAY)) {
+							if(vAttr.equals(XML_V_FOOTWAY) || vAttr.equals(XML_V_STEPS) || vAttr.equals(XML_V_SERVICE)) {
+								eliminate = true;
+								break;
+							}
+						}
+						if(kAttr.equals(XML_K_BUILDING)) {
+							if(vAttr.equals(XML_V_YES)) {
+								eliminate = true;
+								break;
+							}
+						}
+						if(kAttr.equals(XML_K_LANDUSE)) {
+							if(vAttr.equals(XML_V_GRASS)) {
+								eliminate = true;
+								break;
+							}
+						}
+						if(kAttr.equals(XML_K_BARRIER)) {
+							if(vAttr.equals(XML_V_FENCE)) {
+								eliminate = true;
+								break;
+							}
+						}
+					}
 					if( ndNode.getNodeName() != XML_TAG_ND) continue;
 					Element ndElement = (Element)ndNode;
 
@@ -197,14 +240,21 @@ public class Osm2Wkt {
 
 					streetLandmarks.add(Long.valueOf(refAttr.getValue()));
 				}
-
-				// if we found landmarks for this street add street
-				if(!streetLandmarks.isEmpty()){
-					streets.put(streetId, streetLandmarks);
-				}else{
-					System.out.println("found no landmark childs for street " 
-							+ wayNode.getNodeValue());
+				
+				// the way can be used for routing
+				if(!eliminate) {
+					// if we found landmarks for this street add street
+					if(!streetLandmarks.isEmpty()){
+						streets.put(streetId, streetLandmarks);
+					}else{
+						System.out.println("found no landmark childs for street " 
+								+ wayNode.getNodeValue());
+					}
 				}
+				else {
+					System.out.println("eliminate the street that can not used for routing");
+				}
+				/* * * * * * * * */
 			}
 
 		} catch (Exception e) {
