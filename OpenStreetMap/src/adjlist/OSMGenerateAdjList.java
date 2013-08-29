@@ -25,7 +25,6 @@ public class OSMGenerateAdjList {
 	 * @param way
 	 */
 	static ArrayList<WayInfo> wayArrayList = new ArrayList<WayInfo>();
-	static HashMap<Long, WayInfo> wayHashMap = new HashMap<Long, WayInfo>();
 	/**
 	 * @param connect
 	 */
@@ -35,7 +34,7 @@ public class OSMGenerateAdjList {
 		// TODO Auto-generated method stub
 		readNodeFile();
 		readWayFile();
-		readWktsFile();
+		buildAdjList();
 		generateAdjList();
 	}
 	
@@ -57,6 +56,11 @@ public class OSMGenerateAdjList {
 					timeList[j] = 5;
 				
 				ArrayList<Long> localNodeArrayList =  adjList.get(nodeInfo.getNodeId());
+				
+				// this node cannot go to any other node
+				if(localNodeArrayList == null)
+					continue;
+				
 				for(int j = 0; j < localNodeArrayList.size(); j++) {
 					strLine += "n" + localNodeArrayList.get(j) + "(V):";
 					for(int k = 0; k < timeList.length; k++) {
@@ -80,40 +84,27 @@ public class OSMGenerateAdjList {
 		System.out.println("generate adjlist file finish!");
 	}
 	
-	public static void readWktsFile() {
-		System.out.println("read wkts file...");
-		int debug = 0;
-		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + wktsFile);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine;
-			
-			while ((strLine = br.readLine()) != null) {
-				debug++;
-				String[] splitted = strLine.split("\\|\\|");
-				long wayId = Long.parseLong(splitted[0]);
-				WayInfo wayInfo = wayHashMap.get(wayId);
-				String nodeListStr = splitted[1];
-				String[] nodeList = nodeListStr.split(",");
-				ArrayList<Long> localNodeArrayList = new ArrayList<Long>();
-				long preNodeId = 0;
-				for(int i = 0; i < nodeList.length; i++) {
-					long nodeId = Long.parseLong(nodeList[i]);
-					localNodeArrayList.add(nodeId);
-					if(!nodeArrayList.contains(nodeId))
-						nodeArrayList.add(nodeHashMap.get(nodeId));
-					// build adjlist
-					if(i >= 1) {
-						if(!adjList.containsKey(preNodeId)) {
-							ArrayList<Long> adjNodeArrayList = new ArrayList<Long>();
-							adjNodeArrayList.add(nodeId);
-							adjList.put(preNodeId, adjNodeArrayList);
-						}
-						else {
-							ArrayList<Long> adjNodeArrayList = adjList.get(preNodeId);
-							adjNodeArrayList.add(nodeId);
-						}
+	public static void buildAdjList() {
+		System.out.println("build adjlist file...");
+		for(int i = 0; i < wayArrayList.size(); i++) {
+			WayInfo wayInfo = wayArrayList.get(i);
+			boolean isOneway = wayInfo.isOneway();
+			ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
+			long preNodeId = 0;
+			for(int j = 0; j < localNodeArrayList.size(); j++) {
+				long nodeId = localNodeArrayList.get(j);
+				// build adjlist
+				if(j >= 1) {
+					if(!adjList.containsKey(preNodeId)) {
+						ArrayList<Long> adjNodeArrayList = new ArrayList<Long>();
+						adjNodeArrayList.add(nodeId);
+						adjList.put(preNodeId, adjNodeArrayList);
+					}
+					else {
+						ArrayList<Long> adjNodeArrayList = adjList.get(preNodeId);
+						adjNodeArrayList.add(nodeId);
+					}
+					if(!isOneway) {
 						if(!adjList.containsKey(nodeId)) {
 							ArrayList<Long> adjNodeArrayList = new ArrayList<Long>();
 							adjNodeArrayList.add(preNodeId);
@@ -124,21 +115,11 @@ public class OSMGenerateAdjList {
 							adjNodeArrayList.add(preNodeId);
 						}
 					}
-					preNodeId = nodeId;
 				}
-				wayInfo.setNodeArrayList(localNodeArrayList);
-				wayArrayList.add(wayInfo);
+				preNodeId = nodeId;
 			}
-			
-			br.close();
-			in.close();
-			fstream.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("readWktsFile: debug code: " + debug);
 		}
-		System.out.println("read wkts file finish!");
+		System.out.println("build adjlist finish!");
 	}
 	
 	public static void readWayFile() {
@@ -154,18 +135,17 @@ public class OSMGenerateAdjList {
 				debug++;
 				String[] splitted = strLine.split("\\|\\|");
 				long wayId = Long.parseLong(splitted[0]);
-				String name = splitted[1];
-				String nodeListStr = splitted[2];
+				boolean isOneway = splitted[1].equals("O") ? true : false;
+				String name = splitted[2];
+				String nodeListStr = splitted[3];
 				String[] nodeList = nodeListStr.split(",");
 				ArrayList<Long> localNodeArrayList = new ArrayList<Long>(); 
 				for(int i = 0; i < nodeList.length; i++) {
 					long nodeId = Long.parseLong(nodeList[i]);
 					localNodeArrayList.add(nodeId);
 				}
-				// TODO
-//				WayInfo wayInfo = new WayInfo(wayId, name, localNodeArrayList);
-				//wayArrayList.add(wayInfo);
-//				wayHashMap.put(wayId, wayInfo);
+				WayInfo wayInfo = new WayInfo(wayId, isOneway, name, localNodeArrayList);
+				wayArrayList.add(wayInfo);
 			}
 			br.close();
 			in.close();
@@ -198,6 +178,7 @@ public class OSMGenerateAdjList {
 				LocationInfo locationInfo = new LocationInfo(latitude, longitude);
 				NodeInfo nodeInfo = new NodeInfo(nodeId, locationInfo);
 				nodeHashMap.put(nodeId, nodeInfo);
+				nodeArrayList.add(nodeInfo);
 			}
 			br.close();
 			in.close();
