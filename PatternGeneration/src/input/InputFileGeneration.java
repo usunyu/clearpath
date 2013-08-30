@@ -17,8 +17,10 @@ public class InputFileGeneration {
 	static String root = "file";
 	// for write average file for cube
 	static String averageSpeedFile = "Average_Speed.txt";
-	// for write link file
+	// for write highway link file
 	static String highwayLinkFile = "Highway_Link.txt";
+	// for write arterial link file
+	static String arterialLinkFile = "Arterial_Link.txt";
 	/**
 	 * @param database
 	 */
@@ -51,9 +53,10 @@ public class InputFileGeneration {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		/* write link file */
-		//fetchLinkId();
-		//fetchLink();
-		//writeLinkFile();
+		// true: highway, false: arterial
+		fetchLinkId(true);
+		fetchLink();
+		writeLinkFile(true);
 		
 		/* write average file for cube */
 		//for(int i = 0; i < days.length; i++)
@@ -62,15 +65,15 @@ public class InputFileGeneration {
 		//writeAverageCube(7, 0);
 		
 		/* change the interval to 15 min */
-		for(int i = 0; i < days.length; i++) {
+		//for(int i = 0; i < days.length; i++) {
 			// August
-			System.out.println("change the interval for " + months[7] + ", " + days[i] + "...");
-			readAverageCube(7, i);
-			changeInterval();
-			writeAverage15Cube(7, i);
-			renameAverageFile(7, i);
-			System.out.println("change the interval for " + months[7] + ", " + days[i] + " finish!");
-		}
+		//	System.out.println("change the interval for " + months[7] + ", " + days[i] + "...");
+		//	readAverageCube(7, i);
+		//	changeInterval();
+		//	writeAverage15Cube(7, i);
+		//	renameAverageFile(7, i);
+		//	System.out.println("change the interval for " + months[7] + ", " + days[i] + " finish!");
+		//}
 		/* test */
 		//readAverageCube(7, 0);
 		//changeInterval();
@@ -203,10 +206,10 @@ public class InputFileGeneration {
 		System.out.println("read average file finish!");
 	}
 	
-	private static void writeLinkFile() {
+	private static void writeLinkFile(boolean isHighway) {
 		System.out.println("write link file...");
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + highwayLinkFile);
+			FileWriter fstream = new FileWriter(root + "/" + (isHighway ? highwayLinkFile : arterialLinkFile));
 			BufferedWriter out = new BufferedWriter(fstream);
 			for (int i = 0; i < linkList.size(); i++) {
 				LinkInfo link = linkList.get(i);
@@ -322,7 +325,7 @@ public class InputFileGeneration {
 		System.out.println("fetch link finish!");
 	}
 	
-	public static void fetchLinkId() {
+	public static void fetchLinkId(boolean isHighway) {
 		System.out.println("fetch link id...");
 		try {
 			Connection con = null;
@@ -334,7 +337,8 @@ public class InputFileGeneration {
 			sql = "SELECT distinct dc.link_id FROM streets_dca1_new dc, zlevels_new z1, zlevels_new z2"
 					+ " WHERE z1.node_id !=0 AND z2.node_id !=0 "
 					+ " AND Ref_In_Id = z1.node_id AND nRef_In_Id = z2.node_id "
-					+ " AND func_class IN (1,2)" + " ORDER BY dc.link_id";
+					+ " AND func_class IN " + (isHighway ? "(1,2)" : "(3,4,5)")
+					+ " ORDER BY dc.link_id";
 
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
