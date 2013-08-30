@@ -16,86 +16,46 @@ public class OutputKMLGeneration {
 	 */
 	static String root = "file";
 	// for write link file
-	static String linkFileCA = "CA_Link.txt";
-	// for write node file
-	static String nodeFileCA = "CA_Node.txt";
+	static String highwayLinkFile = "Highway_Link.txt";
+	static String arterialLinkFile = "Arterial_Link.txt";
 	// for write kml file
-	static String kmlFileCA = "CA_Link.kml";
+	static String highwayKmlFile = "Highway_Link.kml";
+	static String arterialKmlFile = "Arterial_Link.kml";
 	/**
 	 * @param link
 	 */
-	static ArrayList<CALinkInfo> CALinkList = new ArrayList<CALinkInfo>();
-	/**
-	 * @param node
-	 */
-	static ArrayList<CANodeInfo> CANodeList = new ArrayList<CANodeInfo>();
-	static HashMap<Integer, Integer> oldToNewNodeMap = new HashMap<Integer, Integer>();
+	static ArrayList<LinkInfo> highwayLinkList = new ArrayList<LinkInfo>();
+	static ArrayList<LinkInfo> arterialLinkList = new ArrayList<LinkInfo>();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		readNodeFileCA();
-		readLinkFileCA();
-		generateKMLCA();
+		// true: highway, false: arterial
+		readLinkFile(true);
+		generateKML(true);
 	}
 
-	private static void generateKMLCA() {
+	private static void generateKML(boolean isHighway) {
 		System.out.println("generate link kml...");
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + kmlFileCA);
+			FileWriter fstream = new FileWriter(root + "/" +  (isHighway ? highwayKmlFile : arterialKmlFile));
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
-			for (int i = 0; i < CALinkList.size(); i++) {
-				CALinkInfo link = CALinkList.get(i);
+			ArrayList<LinkInfo> linkList = isHighway ? highwayLinkList : arterialLinkList;
+			for (int i = 0; i < linkList.size(); i++) {
+				LinkInfo link = linkList.get(i);
 				int linkId = link.getLinkId();
-				//int networkId = link.getNetworkId();
-				int linkClass = link.getLinkClass();
-				//boolean rampFlag = link.getRampFlag();
-				//boolean internalFlag = link.getInternalFlag();
-				//boolean activeFlag = link.getActiveFlag();
-				int fromNodeId = link.getFromNodeId();
-				int toNodeId = link.getToNodeId();
-				//double linkLengthKm = link.getLinkLengthKm();
-				//int primaryRoadwayId = link.getPrimaryRoadwayId();
-				//String linkDesc = link.getLinkDesc();
-				//String fromDesc = link.getFromDesc();
-				//String toDesc = link.getToDesc();
-				//double speedLimitKmh = link.getSpeedLimitKmh();
-				//PairInfo startLoc = link.getStartLoc();
-				//PairInfo endLoc = link.getEndLoc();
-				//PairInfo minLoc = link.getMinLoc();
-				//PairInfo maxLoc = link.getMaxLoc();
-				ArrayList<PairInfo> pathPoints = link.getPathPoints();
-				// String encodedPolyline;
-				//double fromProjCompassAngle = link.getFromProjCompassAngle();
-				//double toProjCompassAngle = link.getToProjCompassAngle();
-				//String sourceId = link.getSourceId();
-				//String sourceRef = link.getSourceRef();
-				String tmcCode = link.getTmcCode();
+				int funcClass = link.getFuncClass();
+				String streetName = link.getStreetName();
+				ArrayList<PairInfo> nodeList = link.getNodeList();
 
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
 				kmlStr += "<description>";
-				// kmlStr += "Network:" + networkId + "\r\n";
-				kmlStr += "Class:" + linkClass + "\r\n";
-				// kmlStr += "Ramp:" + rampFlag + "\r\n";
-				// kmlStr += "Internal:" + internalFlag + "\r\n";
-				// kmlStr += "Active:" + activeFlag + "\r\n";
-				kmlStr += "FromNode:" + fromNodeId + "\r\n";
-				kmlStr += "ToNode:" + toNodeId + "\r\n";
-				// kmlStr += "Length(Km):" + linkLengthKm + "\r\n";
-				// kmlStr += "Primary:" + primaryRoadwayId + "\r\n";
-				// kmlStr += "LinkDesc:" + linkDesc + "\r\n";
-				// kmlStr += "FromDesc:" + fromDesc + "\r\n";
-				// kmlStr += "ToDesc:" + toDesc + "\r\n";
-				// kmlStr += "SpeedLimit(Km/h):" + speedLimitKmh + "\r\n";
-				// kmlStr += "FromAngle:" + fromProjCompassAngle + "\r\n";
-				// kmlStr += "ToAngle:" + fromProjCompassAngle + "\r\n";
-				// kmlStr += "SourceId:" + sourceId + "\r\n";
-				// kmlStr += "SourceRef:" + sourceRef + "\r\n";
-				kmlStr += "TMCCode:" + tmcCode;
+				kmlStr += "Class:" + funcClass + "\r\n";
+				kmlStr += "Name:" + streetName + "\r\n";
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
-				for (int j = 0; j < pathPoints.size(); j++) {
-					PairInfo node = pathPoints.get(j);
+				for (int j = 0; j < nodeList.size(); j++) {
+					PairInfo node = nodeList.get(j);
 					kmlStr += node.getLongi() + "," + node.getLati() + ",0 ";
 				}
 				kmlStr += "</coordinates></LineString></Placemark>\n";
@@ -110,46 +70,34 @@ public class OutputKMLGeneration {
 		System.out.println("generate link kml finish!");
 	}
 
-	private static void readLinkFileCA() {
+	private static void readLinkFile(boolean isHighway) {
 		System.out.println("read link file...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + linkFileCA);
+			FileInputStream fstream = new FileInputStream(root + "/" + (isHighway ? highwayLinkFile : arterialLinkFile));
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split("\\|\\|");
+				String[] nodes = strLine.split(";");
 				int linkId = Integer.parseInt(nodes[0]);
-				//int networkId = Integer.parseInt(nodes[1]);
-				int linkClass = Integer.parseInt(nodes[1]);
-				//boolean rampFlag = getBooleanFromStr(nodes[3]);
-				//boolean internalFlag = getBooleanFromStr(nodes[4]);
-				//boolean activeFlag = getBooleanFromStr(nodes[5]);
-				int fromNodeIdNew = Integer.parseInt(nodes[2]);
-				int toNodeIdNew = Integer.parseInt(nodes[3]);
-				//double linkLengthKm = Double.parseDouble(nodes[8]);
-				//int primaryRoadwayId = Integer.parseInt(nodes[9]);
-				//String linkDesc = nodes[10];
-				//String fromDesc = nodes[11];
-				//String toDesc = nodes[12];
-				//double speedLimitKmh = Double.parseDouble(nodes[13]);
-				PairInfo startLoc = getPairFromStr(nodes[4]);
-				PairInfo endLoc = getPairFromStr(nodes[5]);
-				//PairInfo minLoc = getPairFromStr(nodes[16]);
-				//PairInfo maxLoc = getPairFromStr(nodes[17]);
-				ArrayList<PairInfo> pathPoints = getPairListFromStr(nodes[6]);
-				//double fromProjCompassAngle = Double.parseDouble(nodes[19]);
-				//double toProjCompassAngle = Double.parseDouble(nodes[20]);
-				//String sourceId = nodes[21];
-				//String sourceRef = nodes[22];
-				String tmcCode = nodes[7];
+				String allDir = nodes[1];
+				String streetName = nodes[2];
+				int funcClass = Integer.parseInt(nodes[3]);
+				ArrayList<PairInfo> nodeList = getPairListFromStr(nodes[4]);
+				int speedCat = Integer.parseInt(nodes[5]);
+				String dirTravel = nodes[6];
+				int startNode = Integer.parseInt(nodes[7]);
+				int endNode = Integer.parseInt(nodes[8]);
 
-				CALinkInfo CALink = new CALinkInfo(linkId, linkClass, fromNodeIdNew, toNodeIdNew, startLoc, endLoc, pathPoints, tmcCode);
+				LinkInfo linkInfo = new LinkInfo(linkId, funcClass, streetName, startNode, endNode, nodeList, dirTravel, speedCat, allDir);
 
-				CALinkList.add(CALink);
+				if(isHighway)
+					highwayLinkList.add(linkInfo);
+				else
+					arterialLinkList.add(linkInfo);
 				
 				if (debug % 100000 == 0)
 					System.out.println("record " + debug + " finish!");
@@ -163,7 +111,7 @@ public class OutputKMLGeneration {
 	}
 
 	private static ArrayList<PairInfo> getPairListFromStr(String str) {
-		String[] nodes = str.split(";");
+		String[] nodes = str.split(":");
 		ArrayList<PairInfo> pairList = new ArrayList<PairInfo>();
 		for (int i = 0; i < nodes.length; i++) {
 			PairInfo pair = getPairFromStr(nodes[i]);
@@ -174,55 +122,7 @@ public class OutputKMLGeneration {
 
 	private static PairInfo getPairFromStr(String str) {
 		String[] nodes = str.split(",");
-		PairInfo pair = new PairInfo(Double.parseDouble(nodes[0]), Double.parseDouble(nodes[1]));
+		PairInfo pair = new PairInfo(Double.parseDouble(nodes[1]), Double.parseDouble(nodes[0]));
 		return pair;
-	}
-
-	private static boolean getBooleanFromStr(String str) {
-		if(str.equals("true"))
-			return true;
-		else
-			return false;
-	}
-
-	private static void readNodeFileCA() {
-		System.out.println("read node file...");
-		int debug = 0;
-		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + nodeFileCA);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine;
-			
-			while ((strLine = br.readLine()) != null) {
-				debug++;
-				String[] nodes = strLine.split("\\|\\|");
-				int nodeId = Integer.parseInt(nodes[0]);
-				int newNodeId = Integer.parseInt(nodes[1]);
-				//int networkId = Integer.parseInt(nodes[2]);
-				//String nodeType = nodes[3];
-				//int minLinkClass = Integer.parseInt(nodes[4]);
-				//String nodeName = nodes[5];
-				String locationStr = nodes[2];
-				String[] locNode = locationStr.split(",");
-				double lat = Double.parseDouble(locNode[0]);
-				double lng = Double.parseDouble(locNode[1]);
-				PairInfo location = new PairInfo(lat, lng);
-				//String sourceId1 = nodes[7];
-				//String sourceRef1 = nodes[8];
-				
-				CANodeInfo CANode = new CANodeInfo(nodeId, newNodeId, location);
-				
-				CANodeList.add(CANode);
-				oldToNewNodeMap.put(nodeId, newNodeId);
-				if (debug % 100000 == 0)
-					System.out.println("record " + debug + " finish!");
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("Error Code: " + debug);
-		}
-		System.out.println("read node file finish!");
 	}
 }
