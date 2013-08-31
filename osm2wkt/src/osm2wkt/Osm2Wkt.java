@@ -199,6 +199,9 @@ public class Osm2Wkt {
 				landObj.longitude = Double.valueOf(idLon.getValue());
 
 				landmarks.put(landObj.id, landObj);
+				
+				if(s % 1000 == 0)
+					System.out.println("landmarks processed " + ((double) s / landmarkList.getLength() * 100) + "%" );
 			}
 
 			/* Yu Sun Modify */
@@ -298,6 +301,8 @@ public class Osm2Wkt {
 				else {
 					System.out.println("eliminate the street that can not used for routing");
 				}
+				if(s % 1000 == 0)
+					System.out.println("streets processed " + ((double) s / wayList.getLength() * 100) + "%" );
 				/* * * * * * * * */
 			}
 
