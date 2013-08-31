@@ -60,14 +60,13 @@ public class OSMGenerateAdjList {
 				String id[] = splitted[0].split(",");
 				long wayId = Long.parseLong(id[0]);
 				int edgeId = Integer.parseInt(id[1]);
-				boolean isOneway = splitted[1].equals("O") ? true : false;
-				String name = splitted[2];
-				String highway = splitted[3];
-				long startNode = Long.parseLong(splitted[4]);
-				long endNode = Long.parseLong(splitted[5]);
-				int distance = Integer.parseInt(splitted[6]);
+				String name = splitted[1];
+				String highway = splitted[2];
+				long startNode = Long.parseLong(splitted[3]);
+				long endNode = Long.parseLong(splitted[4]);
+				int distance = Integer.parseInt(splitted[5]);
 				
-				EdgeInfo edgeInfo = new EdgeInfo(wayId, edgeId, isOneway, name, highway, startNode, endNode, distance);
+				EdgeInfo edgeInfo = new EdgeInfo(wayId, edgeId, name, highway, startNode, endNode, distance);
 				edgeArrayList.add(edgeInfo);
 			}
 			br.close();
@@ -183,7 +182,6 @@ public class OSMGenerateAdjList {
 		/* build adjlist using edge */
 		for(int i = 0; i < edgeArrayList.size(); i++) {
 			EdgeInfo edgeInfo = edgeArrayList.get(i);
-			boolean isOneway = edgeInfo.isOneway();
 			long startNode = edgeInfo.getStartNode();
 			long endNode = edgeInfo.getEndNode();
 			String nodeIdString = startNode + "," + endNode;
@@ -196,19 +194,6 @@ public class OSMGenerateAdjList {
 			else {
 				ArrayList<Long> adjNodeArrayList = adjList.get(startNode);
 				adjNodeArrayList.add(endNode);
-			}
-			if(!isOneway) {
-				nodeIdString = endNode + "," + startNode;
-				nodesToEdge.put(nodeIdString, edgeInfo);
-				if(!adjList.containsKey(endNode)) {
-					ArrayList<Long> adjNodeArrayList = new ArrayList<Long>();
-					adjNodeArrayList.add(startNode);
-					adjList.put(endNode, adjNodeArrayList);
-				}
-				else {
-					ArrayList<Long> adjNodeArrayList = adjList.get(endNode);
-					adjNodeArrayList.add(startNode);
-				}
 			}
 		}
 		

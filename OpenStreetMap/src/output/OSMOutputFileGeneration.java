@@ -40,7 +40,7 @@ public class OSMOutputFileGeneration {
 		System.out.println("overwrite way file...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + (allTag ? wayFile : wayInfoFile));
+			FileWriter fstream = new FileWriter(root + "/" + (allTag ? wayInfoFile : wayFile));
 			BufferedWriter out = new BufferedWriter(fstream);
 			for (int i = 0; i < wayArrayList.size(); i++) {
 				debug++;

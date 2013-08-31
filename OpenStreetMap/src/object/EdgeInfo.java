@@ -5,17 +5,17 @@ import java.util.*;
 public class EdgeInfo {
 	long wayId;
 	int edgeId;
-	boolean isOneway;
+	//boolean isOneway;
 	String name;
 	String highway;
 	Long startNode;
 	Long endNode;
 	int distance;
 	
-	public EdgeInfo(long wayId, int edgeId, boolean isOneway, String name, String highway, Long startNode, Long endNode, int distance) {
+	public EdgeInfo(long wayId, int edgeId, /*boolean isOneway,*/ String name, String highway, Long startNode, Long endNode, int distance) {
 		this.wayId = wayId;
 		this.edgeId = edgeId;
-		this.isOneway = isOneway;
+		//this.isOneway = isOneway;
 		this.name = name;
 		this.highway = highway;
 		this.startNode = startNode;
@@ -31,9 +31,9 @@ public class EdgeInfo {
 		return edgeId;
 	}
 
-	public boolean isOneway() {
-		return isOneway;
-	}
+	// public boolean isOneway() {
+	// 	return isOneway;
+	// }
 	
 	public String getName() {
 		return name;

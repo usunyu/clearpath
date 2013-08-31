@@ -46,14 +46,13 @@ public class OSMDivideWayToEdge {
 				EdgeInfo edgeInfo = edgeArrayList.get(i);
 				long wayId = edgeInfo.getWayId();
 				int edgeId = edgeInfo.getEdgeId();
-				char isOneway = edgeInfo.isOneway() ? 'O' : 'B';
 				String name = edgeInfo.getName();
 				String highway = edgeInfo.getHighway();
 				long startNode = edgeInfo.getStartNode();
 				long endNode = edgeInfo.getEndNode();
 				int distance = edgeInfo.getDistance();
 				
-				String strLine = wayId + "," + edgeId + "||" + isOneway + "||" + name + "||"  + highway + "||" 
+				String strLine = wayId + "," + edgeId + "||" + name + "||"  + highway + "||" 
 				+ startNode + "||" + endNode + "||" + distance + "\r\n";
 				out.write(strLine);
 			}
@@ -88,8 +87,15 @@ public class OSMDivideWayToEdge {
 					NodeInfo nodeInfo2 = nodeHashMap.get(endNode);
 					double dDistance = Distance.calculateDistance(nodeInfo1.getLocation(), nodeInfo2.getLocation()) * 5280;
 					int distance = (int)Math.round(dDistance);
-					EdgeInfo edgeInfo = new EdgeInfo(wayId, edgeId++, isOneway, name, highway, startNode, endNode, distance);
+					EdgeInfo edgeInfo = new EdgeInfo(wayId, edgeId, name, highway, startNode, endNode, distance);
+					edgeId++;
 					edgeArrayList.add(edgeInfo);
+					// use two edges to denote one edge here
+					if(!isOneway) {
+						EdgeInfo edgeInfo2 = new EdgeInfo(wayId, edgeId, name, highway, endNode, startNode, distance);
+						edgeId++;
+						edgeArrayList.add(edgeInfo2);
+					}
 				}
 				preNodeId = nodeId;
 			}
