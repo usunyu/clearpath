@@ -38,6 +38,22 @@ import org.xml.sax.SAXException;
 
 import osm2wkt.exports.*;
 
+/*
+ * this is 1st step for OSM
+ * it will generate a file *.wkts
+ * format:
+ * wayId1||nodeId1,nodeId2,...nodeId3
+ * wayId2||nodeId4,nodeId5,...nodeId6
+ * denote every way contains which nodes
+ * 
+ * this process get rid of all non-routeable way, such as building, shape type;
+ * http://wiki.openstreetmap.org/wiki/Key:highway
+ * http://wiki.openstreetmap.org/wiki/Highway_examples
+ * 
+ * and also get rid of all highway:service for now for simple;
+ * and fixCompleteness will introduce the new problem, bridge problem,so we don't want to run it now.
+ */
+
 public class Osm2Wkt {
 
 	private final static String XML_TAG_OSM 	= "osm";
@@ -56,6 +72,7 @@ public class Osm2Wkt {
 	private final static String XML_V_FOOTWAY 	= "footway";
 	private final static String XML_V_STEPS 	= "steps";
 	private final static String XML_V_SERVICE 	= "service";
+	private final static String XML_V_PEDESTRIAN = "pedestrian";
 	private final static String XML_K_BUILDING 	= "building";
 	private final static String XML_V_YES 		= "yes";
 	private final static String XML_K_LANDUSE 	= "landuse";
@@ -63,6 +80,7 @@ public class Osm2Wkt {
 	private final static String XML_K_BARRIER 	= "barrier";
 	private final static String XML_K_LEISURE 	= "leisure";
 	private final static String XML_K_RAILWAY 	= "railway";
+	private final static String XML_K_AREA	 	= "area";
 	private final static String FILE_EXT_WKTS	= "wkts";
 	/* * * * * * * * */
 	private final static String FILE_EXT_WKT	= "wkt";
@@ -213,7 +231,12 @@ public class Osm2Wkt {
 						String vAttr = tempElement.getAttribute(XML_TAG_V);
 						// any kind of streets can be eliminated should be added here 
 						if(kAttr.equals(XML_K_HIGHWAY)) {
-							if(vAttr.equals(XML_V_FOOTWAY) || vAttr.equals(XML_V_STEPS) || vAttr.equals(XML_V_SERVICE)) {
+							if(vAttr.equals(XML_V_FOOTWAY) || vAttr.equals(XML_V_STEPS) || vAttr.equals(XML_V_PEDESTRIAN)) {
+								eliminate = true;
+								break;
+							}
+							// we eliminate all the service type first for simple
+							if(vAttr.equals(XML_V_SERVICE)) {
 								eliminate = true;
 								break;
 							}
@@ -242,6 +265,12 @@ public class Osm2Wkt {
 						if(kAttr.equals(XML_K_RAILWAY)) {
 							eliminate = true;
 							break;
+						}
+						if(kAttr.equals(XML_K_AREA)) {
+							if(vAttr.equals(XML_V_YES)) {
+								eliminate = true;
+								break;
+							}
 						}
 					}
 					if( ndNode.getNodeName() != XML_TAG_ND) continue;

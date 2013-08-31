@@ -30,8 +30,8 @@ public class OutputKMLGeneration {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		// true: highway, false: arterial
-		readLinkFile(true);
-		generateKML(true);
+		readLinkFile(false);
+		generateKML(false);
 	}
 
 	private static void generateKML(boolean isHighway) {
@@ -46,6 +46,8 @@ public class OutputKMLGeneration {
 				int linkId = link.getLinkId();
 				int funcClass = link.getFuncClass();
 				String streetName = link.getStreetName();
+				if(streetName.contains("&"))
+					streetName = streetName.replaceAll("&", " and ");
 				ArrayList<PairInfo> nodeList = link.getNodeList();
 
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";

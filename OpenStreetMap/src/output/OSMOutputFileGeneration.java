@@ -13,6 +13,7 @@ public class OSMOutputFileGeneration {
 	static String root = "file";
 	static String nodeFile = "osm_node.txt";
 	static String wayFile = "osm_way.txt";
+	static String wayInfoFile = "osm_way_info.txt";
 	static String wktsFile = "map.osm.wkts";
 	/**
 	 * @param node
@@ -31,14 +32,15 @@ public class OSMOutputFileGeneration {
 		readWayFile();
 		readWktsFile();
 		overwriteNodeFile();
-		overwriteWayFile();
+		// true: with all info_tag, false: with necessary info
+		overwriteWayFile(false);
 	}
 	
-	public static void overwriteWayFile() {
+	public static void overwriteWayFile(boolean allTag) {
 		System.out.println("overwrite way file...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + wayFile);
+			FileWriter fstream = new FileWriter(root + "/" + (allTag ? wayFile : wayInfoFile));
 			BufferedWriter out = new BufferedWriter(fstream);
 			for (int i = 0; i < wayArrayList.size(); i++) {
 				debug++;
@@ -46,6 +48,7 @@ public class OSMOutputFileGeneration {
 				long wayId = wayInfo.getWayId();
 				char isOneway = wayInfo.isOneway() ? 'O' : 'B';
 				String name = wayInfo.getName();
+				String highway = wayInfo.getHighway();
 				ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
 				String nodeListStr = "";
 				for(int j = 0; j < localNodeArrayList.size(); j++) {
@@ -53,7 +56,17 @@ public class OSMOutputFileGeneration {
 					if(j < localNodeArrayList.size() - 1)
 						nodeListStr += ",";
 				}
-				String strLine = wayId + "||" + isOneway + "||" + name + "||" + nodeListStr + "\r\n";
+				String strLine = wayId + "||" + isOneway + "||" + name + "||"  + highway + "||" + nodeListStr;
+				if(allTag) {
+					HashMap<String, String> infoHashMap = wayInfo.getInfoHashMap();
+					Iterator<String> iter = infoHashMap.keySet().iterator();
+					while(iter.hasNext()) {
+						String key = iter.next();
+						String val = infoHashMap.get(key);
+						strLine += "||" + key + ";;" + val;
+					}
+				}
+				strLine += "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -147,6 +160,7 @@ public class OSMOutputFileGeneration {
 				long wayId = Long.parseLong(splitted[0]);
 				boolean isOneway = splitted[1].equals("O") ? true : false;
 				String name = splitted[2];
+				String highway = splitted[3];
 				//String nodeListStr = splitted[2];
 				//String[] nodeList = nodeListStr.split(",");
 				//ArrayList<Long> localNodeArrayList = new ArrayList<Long>(); 
@@ -154,7 +168,14 @@ public class OSMOutputFileGeneration {
 				//	long nodeId = Long.parseLong(nodeList[i]);
 				//	localNodeArrayList.add(nodeId);
 				//}
-				WayInfo wayInfo = new WayInfo(wayId, isOneway, name, null);
+				HashMap<String, String> infoHashMap = new HashMap<String, String>();
+				for(int i = 4; i < splitted.length; i++) {
+					String[] map = splitted[i].split(";;");
+					String key = map[0];
+					String value = map[1];
+					infoHashMap.put(key, value);
+				}
+				WayInfo wayInfo = new WayInfo(wayId, isOneway, name, highway, null, infoHashMap);
 				//wayArrayList.add(wayInfo);
 				wayHashMap.put(wayId, wayInfo);
 			}

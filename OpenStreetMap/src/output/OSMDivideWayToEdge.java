@@ -1,11 +1,11 @@
-package map;
+package output;
 
 import java.io.*;
 import java.util.*;
 
 import object.*;
 
-public class OSMGenerateKMLMap {
+public class OSMDivideWayToEdge {
 
 	/**
 	 * @param file
@@ -13,8 +13,7 @@ public class OSMGenerateKMLMap {
 	static String root = "file";
 	static String nodeFile = "osm_node.txt";
 	static String wayFile = "osm_way.txt";
-	static String kmlFile = "osm_map.kml";
-	static String wktsFile = "map.osm.wkts";
+	static String edgeFile = "osm_edge.txt";
 	/**
 	 * @param node
 	 */
@@ -23,63 +22,79 @@ public class OSMGenerateKMLMap {
 	 * @param way
 	 */
 	static ArrayList<WayInfo> wayArrayList = new ArrayList<WayInfo>();
+	/**
+	 * @param edge
+	 */
+	static ArrayList<EdgeInfo> edgeArrayList = new ArrayList<EdgeInfo>();
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		readNodeFile();
 		readWayFile();
-		generateKML();
+		divideWayToEdge();
+		writeEdgeFile();
 	}
 	
-	public static void generateKML() {
-		System.out.println("generate kml...");
+	public static void writeEdgeFile() {
+		System.out.println("write edge file...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + kmlFile);
+			FileWriter fstream = new FileWriter(root + "/" + edgeFile);
 			BufferedWriter out = new BufferedWriter(fstream);
-			out.write("<kml><Document>");
-
-			for (int i = 0; i < wayArrayList.size(); i++) {
+			for (int i = 0; i < edgeArrayList.size(); i++) {
 				debug++;
-				WayInfo wayInfo = wayArrayList.get(i);
-				long wayId = wayInfo.getWayId();
-				boolean isOneway = wayInfo.isOneway();
-				String name = wayInfo.getName();
-				String highway = wayInfo.getHighway();
-				ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
+				EdgeInfo edgeInfo = edgeArrayList.get(i);
+				long wayId = edgeInfo.getWayId();
+				int edgeId = edgeInfo.getEdgeId();
+				char isOneway = edgeInfo.isOneway() ? 'O' : 'B';
+				String name = edgeInfo.getName();
+				String highway = edgeInfo.getHighway();
+				long startNode = edgeInfo.getStartNode();
+				long endNode = edgeInfo.getEndNode();
+				int distance = edgeInfo.getDistance();
 				
-				String kmlStr = "<Placemark><name>Way:" + wayId + "</name>";
-				kmlStr += "<description>";
-				kmlStr += "oneway:" + isOneway + "\r\n";
-				kmlStr += "name:" + name + "\r\n";
-				kmlStr += "highway:" + highway + "\r\n";
-				kmlStr += "ref:\r\n";
-				for(int j = 0; j < localNodeArrayList.size(); j++) {
-					long NodeId = localNodeArrayList.get(j);
-					kmlStr += NodeId + "\r\n";
-				}
-				kmlStr += "\r\n";
-				kmlStr += "</description>";
-				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
-				for(int j = 0; j < localNodeArrayList.size(); j++) {
-					NodeInfo nodeInfo = nodeHashMap.get(localNodeArrayList.get(j));
-					LocationInfo location = nodeInfo.getLocation();
-					kmlStr += location.getLongitude() + "," + location.getLatitude() + ",0 ";
-				}
-				kmlStr += "</coordinates></LineString>";
-				kmlStr += "<Style><LineStyle>";
-				kmlStr += "<width>1</width>";
-				kmlStr += "</LineStyle></Style></Placemark>\n";
-				out.write(kmlStr);
+				String strLine = wayId + "," + edgeId + "||" + isOneway + "||" + name + "||"  + highway + "||" 
+				+ startNode + "||" + endNode + "||" + distance + "\r\n";
+				out.write(strLine);
 			}
-			out.write("</Document></kml>");
 			out.close();
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			System.err.println("generateKML: debug code: " + debug);
+			System.err.println("writeEdgeFile: debug code: " + debug);
 		}
-		System.out.println("generate kml finish!");
+		System.out.println("write edge file finish!");
+	}
+	
+	public static void divideWayToEdge() {
+		System.out.println("divide way to edge...");
+		
+		for(int i = 0; i < wayArrayList.size(); i++) {
+			WayInfo wayInfo = wayArrayList.get(i);
+			long wayId = wayInfo.getWayId();
+			boolean isOneway = wayInfo.isOneway();
+			String name = wayInfo.getName();
+			String highway = wayInfo.getHighway();
+			ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
+			int edgeId = 0;
+			
+			long preNodeId = 0;
+			for(int j = 0; j < localNodeArrayList.size(); j++) {
+				long nodeId = localNodeArrayList.get(j);
+				if(j >= 1) {
+					long startNode = preNodeId;
+					long endNode = nodeId;
+					NodeInfo nodeInfo1 = nodeHashMap.get(startNode);
+					NodeInfo nodeInfo2 = nodeHashMap.get(endNode);
+					double dDistance = Distance.calculateDistance(nodeInfo1.getLocation(), nodeInfo2.getLocation()) * 5280;
+					int distance = (int)Math.round(dDistance);
+					EdgeInfo edgeInfo = new EdgeInfo(wayId, edgeId++, isOneway, name, highway, startNode, endNode, distance);
+					edgeArrayList.add(edgeInfo);
+				}
+				preNodeId = nodeId;
+			}
+		}
+		System.out.println("divide way to edge finish!");
 	}
 	
 	public static void readWayFile() {
@@ -151,4 +166,5 @@ public class OSMGenerateKMLMap {
 		}
 		System.out.println("read node file finish!");
 	}
+
 }

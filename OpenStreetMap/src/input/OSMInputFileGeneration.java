@@ -14,6 +14,16 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+/*
+ * this is 2nd step for OSM
+ * it will generate osm_node.txt and osm_way.txt
+ * format:
+ * osm_node.txt
+ * 
+ * osm_way.txt
+ * 
+ */
+
 public class OSMInputFileGeneration {
 
 	/**
@@ -105,17 +115,26 @@ public class OSMInputFileGeneration {
 				long wayId = wayInfo.getWayId();
 				char isOneway = wayInfo.isOneway() ? 'O' : 'B';
 				String name = wayInfo.getName();
-				ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
-				String nodeListStr = "";
-				for(int j = 0; j < localNodeArrayList.size(); j++) {
-					nodeListStr += localNodeArrayList.get(j);
-					if(j < localNodeArrayList.size() - 1)
-						nodeListStr += ",";
-				}
+				String highway = wayInfo.getHighway();
+				//ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
+				//String nodeListStr = "";
+				//for(int j = 0; j < localNodeArrayList.size(); j++) {
+				//	nodeListStr += localNodeArrayList.get(j);
+				//	if(j < localNodeArrayList.size() - 1)
+				//		nodeListStr += ",";
+				//}
 				
 				// String strLine = wayId + "||" + name + "||" + nodeListStr + "\r\n";
-				String strLine = wayId + "||" + isOneway + "||" + name + "\r\n";
+				String strLine = wayId + "||" + isOneway + "||" + name + "||" + highway;
+				HashMap<String, String> infoHashMap = wayInfo.getInfoHashMap();
 				
+				Iterator<String> iter = infoHashMap.keySet().iterator();
+				while(iter.hasNext()) {
+					String key = iter.next();
+					String val = infoHashMap.get(key);
+					strLine += "||" + key + ";;" + val;
+				}
+				strLine += "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -172,7 +191,9 @@ public class OSMInputFileGeneration {
 					long wayId = Long.parseLong(element.getAttribute("id"));
 					boolean isOneway = false;
 					String name = "null";
-					ArrayList<Long> localNodeArrayList = new ArrayList<Long>();
+					String highway = "null";
+					//ArrayList<Long> localNodeArrayList = new ArrayList<Long>();
+					HashMap<String, String> infoHashMap = new HashMap<String, String>();
 					
 					if(node.hasChildNodes()) {
 						NodeList childList = node.getChildNodes();
@@ -180,31 +201,37 @@ public class OSMInputFileGeneration {
 							Node child = childList.item(j);
 							if (child.getNodeType() == Node.ELEMENT_NODE) {
 								if(child.getNodeName().equals("nd")) {
+									continue;
+									//Element eChildElement = (Element) child;
 									
-									Element eChildElement = (Element) child;
-									
-									long nodeId = Long.parseLong(eChildElement.getAttribute("ref"));
-									localNodeArrayList.add(nodeId);
+									//long nodeId = Long.parseLong(eChildElement.getAttribute("ref"));
+									//localNodeArrayList.add(nodeId);
 								}
 								if(child.getNodeName().equals("tag")) {
 									Element eChildElement = (Element) child;
 									
 									String kAttr = eChildElement.getAttribute("k");
+									String vAttr = eChildElement.getAttribute("v"); 
 									
 									if(kAttr.equals("name")) {
-										name = eChildElement.getAttribute("v");
+										name = vAttr;
 									}
-									
-									if(kAttr.equals("oneway")) {
-										if(eChildElement.getAttribute("v").equals("yes"))
+									else if(kAttr.equals("highway")) {
+										highway = vAttr;
+									}
+									else if(kAttr.equals("oneway")) {
+										if(vAttr.equals("yes"))
 											isOneway = true;
+									}
+									else { // put them in info map
+										infoHashMap.put(kAttr, vAttr);
 									}
 								}
 							}
 						}
 					}
 					
-					WayInfo wayInfo = new WayInfo(wayId, isOneway, name, localNodeArrayList);
+					WayInfo wayInfo = new WayInfo(wayId, isOneway, name, highway, null, infoHashMap);
 					
 					wayArrayList.add(wayInfo);
 				}
