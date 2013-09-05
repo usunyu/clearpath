@@ -54,13 +54,13 @@ public class InputFileGeneration {
 		// TODO Auto-generated method stub
 		/* write link file */
 		// true: highway, false: arterial
-		fetchLinkId(true);
-		fetchLink();
-		writeLinkFile(true);
+		//fetchLinkId(true);
+		//fetchLink();
+		//writeLinkFile(true);
 		
 		/* write average file for cube */
-		//for(int i = 0; i < days.length; i++)
-		//	writeAverageCube(7, i); // August
+		for(int i = 0; i < days.length; i++)
+			writeAverageCube(8, i); // September
 		/* test */
 		//writeAverageCube(7, 0);
 		

@@ -1,7 +1,102 @@
-CleanPath
-=========
 
-Android GPS
+
+TASK (August 30)
+[ ]1) Pls run pattern generation for  the following and exclude the holidays 
+September, October, November, December 
+ Can you pls start creating September, October, November, December patterns. When creating these patterns pls exclude the vacation/holidays days (e.g. Labor Day, thanksging and all others)  so that averages are good. For example, lets assume that  september 3 (Tuesday) is labor day, when creating Tuesday pattern in Septemeber you will only use 3 Tuesdays(excluding Sept 3).  Also pls note that you will generate a "labor day" pattern only using September 3 data.  It will same for all other holidays. 
+Deadline: 9/6
+[ ]2) Pls run pattern generation for  the holidays  that you excludes above. 
+Deadline: 9/6
+[X]3) Generate following files from OSM 
+nodes.csv, edges.csv, adjlist.csv 
+When doing so pls include both (v) and (f) to adjlist. Pls note that (f) should be realistic. 
+Deadline: Monday  9/2 
+type                         speed(MPH)
+motorway:               60
+motorway_link:        55
+residential:               30
+tertiary:                    30
+tertiary_link:             25
+secondary:              35
+secondary_link:       30
+primary:                   40
+primary_link:            35
+unclassified:            15
+null:                          15
+
+GEO Select
+http://docs.oracle.com/cd/A97630_01/appdev.920/a96630/sdo_operat.htm#BJAFBCFC
+
+[ ]4) Look for other tools that can take care of completenes without breaking overpass 
+No deadline 
+[ ]5) Append Read Large OSM
+
+The following example selects the GID values from the POLYGONS table where the GEOMETRY column object is likely to interact spatially with the specified rectangle having the lower-left coordinates (x1,y1) and the upper-right coordinates (x2, y2).
+Select A.Gid FROM Polygons A WHERE SDO_FILTER(A.Geometry, mdsys.sdo_geometry(2003,NULL,NULL,                                   mdsys.sdo_elem_info_array(1,1003,3),                                   mdsys.sdo_ordinate_array(x1,y1,x2,y2)),                      'querytype=WINDOW') = 'TRUE';
+
+
+TASK (August 30)
+[X]1) funcclass observe
+     highway                    fun class
+     secondary                   4
+     residential                   5
+     motorway                    2
+     motorway_link              4
+[X]2) spatialite-tools https://www.gaia-gis.it/fossil/spatialite-tools/index
+[X]3) divide the way
+
+
+TASK (August 27)
+Remove follow way
+[X]1) <tag k="highway" v="footway"/> 
+
+[X]2) <tag k="highway" v="steps"/>
+[X]3) <tag k="building" v="yes"/>
+[X]4) <relation id="1640793" visible="true" version="3" changeset="13181489" timestamp="2012-09-20T09:49:48Z" user="robgeb" uid="336460">
+            <member type="way" ref="8849695" role="outer"/>
+            <member type="way" ref="119353445" role="inner"/>
+            <tag k="building" v="stadium"/>
+            <tag k="type" v="multipolygon"/>
+           </relation>
+[X]5) <tag k="highway" v="service"/>
+[X]6) <tag k="landuse" v="grass"/> 
+[X]7) <tag k="barrier" v="fence"/>
+
+
+TASK (August 26)
+[X]1) were you able to generate adjlist, nodes and edges.csv? 
+[X]2) Can you send me the KML file that shows the nodes locations (after you divide the wayids)?
+[ ]3) What is your observation with change management (when edges/nodes added removed from the map)? 
+[X]4) Also, I asked if you could connect to new datasource (navteqrdf username) to check ? 
+
+
+
+TASK (August 25)
+osm2wkt program
+
+[X]1) Complete problem
+
+[X]2) Bidirectional problem
+
+
+TASK(August 16 25)
+Finished importing Navteq RDF data  to our oracle database.  This is another format that I mentioned  previously but it is very similar to GN_LINKS and GN_NODES, except there is no TMC information 
+
+
+NAVTEQRDF/NAVTEQRDF@gd2.usc.edu:1521:navteq 
+
+[X]1) Can you pls connect to this database and let me know if you can create adjclist from NAVTEQRDF schema? Similar to GN_LINKS and GN_NODES, there are links and nodes tables but with different names. 
+[X]2) Can you pls compare the link_ids in both  GN_LINKS and NAVTEQRDF.LINKS (don't remember the name now) table to see if the link_ids are same. If you we can use TMC table in the NAVTEQRDF schema as well. 
+
+
+
+TASK (August 23)
+People have tested the new adjlist (that you generated with overall penalty), it looks like we are getting to more accurate travel times. It looks like we need to get a little more penalty (additional %5) and also penalty for funclass 5 edges (remember we were only penalyzing funclass=4 and funclass=3 edges). 
+
+[X]Can you pls generate the Tuesday pattern with %25 penalty to all arterial streets (funclass=3 and funcclass=4 edges and funcclass=5 ) for all times (6AM to 9PM). Remember we had rush hour penalty   (%15), pls keep that  as it is. So you will have total of %40 (%25+%15) penalty for arterials (funclass=3 and funcclass=4 edges and funcclass=5 ) rush hours and   %25 for arterial (funclass=3 and funcclass=4 edges and funcclass=5 ) non-rush hours.
+
+
+
 
 
 Connect to Server
@@ -20,29 +115,19 @@ pw: clearp
 
 TASK(August 20)
 [X]We have been testing the your LA Monday, Tuesday,…Sunday   LA addlist files. The highways are coming very good. But it looks like  our speed estimations for Arterials  are  high. As you know we are using the speed_categories to find the  travel-time for Arterials. So to be more realistic, can you pls introduce %20 penalty to all arterial streets (funclass=3 and funcclass=4 edges) for all times (6AM to 9PM). Remember we had rush hour penalty   (%15), pls keep that  as it is, so you will have total of %35 (%20+%15) penalty for arterials rush hours, %20 for arterial non-rush hours.
+
 Can you pls run the pattern ONLY for TUESDAY for 15 minutes?  Can you pls run this while you are working on OpenStreetsMap? Pls let me know when you start running the new Tuesday.
  
 
 TASK(August 19)
-[ ]https://www.gaia-gis.it/fossil/spatialite-tools/wiki?name=OSM+tools
-[ ]https://www.gaia-gis.it/fossil/spatialite-tools/wiki?name=spatialite_osm_net
-[ ]http://osgeo-org.1560.x6.nabble.com/Building-a-connected-graph-with-OSM-data-Splitting-LineStrings-at-their-intersections-td4323604.html
-[ ]http://tm.kit.edu/~mayer/osm2wkt/ (linestrings)
+[X]https://www.gaia-gis.it/fossil/spatialite-tools/wiki?name=OSM+tools
+[X]https://www.gaia-gis.it/fossil/spatialite-tools/wiki?name=spatialite_osm_net
+[X]http://osgeo-org.1560.x6.nabble.com/Building-a-connected-graph-with-OSM-data-Splitting-LineStrings-at-their-intersections-td4323604.html
+[X]http://tm.kit.edu/~mayer/osm2wkt/ (linestrings)
 
 
 TASK(August 16)
 Realtime Update
-
-
-
-TASK(August 16)
-Finished importing Navteq RDF data  to our oracle database.  This is another format that I mentioned  previously but it is very similar to GN_LINKS and GN_NODES, except there is no TMC information 
-
-
-NAVTEQRDF/NAVTEQRDF@gd2.usc.edu:1521:navteq 
-
-[ ]1) Can you pls connect to this database and let me know if you can create adjclist from NAVTEQRDF schema? Similar to GN_LINKS and GN_NODES, there are links and nodes tables but with different names. 
-[ ]2) Can you pls compare the link_ids in both  GN_LINKS and NAVTEQRDF.LINKS (don't remember the name now) table to see if the link_ids are same. If you we can use TMC table in the NAVTEQRDF schema as well. 
 
 
 
@@ -58,7 +143,7 @@ Please email me if you have any questions. Can you generate the new adjlist by S
 TASK(August 12)
 [X]1) Do we have all 7days patterns for August patterns? 
 [X]2) How long does it take to create one day pattern? 
-[ ]3) Can you pls start creating September, October, November, December patterns. When creating these patterns pls exclude the vacation/holidays days (e.g. Labor Day, thanksging and all others)  so that averages are good. For example, lets assume that  september 3 (Tuesday) is labor day, when creating Tuesday pattern in Septemeber you will only use 3 Tuesdays(excluding Sept 3).  Also pls note that you will generate a "labor day" pattern only using September 3 data.  It will same for all other holidays. 
+[X]3) Can you pls start creating September, October, November, December patterns. When creating these patterns pls exclude the vacation/holidays days (e.g. Labor Day, thanksging and all others)  so that averages are good. For example, lets assume that  september 3 (Tuesday) is labor day, when creating Tuesday pattern in Septemeber you will only use 3 Tuesdays(excluding Sept 3).  Also pls note that you will generate a "labor day" pattern only using September 3 data.  It will same for all other holidays. 
 
 
 
