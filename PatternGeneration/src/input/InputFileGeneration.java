@@ -376,7 +376,7 @@ public class InputFileGeneration {
 			ResultSet res = null;
 			con = getConnection();
 			
-			sql = "SELECT * FROM DING.HIGHWAY_AVERAGES3_CUBE WHERE month = '" + months[month] + "' AND day = '" + days[day] + "'";
+			sql = "SELECT * FROM DING.HIGHWAY_AVERAGES3_CUBE WHERE month = '" + months[month] + "' AND day = '" + days[day] + "' ORDER BY link_id, time";
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
 			int i = 0;
