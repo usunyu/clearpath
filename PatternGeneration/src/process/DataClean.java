@@ -48,7 +48,7 @@ public class DataClean {
 		// TODO Auto-generated method stub
 		fetchSensor();
 		mapCloseSensor();
-		//generateSensorKML();
+		generateSensorKML();
 		for(int i = 0; i < days.length; i++) {
 			// September
 			System.out.println("clean data for " + months[8] + ", " + days[i] + "...");
@@ -58,9 +58,9 @@ public class DataClean {
 			System.out.println("clean data for " + months[8] + ", " + days[i] + " finish!");
 		}
 		/* test */
-		//readAverageCube(7, 0);
+		//readAverageCube(8, 4);
 		//cleanData();
-		//writeCleanFile(7, 0);
+		//writeCleanFile(8, 4);
 	}
 	
 	private static void writeCleanFile(int month, int day) {

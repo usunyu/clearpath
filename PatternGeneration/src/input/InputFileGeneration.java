@@ -59,26 +59,26 @@ public class InputFileGeneration {
 		//writeLinkFile(true);
 		
 		/* write average file for cube */
-		//for(int i = 0; i < days.length; i++)
-		//	writeAverageCube(8, i); // September
+		for(int i = 0; i < days.length; i++)
+			writeAverageCube(8, i); // September
 		/* test */
-		writeAverageCube(8, 4);
+		//writeAverageCube(8, 4);
 		
 		/* change the interval to 15 min */
-//		for(int i = 0; i < days.length; i++) {
-//			// September
-//			System.out.println("change the interval for " + months[8] + ", " + days[i] + "...");
-//			readAverageCube(8, i);
-//			changeInterval();
-//			writeAverage15Cube(8, i);
-//			renameAverageFile(8, i);
-//			System.out.println("change the interval for " + months[8] + ", " + days[i] + " finish!");
-//		}
+		for(int i = 0; i < days.length; i++) {
+			// September
+			System.out.println("change the interval for " + months[8] + ", " + days[i] + "...");
+			readAverageCube(8, i);
+			changeInterval();
+			writeAverage15Cube(8, i);
+			renameAverageFile(8, i);
+			System.out.println("change the interval for " + months[8] + ", " + days[i] + " finish!");
+		}
 		/* test */
-		//readAverageCube(8, 1);
+		//readAverageCube(8, 4);
 		//changeInterval();
-		//writeAverage15Cube(8, 1);
-		//renameAverageFile(8, 1);
+		//writeAverage15Cube(8, 4);
+		//renameAverageFile(8, 4);
 	}
 	
 	private static void renameAverageFile(int month, int day) {
@@ -140,20 +140,25 @@ public class InputFileGeneration {
 				for(int j = 72, k = 0; j < 250; j += 3, k++) {
 					speed15Array[k] = speedArray[j];
 				}
-				// fill near time
+				// fill near time less than 10 min
 				for(int k = 0; k < speed15Array.length; k++) {
 					if(speed15Array[k] == 0) {
 						int oIndex = 72 + k * 3;
-						int lIndex = oIndex - 1;
-						int rIndex = oIndex + 1;
-						if(speedArray[lIndex] != 0 && speedArray[rIndex] != 0) {
-							speed15Array[k] = (speedArray[lIndex] + speedArray[rIndex]) / 2;
-						}
-						else if(speedArray[lIndex] != 0) {
-							speed15Array[k] = speedArray[lIndex];
-						}
-						else if(speedArray[rIndex] != 0) {
-							speed15Array[k] = speedArray[rIndex];
+						for(int step = 1; step < 3; step++) {
+							int lIndex = oIndex - step;
+							int rIndex = oIndex + step;
+							if(speedArray[lIndex] != 0 && speedArray[rIndex] != 0) {
+								speed15Array[k] = (speedArray[lIndex] + speedArray[rIndex]) / 2;
+								break;
+							}
+							else if(speedArray[lIndex] != 0) {
+								speed15Array[k] = speedArray[lIndex];
+								break;
+							}
+							else if(speedArray[rIndex] != 0) {
+								speed15Array[k] = speedArray[rIndex];
+								break;
+							}
 						}
 					}
 				}
