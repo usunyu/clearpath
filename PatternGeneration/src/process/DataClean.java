@@ -48,7 +48,7 @@ public class DataClean {
 		// TODO Auto-generated method stub
 		fetchSensor();
 		mapCloseSensor();
-		generateSensorKML();
+		//generateSensorKML();
 		for(int i = 0; i < days.length; i++) {
 			// September
 			System.out.println("clean data for " + months[8] + ", " + days[i] + "...");

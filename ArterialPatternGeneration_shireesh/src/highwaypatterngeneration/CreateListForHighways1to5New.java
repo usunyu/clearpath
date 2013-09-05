@@ -65,7 +65,7 @@ public class CreateListForHighways1to5New {
 	// "H:\\clearp\\links_all.csv";
 	// private static String [] days =
 	// {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
-	private static String[] days = { "Tuesday" };
+	private static String[] days = { "Monday" };
 
 	static HashMap<Integer, String> sensors_stNames = new HashMap<Integer, String>();
 	static HashMap<String, Integer> LinkDirection = new HashMap<String, Integer>();
@@ -469,8 +469,8 @@ public class CreateListForHighways1to5New {
 			else
 				// sql =
 				// "select speed from highway_averages3_new4 where day='"+day+"' and month = 'July' and link_id= '"+LinkIds[i]+"' order by time";
-				sql = "select speed from HIGHWAY_AVERAGES_AUGUST_CLEAN where day='" + day
-						+ "' and month = 'August' and link_id= '" + LinkIds[i]
+				sql = "select speed from HIGHWAY_AVERAGES_SEP_CLEAN where day='" + day
+						+ "' and month = 'September' and link_id= '" + LinkIds[i]
 						+ "' order by time";
 
 			f = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,

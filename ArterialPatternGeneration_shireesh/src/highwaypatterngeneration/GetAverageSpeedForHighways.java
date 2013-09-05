@@ -60,7 +60,7 @@ private static void createPatterns() {
 		out = new BufferedWriter(fstream);
 			//MOD(TO_CHAR(t2.date_and_time, 'J'), 7) + 1 NOT IN (6, 7) and
 			//String sql = "SELECT avg(t2.SPEED) FROM highway_Averages3_new4 T2 where month = 'July' GROUP BY  TIME ORDER BY TIME";
-		    String sql = "SELECT avg(t2.SPEED) FROM highway_averages_august_clean T2 where month = 'August' GROUP BY  TIME ORDER BY TIME";
+		    String sql = "SELECT avg(t2.SPEED) FROM highway_averages_sep_clean T2 where month = 'September' GROUP BY  TIME ORDER BY TIME";
 			System.out.println(sql);
 			Connection con = getConnection();
 			PreparedStatement f = con.prepareStatement(sql,
