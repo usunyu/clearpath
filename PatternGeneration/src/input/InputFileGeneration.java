@@ -59,26 +59,26 @@ public class InputFileGeneration {
 		//writeLinkFile(true);
 		
 		/* write average file for cube */
-		for(int i = 0; i < days.length; i++)
-			writeAverageCube(8, i); // September
+		//for(int i = 0; i < days.length; i++)
+		//	writeAverageCube(8, i); // September
 		/* test */
 		//writeAverageCube(7, 0);
 		
 		/* change the interval to 15 min */
-		//for(int i = 0; i < days.length; i++) {
-			// August
-		//	System.out.println("change the interval for " + months[7] + ", " + days[i] + "...");
-		//	readAverageCube(7, i);
-		//	changeInterval();
-		//	writeAverage15Cube(7, i);
-		//	renameAverageFile(7, i);
-		//	System.out.println("change the interval for " + months[7] + ", " + days[i] + " finish!");
-		//}
+		for(int i = 0; i < days.length; i++) {
+			// September
+			System.out.println("change the interval for " + months[8] + ", " + days[i] + "...");
+			readAverageCube(8, i);
+			changeInterval();
+			writeAverage15Cube(8, i);
+			renameAverageFile(8, i);
+			System.out.println("change the interval for " + months[8] + ", " + days[i] + " finish!");
+		}
 		/* test */
-		//readAverageCube(7, 0);
+		//readAverageCube(8, 1);
 		//changeInterval();
-		//writeAverage15Cube(7, 0);
-		//renameAverageFile(7, 0);
+		//writeAverage15Cube(8, 1);
+		//renameAverageFile(8, 1);
 	}
 	
 	private static void renameAverageFile(int month, int day) {
@@ -89,6 +89,9 @@ public class InputFileGeneration {
 			return;
 		}
 		File newFile = new File(root + "/" + months[month] + "_" + days[day] + "_" + averageSpeedFile);
+		// Delete old file if it already exist
+		if(newFile.exists())
+			newFile.delete();
 		//Rename
 		if (file.renameTo(newFile)) {
 			System.out.println("rename average file finish!");
@@ -199,6 +202,9 @@ public class InputFileGeneration {
 					sensorSpeedPattern.put(sensorId, newArray);
 				}
 			}
+			br.close();
+			in.close();
+			fstream.close();
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

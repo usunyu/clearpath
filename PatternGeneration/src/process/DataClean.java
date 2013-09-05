@@ -50,12 +50,12 @@ public class DataClean {
 		mapCloseSensor();
 		//generateSensorKML();
 		for(int i = 0; i < days.length; i++) {
-			// August
-			System.out.println("clean data for " + months[7] + ", " + days[i] + "...");
-			readAverageCube(7, i);
+			// September
+			System.out.println("clean data for " + months[8] + ", " + days[i] + "...");
+			readAverageCube(8, i);
 			cleanData();
-			writeCleanFile(7, i);
-			System.out.println("clean data for " + months[7] + ", " + days[i] + " finish!");
+			writeCleanFile(8, i);
+			System.out.println("clean data for " + months[8] + ", " + days[i] + " finish!");
 		}
 		/* test */
 		//readAverageCube(7, 0);
