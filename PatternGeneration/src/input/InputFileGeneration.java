@@ -62,18 +62,18 @@ public class InputFileGeneration {
 		//for(int i = 0; i < days.length; i++)
 		//	writeAverageCube(8, i); // September
 		/* test */
-		//writeAverageCube(7, 0);
+		writeAverageCube(8, 4);
 		
 		/* change the interval to 15 min */
-		for(int i = 0; i < days.length; i++) {
-			// September
-			System.out.println("change the interval for " + months[8] + ", " + days[i] + "...");
-			readAverageCube(8, i);
-			changeInterval();
-			writeAverage15Cube(8, i);
-			renameAverageFile(8, i);
-			System.out.println("change the interval for " + months[8] + ", " + days[i] + " finish!");
-		}
+//		for(int i = 0; i < days.length; i++) {
+//			// September
+//			System.out.println("change the interval for " + months[8] + ", " + days[i] + "...");
+//			readAverageCube(8, i);
+//			changeInterval();
+//			writeAverage15Cube(8, i);
+//			renameAverageFile(8, i);
+//			System.out.println("change the interval for " + months[8] + ", " + days[i] + " finish!");
+//		}
 		/* test */
 		//readAverageCube(8, 1);
 		//changeInterval();

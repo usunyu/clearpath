@@ -67,8 +67,8 @@ public class HighwayPatternGeneration {
 		readLinkFile();
 		fetchSensor();
 		matchLinkSensor();
-		readAverageFile(7, 0);
-		generatePatternKML(102, 7, 0);
+		readAverageFile(8, 0);
+		generatePatternKML(102, 8, 0);
 	}
 	
 	private static void generatePatternKML(int time, int month, int day) {
