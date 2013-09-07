@@ -443,7 +443,7 @@ public class DataListGeneration {
 			int end = Integer.parseInt(args[1]);
 			int time = Integer.parseInt(args[2]);
 			*/
-                    	int start = 30;
+			int start = 30;
 			int end = 4248;
 			int time = 10;
 			//load in the nodes info---nodes coordinates 
@@ -529,142 +529,141 @@ public class DataListGeneration {
 	                   }
 	               }
 	           );
+		
+		//System.out.println("M1");
+		int startTime=time;								// stores the trip initialization time
 
-	       	   //System.out.println("M1");
-	       	   
-	           int startTime=time;								// stores the trip initialization time
+		int nn= graph.getSize();
+		int i, len = nn, arrTime, w, j, id;
+		int[] c = new int[len];
+		int[] parent = new int[len];
+		boolean unreachable=false;
+		/*
+		 * add visited vector
+		 * commented by Dingxiong
+		 */
+		boolean[] visited = new boolean[len];
+		for(i=0; i<len; i++) {
+			visited[i] = false;                      		//indicating infinity
+		}
 
-	           int nn= graph.getSize();
-	           int i, len = nn, arrTime, w, j, id;
-	           int[] c = new int[len];
-	           int[] parent = new int[len];
-	           boolean unreachable=false;
-	           /*
-	            * add visited vector
-	            * commented by Dingxiong
-	            */
-	           boolean[] visited = new boolean[len];
-	           for(i=0; i<len; i++) {
-	                   visited[i] = false;                      		//indicating infinity
-	           }
+		for(i=0; i<len; i++)
+			parent[i] = -1;
 
+		Iterator<Node> it;
+		boolean qFlag = false;
 
-	           for(i=0; i<len; i++)
-	               parent[i] = -1;
+		for(i=0; i<len; i++) {
+			if(i == start)
+				c[i] = 0;                       					//starting node
+			else
+				c[i] = Integer.MAX_VALUE;                      		//indicating infinity
+		}
 
-	           Iterator<Node> it;
-	           boolean qFlag = false;
-
-	           for(i=0; i<len; i++) {
-	               if(i == start)
-	                   c[i] = 0;                       					//starting node
-	               else
-	                   c[i] = Integer.MAX_VALUE;                      		//indicating infinity
-	           }
-
-	          // try{
-		      //    FileWriter fstream = new FileWriter("pairs2\\qu2.txt");
-		      //    BufferedWriter out = new BufferedWriter(fstream);
+		// try{
+		//    FileWriter fstream = new FileWriter("pairs2\\qu2.txt");
+		//    BufferedWriter out = new BufferedWriter(fstream);
 
 
-	           Node tempN, n, s = new Node(start, 0, startTime);       	//creating the starting node with nodeId = start and cost = 0 and arrival time = time
-	           priorityQ.offer(s);                     					//inserting s into the priority queue
-	           int count=0;
-	           while ((n = priorityQ.poll()) != null) { 					//while Q is not empty
-	           	List<adj_lists.Pair<Integer, int[]>> neighbors;
+		Node tempN, n, s = new Node(start, 0, startTime);       	//creating the starting node with nodeId = start and cost = 0 and arrival time = time
+		priorityQ.offer(s);                     					//inserting s into the priority queue
+		int count=0;
+		// problem: algorithm did not end even find end node here!!!???
+		while ((n = priorityQ.poll()) != null) { 					//while Q is not empty
+			List<adj_lists.Pair<Integer, int[]>> neighbors;
 
-	           	time= startTime+n.getArrTime()/60/1000/timeInterval; 			//define time interval at the beginning (granularity)
-//	           	time=startTime;
-//	           	count++;
-	           	if (time>times-1){												// time [6am - 9 pm], we regard times after 8PM as constant edge weights
-	           		time=times-1;
-	           	}
-	               id = n.getNodeId();
-	               /*
-	                * using visited vector
-	                */
-	               if (visited[id] == true)
-	            	   continue;
-	               visited[id] = true;
+			time= startTime+n.getArrTime()/60/1000/timeInterval; 			//define time interval at the beginning (granularity)
+			// time=startTime;
+			// count++;
+			if (time>times-1){												// time [6am - 9 pm], we regard times after 8PM as constant edge weights
+				time=times-1;
+			}
 
-//	               System.out.println(count+"");
-	               neighbors=(List<Pair<Integer, int[]>>) graph.getList().get(id);
-	               arrTime = n.getArrTime();
+			id = n.getNodeId();
+			/*
+			 * using visited vector
+			 */
+			if (visited[id] == true)
+				continue;
+			visited[id] = true;
 
-	               if (neighbors==null)
-	           		continue;
-	               for(Pair<Integer, int[]> pair: neighbors) {
+			// System.out.println(count+"");
+			neighbors=(List<Pair<Integer, int[]>>) graph.getList().get(id);
+			arrTime = n.getArrTime();
 
-	               	int node=pair.getLeft();
-	               	int travelTime=pair.getRight()[time];
-	               	/*
-	               	 * if the node is visited, we bypass it
-	               	 * commented by Dingxiong
-	               	 */
-	               	if (visited[node] == true) continue;
-	               	// if we find a node with updated distance, just insert it to the priority queue
-	               	// even we pop out another node with same id later, we know that it was visited and will ignore it
-	               	//commented by Dingxiong
-	               	if (arrTime + travelTime < c[node]) {
-	               		c[node] = arrTime + travelTime;
-	               		parent[node] = id;
-	               		priorityQ.offer(new Node(node, c[node], c[node]));
-	               	  }
-	                }
+			if (neighbors==null)
+				continue;
 
-	           }
-	           	//out.write("\n");
-	           //out.close();
-	          // }
-	          // catch (IOException io) {
-		      //      System.err.println(io.toString());
-		      //      System.exit(1);
-		      //  }
+			for(Pair<Integer, int[]> pair: neighbors) {
 
+				int node=pair.getLeft();
+				int travelTime=pair.getRight()[time];
+				/*
+				 * if the node is visited, we bypass it
+				 * commented by Dingxiong
+				 */
+				if (visited[node] == true) continue;
+				// if we find a node with updated distance, just insert it to the priority queue
+				// even we pop out another node with same id later, we know that it was visited and will ignore it
+				//commented by Dingxiong
+				if (arrTime + travelTime < c[node]) {
+					c[node] = arrTime + travelTime;
+					parent[node] = id;
+					priorityQ.offer(new Node(node, c[node], c[node]));
+				}
+			}
+		}
+		//out.write("\n");
+		//out.close();
+		// }
+		// catch (IOException io) {
+		//      System.err.println(io.toString());
+		//      System.exit(1);
+		//  }
 
-	          //find the path
-	           int temp;
-	           int[] nextNode = new int[len];
-	           for(i=0; i<len; i++)
-	               nextNode[i] = -1;
+		//find the path
+		int temp;
+		int[] nextNode = new int[len];
 
-	           temp = end;
-	           while(temp != -1) {
-	               if(parent[temp] != -1)
-	                   nextNode[parent[temp]] = temp;
-	               temp = parent[temp];
-	           }
+		for(i=0; i<len; i++)
+			nextNode[i] = -1;
 
+		temp = end;
+		while(temp != -1) {
+			if(parent[temp] != -1)
+				nextNode[parent[temp]] = temp;
+			temp = parent[temp];
+		}
 
-	           if (start == end)
-	               System.out.println("Your starting node is the same as your ending node.");
-	           else {
-	               i = start;
-	               j = 1;
-//	               System.out.print(i);
-	               path.offer(i);
-	               while (nextNode[i] != end) {
-	               	if (nextNode[i]==-1){
-	               		unreachable=true;
-	               		break;
-	               	}
-	               	path.offer(nextNode[i]);
-//	                   System.out.print(" " + nextNode[i]);
-	                   i = nextNode[i];
-	               }
-	               if (!unreachable){
-                    path.offer(end);
-	   	            //path.offer((c[end]-startTime));
+		if (start == end)
+			System.out.println("Your starting node is the same as your ending node.");
+		else {
+			i = start;
+			j = 1;
+			// System.out.print(i);
+			path.offer(i);
+			while (nextNode[i] != end) {
+				if (nextNode[i]==-1){
+					unreachable=true;
+					break;
+				}
+				path.offer(nextNode[i]);
+				// System.out.print(" " + nextNode[i]);
+				i = nextNode[i];
+			}
 
-	   	            if(c[end] > Lsp) {
-	   	                Lsp = c[end];
-	   	            }
-	               }
-	               else {
-	            	System.out.println("unreachable");
+			if (!unreachable){
+				path.offer(end);
+				//path.offer((c[end]-startTime));
 
-	               }
-	           }
+				if(c[end] > Lsp) {
+					Lsp = c[end];
+				}
+			}
+			else {
+				System.out.println("unreachable");
+			}
+		}
 	}
 
 	

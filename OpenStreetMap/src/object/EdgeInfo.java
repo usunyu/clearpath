@@ -1,7 +1,5 @@
 package object;
 
-import java.util.*;
-
 public class EdgeInfo {
 	long wayId;
 	int edgeId;

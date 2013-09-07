@@ -16,4 +16,5 @@ public class NodeInfo {
 	public LocationInfo getLocation() {
 		return location;
 	}
+
 }

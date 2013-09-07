@@ -19,9 +19,9 @@ public class BuildList {
 	 *
 	 *
 	 * input: 	road network in the form of adjecency list.
-
+     *
 	 *AdjList_Thursday.txt is a time-dependent raod network with approximately  47K modes. The format of the file is as follows
-
+    *
 	* n1(V): 6146,6377,6090, ,7688;n4(V):5917,6139,, 7401;
 	* n0(V):6146,6377,6090, . ,7688;n2(V):6031,6258,
 	* n3(V): ; n7(V):.; n9(V):;
