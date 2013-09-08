@@ -35,6 +35,14 @@ public class OSMDivideWayToEdge {
 		writeEdgeFile();
 	}
 	
+	private static String getWayEdgeId(long wayId, int edgeId) {
+		String wayStr = String.valueOf(wayId);
+		String edgeStr = String.valueOf(edgeId);
+		while(edgeStr.length() < 4)
+			edgeStr = "0" + edgeStr;
+		return wayStr + edgeStr;
+	}
+	
 	public static void writeEdgeFile() {
 		System.out.println("write edge file...");
 		int debug = 0;
@@ -52,7 +60,7 @@ public class OSMDivideWayToEdge {
 				long endNode = edgeInfo.getEndNode();
 				int distance = edgeInfo.getDistance();
 				
-				String strLine = wayId + "," + edgeId + "||" + name + "||"  + highway + "||" 
+				String strLine = getWayEdgeId(wayId, edgeId) + "||" + name + "||"  + highway + "||" 
 				+ startNode + "||" + endNode + "||" + distance + "\r\n";
 				out.write(strLine);
 			}
