@@ -848,7 +848,7 @@ public class Osm2Wkt {
 		return crossing;
 	}
 
-	/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
+	/* * * * * * * * * * * * * * ** * ** Yu Sun Add ** * * * * * * * * * * * ** * * * */
 	/* source http://rbrundritt.wordpress.com/2008/10/20/approximate-points-of-intersection-of-two-line-segments/ */
 	private Landmark SimplePolylineIntersection(Landmark latlong1,Landmark latlong2,Landmark latlong3,Landmark latlong4) {
 		//Line segment 1 (p1, p2)
@@ -1056,7 +1056,7 @@ public class Osm2Wkt {
 			i++;
 			System.out.print("[" + partition.size() + "] ");
 			count += partition.size();
-			if(i % 30 == 0)
+			if(i % 50 == 0)
 				System.out.println();
 		}
 		System.out.print("\n");		
@@ -1128,8 +1128,8 @@ public class Osm2Wkt {
 				}
 			}while(removedS);
 
-			if(i % 10000 == 0)
-				System.out.println((double)i / verticesRemove.size() * 100 + "%");
+			if(i % 1000 == 0)
+				System.out.println("clean " + (double)i / verticesRemove.size() * 100 + "%");
 		} //for(Long vertice : verticesRemove)
 
 		System.out.println("removed " + countRemovedStreets 
