@@ -14,14 +14,29 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+
 /*
- * this is 2nd step for OSM
- * it will generate osm_node.txt and osm_way.txt
+ * 2nd step for OSM Project
+ * 1) read the data from OSM file
+ * 2) generate xxx_node.txt and xxx_way.txt from data
+ * 
  * format:
- * osm_node.txt
+ * xxx_node.txt
+ * nodeId      ||lat               ||lon
+ * (id of node)||(latitude of node)||(longitude of node)
  * 
- * osm_way.txt
+ * xxx_way.txt
+ * wayId      ||isOneway                      ||name            ||highway
+ * (id of way)||(O:oneway B:bidirectional way)||(name of street)||(type of way)
  * 
+ * type of way, refer to http://wiki.openstreetmap.org/wiki/Key:highway
  */
 
 public class OSMInputFileGeneration {
@@ -30,10 +45,13 @@ public class OSMInputFileGeneration {
 	 * @param file
 	 */
 	static String root = "file";
-	static String osmFile = "map.osm";
-	static String nodeTxtFile = "osm_node.txt";
-	static String wayTxtFile = "osm_way.txt";
+	//static String osmFile 		= "map.osm";
+	//static String nodeTxtFile 	= "osm_node.txt";
+	//static String wayTxtFile 	= "osm_way.txt";
 	static String extraNodeFile = "extra.wkts";
+	static String osmFile 		= "los_angeles.osm";
+	static String nodeTxtFile 	= "los_angeles_node.txt";
+	static String wayTxtFile 	= "los_angeles_way.txt";
 	/**
 	 * @param node
 	 */
@@ -42,14 +60,143 @@ public class OSMInputFileGeneration {
 	 * @param way
 	 */
 	static ArrayList<WayInfo> wayArrayList = new ArrayList<WayInfo>();
+	/**
+	 * @param xml
+	 */
+	static final String ID 		= "id";
+	static final String NODE 	= "node";
+	static final String WAY 	= "way";
+	static final String LAT 	= "lat";
+	static final String LON 	= "lon";
+	static final String TAG		= "tag";
+	static final String K		= "k";
+	static final String V		= "v";
+	static final String NAME	= "name";
+	static final String HIGHWAY	= "highway";
+	static final String ONEWAY	= "oneway";
+	static final String YES		= "yes";
+	static final String RELATION	= "relation";
 	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		readOsmFile();
+		readOsmFileStax();
+		// readOsmFile();
 		// readExtraFile();
 		writeTxtFile();
 	}
 	
+	/*
+	 * use library sTax to read OSM(XML) file
+	 */
+	public static void readOsmFileStax() {
+		System.out.println("read osm file...");
+		int debug = 0;
+		try {
+			// First create a new XMLInputFactory
+			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			// Setup a new eventReader
+			InputStream in = new FileInputStream(root + "/" + osmFile);
+			XMLEventReader eventReader = inputFactory.createXMLEventReader(in);
+		    // Read the XML document
+			// NodeInfo
+			NodeInfo nodeInfo = null;
+			long nodeId = 0;
+			LocationInfo location = null;
+			double latitude = 0;
+			double longitude = 0;
+			// WayInfo
+			WayInfo wayInfo = null;
+			long wayId = 0;
+			String kAttr = null;
+			String vAttr = null;
+			String name = null;
+			String highway = null;
+			boolean isOneway = false;
+			while (eventReader.hasNext()) {
+				debug++;
+				XMLEvent event = eventReader.nextEvent();
+				 
+				if (event.isStartElement()) {
+					StartElement startElement = event.asStartElement();
+					// If we have a item element we create a new item
+					if (startElement.getName().getLocalPart().equals(NODE)) {	// read node
+						Iterator<Attribute> attributes = startElement.getAttributes();
+						while (attributes.hasNext()) {
+							Attribute attribute = attributes.next();
+							if (attribute.getName().toString().equals(ID))
+								nodeId = Long.parseLong(attribute.getValue());
+							if (attribute.getName().toString().equals(LAT))
+								latitude = Double.parseDouble(attribute.getValue());
+							if (attribute.getName().toString().equals(LON))
+								longitude = Double.parseDouble(attribute.getValue());
+						}
+						location = new LocationInfo(latitude, longitude);
+					}
+					// If we have a item element we create a new item
+					if (startElement.getName().getLocalPart().equals(WAY)) {	// read way
+						// set default
+						isOneway = false;
+						name = "null";
+						highway = "null";
+						Iterator<Attribute> attributes = startElement.getAttributes();
+						while (attributes.hasNext()) {
+							Attribute attribute = attributes.next();
+							if (attribute.getName().toString().equals(ID)) {
+								wayId = Long.parseLong(attribute.getValue());
+								break;
+							}
+						}
+					}
+					// Read child tag element of way
+					if (startElement.getName().getLocalPart().equals(TAG)) {	// read tag
+						Iterator<Attribute> attributes = startElement.getAttributes();
+						while (attributes.hasNext()) {
+							Attribute attribute = attributes.next();
+							if (attribute.getName().toString().equals(K))
+								kAttr = attribute.getValue();
+							if (attribute.getName().toString().equals(V))
+								vAttr = attribute.getValue();
+						}
+						if(kAttr.equals(NAME)) {
+							name = vAttr;
+						}
+						else if(kAttr.equals(HIGHWAY)) {
+							highway = vAttr;
+						}
+						else if(kAttr.equals(ONEWAY)) {
+							if(vAttr.equals(YES))
+								isOneway = true;
+						}
+						else {
+							// TODO: put other in info map
+						}
+					}
+				}
+				
+				// If we reach the end of an item element we add it to the list
+		        if (event.isEndElement()) {
+		        	EndElement endElement = event.asEndElement();
+		        	if (endElement.getName().getLocalPart().equals(NODE)) {
+		        		nodeInfo = new NodeInfo(nodeId, location);
+		        		nodeArrayList.add(nodeInfo);
+		        	}
+		        	if (endElement.getName().getLocalPart().equals(WAY)) {
+		        		wayInfo = new WayInfo(wayId, isOneway, name, highway, null, null);
+		        		wayArrayList.add(wayInfo);
+		        	}
+		        }
+			}
+		}
+		catch (Exception e) {
+	    	e.printStackTrace();
+	    	System.err.println("readOsmFile: debug code: " + debug);
+	    }
+		System.out.println("read osm file finish!");
+	}
+	
+	/*
+	 * deprecated
+	 * used for extra node after fixCompleteness, but fixCompleteness has problem
+	 */
 	public static void readExtraFile() {
 		System.out.println("read extra file...");
 		int debug = 0;
@@ -83,6 +230,9 @@ public class OSMInputFileGeneration {
 		System.out.println("read extra file finish!");
 	}
 	
+	/*
+	 * write to TXT file from the data read from XML file 
+	 */
 	public static void writeTxtFile() {
 		System.out.println("write txt file...");
 		int debug = 0, loop = 0;
@@ -116,24 +266,31 @@ public class OSMInputFileGeneration {
 				char isOneway = wayInfo.isOneway() ? 'O' : 'B';
 				String name = wayInfo.getName();
 				String highway = wayInfo.getHighway();
-				//ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
-				//String nodeListStr = "";
-				//for(int j = 0; j < localNodeArrayList.size(); j++) {
-				//	nodeListStr += localNodeArrayList.get(j);
-				//	if(j < localNodeArrayList.size() - 1)
-				//		nodeListStr += ",";
-				//}
+				String strLine = null;
 				
-				// String strLine = wayId + "||" + name + "||" + nodeListStr + "\r\n";
-				String strLine = wayId + "||" + isOneway + "||" + name + "||" + highway;
+				ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
+				if(localNodeArrayList != null) {
+					String nodeListStr = "";
+					for(int j = 0; j < localNodeArrayList.size(); j++) {
+						nodeListStr += localNodeArrayList.get(j);
+						if(j < localNodeArrayList.size() - 1)
+							nodeListStr += ",";
+					}
+					strLine = wayId + "||" + name + "||" + nodeListStr + "\r\n";
+				}
+				
+				strLine = wayId + "||" + isOneway + "||" + name + "||" + highway;
 				HashMap<String, String> infoHashMap = wayInfo.getInfoHashMap();
 				
-				Iterator<String> iter = infoHashMap.keySet().iterator();
-				while(iter.hasNext()) {
-					String key = iter.next();
-					String val = infoHashMap.get(key);
-					strLine += "||" + key + ";;" + val;
+				if(infoHashMap != null) {
+					Iterator<String> iter = infoHashMap.keySet().iterator();
+					while(iter.hasNext()) {
+						String key = iter.next();
+						String val = infoHashMap.get(key);
+						strLine += "||" + key + "|" + val;
+					}
 				}
+				
 				strLine += "\r\n";
 				out.write(strLine);
 			}
@@ -147,6 +304,10 @@ public class OSMInputFileGeneration {
 		System.out.println("write txt file finish!");
 	}
 
+	/*
+	 * deprecated
+	 * can not deal with large amount of XML file
+	 */
 	public static void readOsmFile() {
 		System.out.println("read osm file...");
 		int debug = 0, loop = 0;
@@ -175,6 +336,9 @@ public class OSMInputFileGeneration {
 					
 					nodeArrayList.add(nodeInfo);
 				}
+				
+				if(i % 1000 == 0)
+					System.out.println("landmarks processed " + ((double) i / nodeList.getLength() * 100) + "%" );
 			}
 			// read way
 			loop++;

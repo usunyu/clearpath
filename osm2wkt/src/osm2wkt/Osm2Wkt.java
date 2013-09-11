@@ -39,8 +39,11 @@ import org.xml.sax.SAXException;
 import osm2wkt.exports.*;
 
 /*
- * this is 1st step for OSM
- * it will generate a file *.wkts
+ * 1st step for OSM Project
+ * 1) read the data from OSM file
+ * 2) get rid of unroutable data
+ * 3) generate a file xxx.wkts
+ * 
  * format:
  * wayId1||nodeId1,nodeId2,...nodeId3
  * wayId2||nodeId4,nodeId5,...nodeId6
@@ -49,8 +52,7 @@ import osm2wkt.exports.*;
  * this process get rid of all non-routeable way, such as building, shape type;
  * http://wiki.openstreetmap.org/wiki/Key:highway
  * http://wiki.openstreetmap.org/wiki/Highway_examples
- * 
- * and also get rid of all highway:service for now for simple;
+ * also get rid of all highway:service for now for simple;
  * and fixCompleteness will introduce the new problem, bridge problem,so we don't want to run it now.
  */
 
