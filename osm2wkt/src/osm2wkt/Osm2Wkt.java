@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.text.DecimalFormat;
@@ -35,6 +36,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
 
 import osm2wkt.exports.*;
 
@@ -66,7 +75,7 @@ public class Osm2Wkt {
 	private final static String XML_TAG_WAY 	= "way";
 	private final static String XML_TAG_ND 		= "nd";
 	private final static String XML_TAG_REF 	= "ref";
-	/* Yu Sun Modify */
+	/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
 	private final static String XML_TAG_TAG 	= "tag";
 	private final static String XML_TAG_K	 	= "k";
 	private final static String XML_TAG_V	 	= "v";
@@ -84,7 +93,7 @@ public class Osm2Wkt {
 	private final static String XML_K_RAILWAY 	= "railway";
 	private final static String XML_K_AREA	 	= "area";
 	private final static String FILE_EXT_WKTS	= "wkts";
-	/* * * * * * * * */
+	/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 	private final static String FILE_EXT_WKT	= "wkt";
 	private final static String FILE_EXT_OSM	= "osm";
 	private final static String WKT_TAG_BEGIN	= "LINESTRING (";
@@ -96,10 +105,10 @@ public class Osm2Wkt {
 	private final static String WKT_TAG_MARKADD	= " ";
 	private final static String WKT_TAG_MARKSEP1 = ",";
 	private final static String WKT_TAG_MARKSEP2 = " ";
-	/* Yu Sun Modify */
+	/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
 	//static ArrayList<Long> extraPointsArrayList = new ArrayList<Long>();
 	//static HashMap<Long, Landmark> extraPointsHashMap = new HashMap<Long, Landmark>();
-	/* * * * * * * * */
+	/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 
 	private WeightedPseudograph<Long, DefaultWeightedEdge> weightedGraph;
 	private WeightedPseudograph<Long, DefaultWeightedEdge> testweightedGraph;
@@ -145,6 +154,166 @@ public class Osm2Wkt {
 		bd = bd.setScale(decimalPlace,BigDecimal.ROUND_HALF_UP);
 		return bd.doubleValue();
 	}
+	
+	/* * * * * * * * * * * * * * ** * ** Yu Sun Add ** * * * * * * * * * * * ** * * * */
+	/*
+	 * use sTaX API to read OSM(XML) file instead of using DOM
+	 * refer to refer to http://www.vogella.com/articles/JavaXML/article.html
+	 */
+	private boolean readOsmStax(String filename) {
+		System.out.println("reading in openstreetmap xml ...");
+		int debug = 0;
+		long eliminateNum = 0;
+		try {
+			// First create a new XMLInputFactory
+			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			// Setup a new eventReader
+			InputStream in = new FileInputStream(filename);
+			XMLEventReader eventReader = inputFactory.createXMLEventReader(in);
+		    // Read the XML document
+			// Landmark
+			Landmark landObj = null;
+			long landId = 0;
+			double latitude = 0;
+			double longitude = 0;
+			// Street
+			long streetId = 0;
+			Vector<Long> streetLandmarks = null;
+			boolean eliminate = false;
+			String kAttr = null;
+			String vAttr = null;
+			while (eventReader.hasNext()) {
+				debug++;
+				XMLEvent event = eventReader.nextEvent();
+				if (event.isStartElement()) { 
+					StartElement startElement = event.asStartElement();
+					// If we have a item element we create a new item
+					if (startElement.getName().getLocalPart().equals(XML_TAG_NODE)) {	// read in all landmarks
+						Iterator<Attribute> attributes = startElement.getAttributes();
+						while (attributes.hasNext()) {
+							Attribute attribute = attributes.next();
+							if (attribute.getName().toString().equals(XML_TAG_ID))
+								landId = Long.parseLong(attribute.getValue());
+							if (attribute.getName().toString().equals(XML_TAG_LAT))
+								latitude = Double.parseDouble(attribute.getValue());
+							if (attribute.getName().toString().equals(XML_TAG_LON))
+								longitude = Double.parseDouble(attribute.getValue());
+						}
+					}
+					
+					// If we have a item element we create a new item
+					if (startElement.getName().getLocalPart().equals(XML_TAG_WAY)) {	// read in all streets
+						// set default
+						streetLandmarks = new Vector<Long>();
+						eliminate = false;
+						Iterator<Attribute> attributes = startElement.getAttributes();
+						while (attributes.hasNext()) {
+							Attribute attribute = attributes.next();
+							if (attribute.getName().toString().equals(XML_TAG_ID)) {
+								streetId = Long.parseLong(attribute.getValue());
+								break;
+							}
+						}
+					}
+					
+					// If we have a item element we create a new item
+					if (startElement.getName().getLocalPart().equals(XML_TAG_ND)) {	// get landmarks for this street
+						Iterator<Attribute> attributes = startElement.getAttributes();
+						while (attributes.hasNext()) {
+							Attribute attribute = attributes.next();
+							if (attribute.getName().toString().equals(XML_TAG_REF))
+								streetLandmarks.add(Long.valueOf(attribute.getValue()));
+						}
+					}
+					
+					// Read child tag element of way
+					if (startElement.getName().getLocalPart().equals(XML_TAG_TAG)) {	// read tag
+						Iterator<Attribute> attributes = startElement.getAttributes();
+						while (attributes.hasNext()) {
+							Attribute attribute = attributes.next();
+							if (attribute.getName().toString().equals(XML_TAG_K))
+								kAttr = attribute.getValue();
+							if (attribute.getName().toString().equals(XML_TAG_V))
+								vAttr = attribute.getValue();
+						}
+						// any kind of streets can be eliminated should be added here 
+						if(kAttr.equals(XML_K_HIGHWAY)) {
+							if(vAttr.equals(XML_V_FOOTWAY) || vAttr.equals(XML_V_STEPS) || vAttr.equals(XML_V_PEDESTRIAN)) {
+								eliminate = true;
+							}
+							// we eliminate all the service type first for simple
+							if(vAttr.equals(XML_V_SERVICE)) {
+								eliminate = true;
+							}
+						}
+						if(kAttr.equals(XML_K_BUILDING)) {
+							if(vAttr.equals(XML_V_YES)) {
+								eliminate = true;
+							}
+						}
+						if(kAttr.equals(XML_K_LANDUSE)) {
+							if(vAttr.equals(XML_V_GRASS)) {
+								eliminate = true;
+							}
+						}
+						if(kAttr.equals(XML_K_BARRIER)) {
+							eliminate = true;
+						}
+						if(kAttr.equals(XML_K_LEISURE)) {
+							eliminate = true;
+						}
+
+						if(kAttr.equals(XML_K_RAILWAY)) {
+							eliminate = true;
+						}
+						if(kAttr.equals(XML_K_AREA)) {
+							if(vAttr.equals(XML_V_YES)) {
+								eliminate = true;
+							}
+						}
+					}
+				}
+				
+				// If we reach the end of an item element we add it to the list
+				if (event.isEndElement()) {
+		        	EndElement endElement = event.asEndElement();
+		        	if (endElement.getName().getLocalPart().equals(XML_TAG_NODE)) {
+		        		landObj = new Landmark();
+		        		landObj.id = landId;
+		        		landObj.latitude = latitude;
+		        		landObj.longitude = longitude;
+		        		landmarks.put(landObj.id, landObj);
+		        	}
+		        	
+		        	if (endElement.getName().getLocalPart().equals(XML_TAG_WAY)) {
+		        		// the way can be used for routing
+						if(!eliminate) {
+							// if we found landmarks for this street add street
+							if(!streetLandmarks.isEmpty()){
+								streets.put(streetId, streetLandmarks);
+							}else{
+								System.out.println("found no landmark childs for street "  + streetId);
+							}
+						}
+						else {
+							// System.out.println("eliminate the street that can not used for routing");
+							eliminateNum++;
+						}
+		        	}
+		        }
+				if(debug % 10000000 == 0)
+					System.out.println("processed line " + debug);
+			}
+		} catch (Exception e) {
+			System.out.println("reading osm file failed: " + e.getLocalizedMessage());
+			e.printStackTrace();
+			System.err.println("readOsmStax: debug code: " + debug);
+			return false;
+		}
+		System.out.println("reading osm file successfully, eliminate " + eliminateNum + " streets.");
+		return true;
+	}
+	/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 
 	private boolean readOsm(String filename){
 		System.out.println("reading in openstreetmap xml ...");
@@ -206,7 +375,7 @@ public class Osm2Wkt {
 					System.out.println("landmarks processed " + ((double) s / landmarkList.getLength() * 100) + "%" );
 			}
 
-			/* Yu Sun Modify */
+			/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
 			// read in all streets
 			NodeList wayList = doc.getElementsByTagName(XML_TAG_WAY);
 			for( int s=0; s<wayList.getLength(); s++ ){
@@ -305,7 +474,7 @@ public class Osm2Wkt {
 				}
 				if(s % 1000 == 0)
 					System.out.println("streets processed " + ((double) s / wayList.getLength() * 100) + "%" );
-				/* * * * * * * * */
+				/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 			}
 
 		} catch (Exception e) {
@@ -437,14 +606,33 @@ public class Osm2Wkt {
 	private boolean fixCompleteness(){
 		System.out.println("checking landmark completeness for all streets ...");
 
-		for(Vector<Long> l : streets.values()){
-			for(Long mark : l){
+		/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
+		// for(Vector<Long> l : streets.values()){
+		// 	for(Long mark : l){
+		// 		if(!landmarks.containsKey(mark)){
+		// 			System.out.println("landmarks " + mark + " for street not found");
+		// 			return false;
+		// 		}
+		// 	}
+		// }
+		
+		Iterator<Map.Entry<Long, Vector<Long>>> iter = streets.entrySet().iterator();
+		while (iter.hasNext()) {
+		    Map.Entry<Long, Vector<Long>> entry = iter.next();
+		    Long streetId = entry.getKey();
+		    Vector<Long> l = entry.getValue();
+		    for(Long mark : l){
 				if(!landmarks.containsKey(mark)){
-					System.out.println("landmarks " + mark + " for street not found");
-					return false;
+					System.out.println("landmarks " + mark + " for street " + streetId + " not found, removed");
+					//return false;
+					// remove the bad street from streets
+					iter.remove();
+					break;
 				}
 			}
 		}
+		
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 		System.out.println("all required landmarks available for all streets");
 
@@ -646,7 +834,7 @@ public class Osm2Wkt {
 			crossing.y = y;
 			landmarks.put(crossing.id, crossing);
 
-			/* Yu Sun Modify */
+			/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
 			Landmark local = SimplePolylineIntersection(a1, a2, b1, b2);
 			crossing.latitude = local.latitude;
 			crossing.longitude = local.longitude;
@@ -654,13 +842,13 @@ public class Osm2Wkt {
 			//	extraPointsArrayList.add(crossing.id);
 			//	extraPointsHashMap.put(crossing.id, crossing);
 			//}
-			/* * * * * * * * */
+			/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 		}
 
 		return crossing;
 	}
 
-	/* Yu Sun Modify */
+	/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
 	/* source http://rbrundritt.wordpress.com/2008/10/20/approximate-points-of-intersection-of-two-line-segments/ */
 	private Landmark SimplePolylineIntersection(Landmark latlong1,Landmark latlong2,Landmark latlong3,Landmark latlong4) {
 		//Line segment 1 (p1, p2)
@@ -720,7 +908,7 @@ public class Osm2Wkt {
 	    
 	    return (betweenLats && betweenLons);
 	}
-	/* * * * * * * * */
+	/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 
 	private boolean transformCoordinates(){
 		// in this function we have to restrict the precision we calculate the x, y coordinates
@@ -976,7 +1164,7 @@ public class Osm2Wkt {
 			}
 			*/
 			
-			/* Yu Sun Modify */
+			/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
 			for (int i=0; i < streets.size(); i++) {
 				
 				Long wayId = (Long)streets.keySet().toArray()[i];
@@ -994,7 +1182,7 @@ public class Osm2Wkt {
 				wktstream.append(refStr);
 				wktstream.append("\r\n");
 			}
-			/* * * * * * * * */
+			/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 
 			wktstream.close();
 
@@ -1006,7 +1194,7 @@ public class Osm2Wkt {
 
 		System.out.println("writing wkt file done");
 		
-		/* Yu Sun Modify */
+		/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
 		//System.out.println("writing extra points file ...");
 		//try {
 		//	String extrafile = "file/extra." + FILE_EXT_WKTS;
@@ -1029,7 +1217,7 @@ public class Osm2Wkt {
 		//	return false;
 		//}
 		//System.out.println("writing extra points file done");
-		/* * * * * * * * */
+		/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 		return true;
 	}
 
@@ -1244,10 +1432,11 @@ public class Osm2Wkt {
 		
 		System.out.println("osm2wkt v1.2.0- convert " +
 		"openstreetmap to wkt - Christoph P. Mayer - mayer@kit.edu");
-		if(args.length < 1 || args.length > 7){
-			printUsage();
-			return;
-		}
+		/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
+		 if(args.length < 1 || args.length > 7){
+		 	printUsage();
+		 	return;
+		 }
 
 		boolean append = false;
 		int translateX = 0;
@@ -1255,26 +1444,26 @@ public class Osm2Wkt {
 		String file = "";
 		String destfile = "";
 
-		try{
-			file = args[args.length-1];
+		 try{
+		 	file = args[args.length-1];
 
-			for(int i=0; i<args.length; i++){
-				if(args[i].equals("-a")){
-					append = true;
-				}
-				if(args[i].equals("-t")){
-					translateX = Integer.parseInt(args[i+1]);
-					translateY = Integer.parseInt(args[i+2]);
-				}
-				if(args[i].equals("-o")){
-					destfile = args[i+1];
-				}
-			}
-		}catch(Exception e){
-			System.out.println("parsing command line arguments failed");
-			printUsage();
-			return;
-		}
+		 	for(int i=0; i<args.length; i++){
+		 		if(args[i].equals("-a")){
+		 			append = true;
+		 		}
+		 		if(args[i].equals("-t")){
+		 			translateX = Integer.parseInt(args[i+1]);
+		 			translateY = Integer.parseInt(args[i+2]);
+		 		}
+		 		if(args[i].equals("-o")){
+		 			destfile = args[i+1];
+		 		}
+		 	}
+		 }catch(Exception e){
+		 	System.out.println("parsing command line arguments failed");
+		 	printUsage();
+		 	return;
+		 }
 
 		if(destfile.length() == 0) destfile = file + "." + FILE_EXT_WKTS;
 		Osm2Wkt obj = new Osm2Wkt();
@@ -1284,7 +1473,11 @@ public class Osm2Wkt {
 
 		if(filelower.endsWith(FILE_EXT_OSM)){
 
-			if(!obj.readOsm(file)) 						return;
+			/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
+			// if(!obj.readOsm(file)) 						return;
+			// change to readOsmStax
+			if(!obj.readOsmStax(file)) 					return;
+			/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 			if(!obj.transformCoordinates()) 			return;
 			// this is where( simplifyGraph ) the graph is constructed 
 			// so you can create a weighted graph here and see if we get weird edges

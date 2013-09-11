@@ -63,18 +63,18 @@ public class OSMInputFileGeneration {
 	/**
 	 * @param xml
 	 */
-	static final String ID 		= "id";
-	static final String NODE 	= "node";
-	static final String WAY 	= "way";
-	static final String LAT 	= "lat";
-	static final String LON 	= "lon";
-	static final String TAG		= "tag";
-	static final String K		= "k";
-	static final String V		= "v";
-	static final String NAME	= "name";
-	static final String HIGHWAY	= "highway";
-	static final String ONEWAY	= "oneway";
-	static final String YES		= "yes";
+	static final String ID 			= "id";
+	static final String NODE 		= "node";
+	static final String WAY 		= "way";
+	static final String LAT 		= "lat";
+	static final String LON 		= "lon";
+	static final String TAG			= "tag";
+	static final String K			= "k";
+	static final String V			= "v";
+	static final String NAME		= "name";
+	static final String HIGHWAY		= "highway";
+	static final String ONEWAY		= "oneway";
+	static final String YES			= "yes";
 	static final String RELATION	= "relation";
 	
 	public static void main(String[] args) {
@@ -85,7 +85,8 @@ public class OSMInputFileGeneration {
 	}
 	
 	/*
-	 * use library sTax to read OSM(XML) file
+	 * use sTaX API to read OSM(XML) file instead of using DOM
+	 * refer to http://www.vogella.com/articles/JavaXML/article.html
 	 */
 	public static void readOsmFileStax() {
 		System.out.println("read osm file...");
@@ -170,6 +171,10 @@ public class OSMInputFileGeneration {
 							// TODO: put other in info map
 						}
 					}
+					
+					if (startElement.getName().getLocalPart().equals(RELATION)) {	// skip relation
+						break;
+					}
 				}
 				
 				// If we reach the end of an item element we add it to the list
@@ -188,7 +193,7 @@ public class OSMInputFileGeneration {
 		}
 		catch (Exception e) {
 	    	e.printStackTrace();
-	    	System.err.println("readOsmFile: debug code: " + debug);
+	    	System.err.println("readOsmFileStax: debug code: " + debug);
 	    }
 		System.out.println("read osm file finish!");
 	}
