@@ -1051,9 +1051,13 @@ public class Osm2Wkt {
 
 		// print the different partition sizes
 		long count = 0;
+		int i = 0;
 		for(Set<Long> partition : partitions){
+			i++;
 			System.out.print("[" + partition.size() + "] ");
 			count += partition.size();
+			if(i % 30 == 0)
+				System.out.println();
 		}
 		System.out.print("\n");		
 
