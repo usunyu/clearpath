@@ -1096,8 +1096,9 @@ public class Osm2Wkt {
 		int countRemovedLandmarks = 0;
 		int countRemovedStreets = 0;
 
+		i = 0;
 		for(Long vertice : verticesRemove){
-
+			i++;
 			boolean removedL;
 			do{
 				// remove all landmark 
@@ -1127,6 +1128,8 @@ public class Osm2Wkt {
 				}
 			}while(removedS);
 
+			if(i % 10000 == 0)
+				System.out.println((double)i / verticesRemove.size() * 100 + "%");
 		} //for(Long vertice : verticesRemove)
 
 		System.out.println("removed " + countRemovedStreets 
