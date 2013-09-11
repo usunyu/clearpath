@@ -1440,6 +1440,8 @@ public class Osm2Wkt {
 		System.out.println("osm2wkt v1.2.0- convert " +
 		"openstreetmap to wkt - Christoph P. Mayer - mayer@kit.edu");
 		/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
+		System.out.println("modified by - Yu Sun - sun812@usc.edu ");
+		/* * * * * * * * * * * * * * ** * * * * * * * * * ** * * * * * * * * * * * * * * * * */
 		 if(args.length < 1 || args.length > 7){
 		 	printUsage();
 		 	return;
