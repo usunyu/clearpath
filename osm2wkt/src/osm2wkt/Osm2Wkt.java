@@ -1,6 +1,7 @@
 package osm2wkt;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -76,6 +77,7 @@ public class Osm2Wkt {
 	private final static String XML_TAG_ND 		= "nd";
 	private final static String XML_TAG_REF 	= "ref";
 	/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
+	// XML Tag
 	private final static String XML_TAG_TAG 	= "tag";
 	private final static String XML_TAG_K	 	= "k";
 	private final static String XML_TAG_V	 	= "v";
@@ -92,7 +94,12 @@ public class Osm2Wkt {
 	private final static String XML_K_LEISURE 	= "leisure";
 	private final static String XML_K_RAILWAY 	= "railway";
 	private final static String XML_K_AREA	 	= "area";
+
+	// File and Folder
 	private final static String FILE_EXT_WKTS	= "wkts";
+	private final static String FOLDER_ROOT		= "file";
+	private final static String MISS_LANDMARK	= "miss_landmark.txt";
+	private final static String OSM_PROJECT 	= "OpenStreetMap";
 	/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 	private final static String FILE_EXT_WKT	= "wkt";
 	private final static String FILE_EXT_OSM	= "osm";
@@ -615,22 +622,32 @@ public class Osm2Wkt {
 		// 		}
 		// 	}
 		// }
-		
-		Iterator<Map.Entry<Long, Vector<Long>>> iter = streets.entrySet().iterator();
-		while (iter.hasNext()) {
-		    Map.Entry<Long, Vector<Long>> entry = iter.next();
-		    Long streetId = entry.getKey();
-		    Vector<Long> l = entry.getValue();
-		    for(Long mark : l){
-				if(!landmarks.containsKey(mark)){
-					System.out.println("landmarks " + mark + " for street " + streetId + " not found, removed");
-					//return false;
-					// remove the bad street from streets
-					iter.remove();
-					break;
+		try {
+			FileWriter fstream = new FileWriter(FOLDER_ROOT + "/" + MISS_LANDMARK);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			Iterator<Map.Entry<Long, Vector<Long>>> iter = streets.entrySet().iterator();
+			while (iter.hasNext()) {
+			    Map.Entry<Long, Vector<Long>> entry = iter.next();
+			    Long streetId = entry.getKey();
+			    Vector<Long> l = entry.getValue();
+			    for(Long mark : l){
+					if(!landmarks.containsKey(mark)){
+						String strLine = "node " + mark + " for way " + streetId + " not found" + "\r\n";
+						out.write(strLine);
+						// remove the bad street from streets
+						iter.remove();
+						break;
+					}
 				}
 			}
+			
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
 		}
+		System.out.println("miss landmarks report generated.");
 		
 		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -1570,7 +1587,7 @@ public class Osm2Wkt {
 	private static void copyFileToOSMProj(String destfile) {
 		try {
 			 File f1 = new File(destfile);
-			 File f2 = new File("../OpenStreetMap/" + destfile);
+			 File f2 = new File("../" + OSM_PROJECT + "/" + destfile);
 			 InputStream in = new FileInputStream(f1);
 
 	          //For Append the file.
