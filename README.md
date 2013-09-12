@@ -1,11 +1,44 @@
 
+TASK (September 11)
+
+[X]1) miss landmarks, landmarks 123687684 for street not found
+
+
+TASK (September 5)
+
+Pls do based on my project, you can use the function tdsp2(). Pls dont work on the original java file but create a new Java class (with name OSMrouting.java). Note the important points here. 
+[X]a) my adlist (you have the sample) was starting with index 0, but OSM adjlist includes the node number at the begging of the line 
+[ ]b) can you generate OSM adjlist as close as possible to my adjlist (pls make the separators same, the order of the columns same and etc) . For example use ","  instead of || (come takes less storage in the memory.   
+d) when you create edge ids pls don't  use "," and 0 (zero) offset number. Pls include 3 digit to the end ow wayid to generate edge id.  For example, 125698,0 -->  125698001 ,  125698,1--> 125698002 ,  125698,18--> 125698018
+[X]c) At first pls use the small dataset you have, later we will do it for California
+
+
 
 TASK (August 30)
-[ ]1) Pls run pattern generation for  the following and exclude the holidays 
+[X]1) Pls run pattern generation for  the following and exclude the holidays 
 September, October, November, December 
  Can you pls start creating September, October, November, December patterns. When creating these patterns pls exclude the vacation/holidays days (e.g. Labor Day, thanksging and all others)  so that averages are good. For example, lets assume that  september 3 (Tuesday) is labor day, when creating Tuesday pattern in Septemeber you will only use 3 Tuesdays(excluding Sept 3).  Also pls note that you will generate a "labor day" pattern only using September 3 data.  It will same for all other holidays. 
+
+New Year's Day                                January 1
+Martin Luther King Day                    third Monday in January
+
+President's Day                                third Monday in February
+
+Memorial Day                                   last Monday in May
+
+Independence Day                            July 4
+
+Labor Day                                         first Monday in September
+
+Columbus Day                                  second Monday in October
+
+Veterans Day                                     November 11      
+Thanksgiving Day                             fourth Thursday in November
+
+Christmas Day                                  December 25
+
 Deadline: 9/6
-[ ]2) Pls run pattern generation for  the holidays  that you excludes above. 
+[X]2) Pls run pattern generation for  the holidays  that you excludes above. 
 Deadline: 9/6
 [X]3) Generate following files from OSM 
 nodes.csv, edges.csv, adjlist.csv 
@@ -29,7 +62,7 @@ http://docs.oracle.com/cd/A97630_01/appdev.920/a96630/sdo_operat.htm#BJAFBCFC
 
 [ ]4) Look for other tools that can take care of completenes without breaking overpass 
 No deadline 
-[ ]5) Append Read Large OSM
+[X]5) Append Read Large OSM
 
 The following example selects the GID values from the POLYGONS table where the GEOMETRY column object is likely to interact spatially with the specified rectangle having the lower-left coordinates (x1,y1) and the upper-right coordinates (x2, y2).
 Select A.Gid FROM Polygons A WHERE SDO_FILTER(A.Geometry, mdsys.sdo_geometry(2003,NULL,NULL,                                   mdsys.sdo_elem_info_array(1,1003,3),                                   mdsys.sdo_ordinate_array(x1,y1,x2,y2)),                      'querytype=WINDOW') = 'TRUE';
@@ -108,6 +141,7 @@ pw: clearp
 
 
 geodb.usc.edu
+
 user: clearp
 pw: clearp
 
