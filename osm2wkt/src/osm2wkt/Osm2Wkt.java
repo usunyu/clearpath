@@ -1099,36 +1099,59 @@ public class Osm2Wkt {
 		i = 0;
 		for(Long vertice : verticesRemove){
 			i++;
-			boolean removedL;
-			do{
-				// remove all landmark 
-				removedL = false;
-				for(Long lid : landmarks.keySet()){
-					if(((long)lid) == ((long)vertice)){
-						landmarks.remove(lid); 
-						removedL = true;
-						countRemovedLandmarks++;
-						break;
-					}
-				}
-			}while(removedL);
+			// boolean removedL;
+			// do{
+			// 	// remove all landmark 
+			// 	removedL = false;
+			// 	for(Long lid : landmarks.keySet()){
+			// 		if(((long)lid) == ((long)vertice)){
+			// 			landmarks.remove(lid); 
+			// 			removedL = true;
+			// 			countRemovedLandmarks++;
+			// 			break;
+			// 		}
+			// 	}
+			// }while(removedL);
 
-			boolean removedS;
-			do{
-				// remove all streets that contain this vertice
-				removedS = false;
-				for(Long sid : streets.keySet()){
-					Vector<Long> street = streets.get(sid);
-					if(street.contains(vertice)){
-						streets.remove(sid);
-						removedS = true;
-						countRemovedStreets++;
-						break;
-					}
-				}
-			}while(removedS);
+			// boolean removedS;
+			// do{
+			// 	// remove all streets that contain this vertice
+			// 	removedS = false;
+			// 	for(Long sid : streets.keySet()){
+			// 		Vector<Long> street = streets.get(sid);
+			// 		if(street.contains(vertice)){
+			// 			streets.remove(sid);
+			// 			removedS = true;
+			// 			countRemovedStreets++;
+			// 			break;
+			// 		}
+			// 	}
+			// }while(removedS);
 
-			if(i % 1000 == 0)
+			/* * * * * * * * * * * * * * ** * ** Yu Sun Add ** * * * * * * * * * * * ** * * * */
+			try {
+				if(landmarks.containsKey((long)vertice)) {
+					landmarks.remove(vertice);
+					countRemovedLandmarks++;
+				}
+
+				Iterator<Map.Entry<Long, Vector<Long>>> iter = streets.entrySet().iterator();
+				while (iter.hasNext()) {
+				    Map.Entry<Long, Vector<Long>> entry = iter.next();
+				    Long streetId = entry.getKey();
+				    Vector<Long> l = entry.getValue();
+				    if(l.contains(vertice)) {
+				    	iter.remove();
+				    	countRemovedStreets++;
+				    }
+				}
+			}
+			catch(Exception e) {
+				System.err.println("debug code: " + i);
+			}
+			/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
+
+			if(i % 10000 == 0)
 				System.out.println("clean " + (double)i / verticesRemove.size() * 100 + "%");
 		} //for(Long vertice : verticesRemove)
 
