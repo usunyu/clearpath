@@ -137,6 +137,8 @@ public class OSMOutputFileGeneration {
 				}
 				wayInfo.setNodeArrayList(localNodeArrayList);
 				wayArrayList.add(wayInfo);
+				if(debug % 10000 == 0)
+					System.out.println("processed line " + debug);
 			}
 			
 			br.close();

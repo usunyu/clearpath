@@ -10,9 +10,13 @@ public class OSMGenerateKMLNode {
 	/**
 	 * @param file
 	 */
-	static String root = "file";
-	static String nodeFile = "osm_node.txt";
-	static String kmlFile = "osm_node.kml";
+	static String root 			= "file";
+	
+	//static String nodeFile 		= "osm_node.txt";
+	//static String kmlFile 		= "osm_node.kml";
+	
+	static String nodeFile	 	= "los_angeles_node.txt";
+	static String kmlFile 		= "los_angeles_node.kml";
 	/**
 	 * @param node
 	 */

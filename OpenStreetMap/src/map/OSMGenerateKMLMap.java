@@ -10,11 +10,15 @@ public class OSMGenerateKMLMap {
 	/**
 	 * @param file
 	 */
-	static String root = "file";
-	static String nodeFile = "osm_node.txt";
-	static String wayFile = "osm_way.txt";
-	static String kmlFile = "osm_map.kml";
-	static String wktsFile = "map.osm.wkts";
+	static String root 			= "file";
+	
+	//static String nodeFile 		= "osm_node.txt";
+	//static String wayFile 		= "osm_way.txt";
+	//static String kmlFile 		= "osm_map.kml";
+	
+	static String nodeFile	 	= "los_angeles_node.txt";
+	static String wayFile	 	= "los_angeles_way.txt";
+	static String kmlFile 		= "los_angeles_map.kml";
 	/**
 	 * @param node
 	 */

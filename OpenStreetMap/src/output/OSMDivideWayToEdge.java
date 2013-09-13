@@ -10,10 +10,14 @@ public class OSMDivideWayToEdge {
 	/**
 	 * @param file
 	 */
-	static String root = "file";
-	static String nodeFile = "osm_node.txt";
-	static String wayFile = "osm_way.txt";
-	static String edgeFile = "osm_edge.txt";
+	static String root 			= "file";
+	//static String nodeFile 		= "osm_node.txt";
+	//static String wayFile 		= "osm_way.txt";
+	//static String edgeFile 		= "osm_edge.txt";
+	
+	static String nodeFile	 	= "los_angeles_node.txt";
+	static String wayFile	 	= "los_angeles_way.txt";
+	static String edgeFile 		= "los_angeles_edge.txt";
 	/**
 	 * @param node
 	 */
