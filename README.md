@@ -1,10 +1,25 @@
 == MANUAL
 
+Connect to Server
+mstsc 
+
+host: 128.125.163.86
+user: clearp
+pw: clearp
+
+
+geodb.usc.edu
+
+user: clearp
+pw: clearp
+
+
+
 Open Street Map Process:
 please make sure osm2wkt and OpenStreetMap project in the same folder.
 In osm2wkt Project:
 1) put your "map.osm" in the osm2wkt/file folder
-2) run osm2wkt /Osm2wkt.java, this step will get rid of the none-routable path. and please press No when it asked for fixCompleteness.
+2) run osm2wkt /Osm2wkt.java, this step will get rid of the none-routable path, and please press No when it asked for fixCompleteness.
 In OpenStreetMap Project:
 3) put your "map.osm" in the OpenStreetMap/file
 4) run input/OSMInputFileGeneration
@@ -80,16 +95,21 @@ private static String [] days = {"Monday"};
 
 == TASK
 
+
 TASK (September 11)
 
 [X]1) miss landmarks, landmarks 123687684 for street not found
+[ ]2) improve osm2wkt
+
+[ ]3) remove link on the sea (check what highway:null type look like)
+
 
 
 TASK (September 5)
 
 Pls do based on my project, you can use the function tdsp2(). Pls dont work on the original java file but create a new Java class (with name OSMrouting.java). Note the important points here. 
 [X]a) my adlist (you have the sample) was starting with index 0, but OSM adjlist includes the node number at the begging of the line 
-[ ]b) can you generate OSM adjlist as close as possible to my adjlist (pls make the separators same, the order of the columns same and etc) . For example use ","  instead of || (come takes less storage in the memory.   
+[X]b) can you generate OSM adjlist as close as possible to my adjlist (pls make the separators same, the order of the columns same and etc) . For example use ","  instead of || (come takes less storage in the memory.   
 d) when you create edge ids pls don't  use "," and 0 (zero) offset number. Pls include 3 digit to the end ow wayid to generate edge id.  For example, 125698,0 -->  125698001 ,  125698,1--> 125698002 ,  125698,18--> 125698018
 [X]c) At first pls use the small dataset you have, later we will do it for California
 
@@ -141,7 +161,7 @@ null:                          15
 GEO Select
 http://docs.oracle.com/cd/A97630_01/appdev.920/a96630/sdo_operat.htm#BJAFBCFC
 
-[ ]4) Look for other tools that can take care of completenes without breaking overpass 
+[X]4) Look for other tools that can take care of completenes without breaking overpass 
 No deadline 
 [X]5) Append Read Large OSM
 
@@ -208,24 +228,6 @@ TASK (August 23)
 People have tested the new adjlist (that you generated with overall penalty), it looks like we are getting to more accurate travel times. It looks like we need to get a little more penalty (additional %5) and also penalty for funclass 5 edges (remember we were only penalyzing funclass=4 and funclass=3 edges). 
 
 [X]Can you pls generate the Tuesday pattern with %25 penalty to all arterial streets (funclass=3 and funcclass=4 edges and funcclass=5 ) for all times (6AM to 9PM). Remember we had rush hour penalty   (%15), pls keep that  as it is. So you will have total of %40 (%25+%15) penalty for arterials (funclass=3 and funcclass=4 edges and funcclass=5 ) rush hours and   %25 for arterial (funclass=3 and funcclass=4 edges and funcclass=5 ) non-rush hours.
-
-
-
-
-
-Connect to Server
-mstsc 
-
-host: 128.125.163.86
-user: clearp
-pw: clearp
-
-
-geodb.usc.edu
-
-user: clearp
-pw: clearp
-
 
 
 TASK(August 20)
