@@ -12,18 +12,23 @@ public class OSMRouting {
 	/**
 	 * @param param
 	 */
-	static long startNode = 1474993500;
-	static long endNode = 122657380;
-	static int startTime = 10;
-	static int timeInterval = 15;
-	static int timeRange = 60;
+	static long startNode 		= 95687844;
+	static long endNode 		= 122759345;
+	static int startTime 		= 10;
+	static int timeInterval 	= 15;
+	static int timeRange 		= 60;
 	/**
 	 * @param file
 	 */
-	static String root = "file";
-	static String adjlistFile = "osm_adjlist.txt";
-	static String nodeFile = "osm_node.txt";
-	static String kmlFile = "osm_path.kml";
+	static String root 			= "file";
+	
+	//static String adjlistFile = "osm_adjlist.txt";
+	//static String nodeFile = "osm_node.txt";
+	//static String kmlFile = "osm_path.kml";
+	
+	static String nodeFile	 	= "los_angeles_node.txt";
+	static String adjlistFile 	= "los_angeles_adjlist.txt";
+	static String kmlFile 		= "los_angeles_path.kml";
 	/**
 	 * @param node
 	 */
@@ -213,8 +218,8 @@ public class OSMRouting {
 
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				if (debug % 1000 == 0)
-					System.out.println("completed " + debug + "lines.");
+				if (debug % 100000 == 0)
+					System.out.println("completed " + debug + " lines.");
 
 				String[] splitStr = strLine.split("\\|\\|");
 				long startNode = Long.parseLong(splitStr[0].substring(1));
