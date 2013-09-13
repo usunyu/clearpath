@@ -55,6 +55,8 @@ public class OSMGenerateKMLMap {
 				String kmlStr = "<Placemark><name>Way:" + wayId + "</name>";
 				kmlStr += "<description>";
 				kmlStr += "oneway:" + isOneway + "\r\n";
+				if(name.contains("&"))
+					name.replace("and", "&");
 				kmlStr += "name:" + name + "\r\n";
 				kmlStr += "highway:" + highway + "\r\n";
 				kmlStr += "ref:\r\n";
