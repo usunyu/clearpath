@@ -61,9 +61,8 @@ public class OSMGenerateAdjList {
 			while ((strLine = br.readLine()) != null) {
 				debug++;
 				String[] splitted = strLine.split("\\|\\|");
-				String id[] = splitted[0].split(",");
-				long wayId = Long.parseLong(id[0]);
-				int edgeId = Integer.parseInt(id[1]);
+				long wayId = Long.parseLong(splitted[0].substring(0, splitted[0].length() - 4));
+				int edgeId = Integer.parseInt(splitted[0].substring(splitted[0].length() - 4));
 				String name = splitted[1];
 				String highway = splitted[2];
 				long startNode = Long.parseLong(splitted[3]);
