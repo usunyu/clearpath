@@ -5,3 +5,5 @@
 *.zip
 *.class
 *.osm
+*.wkt
+*.wkts
