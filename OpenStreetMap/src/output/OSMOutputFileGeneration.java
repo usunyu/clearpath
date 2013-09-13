@@ -10,11 +10,16 @@ public class OSMOutputFileGeneration {
 	/**
 	 * @param file
 	 */
-	static String root = "file";
-	static String nodeFile = "osm_node.txt";
-	static String wayFile = "osm_way.txt";
-	static String wayInfoFile = "osm_way_info.txt";
-	static String wktsFile = "map.osm.wkts";
+	static String root 			= "file";
+	//static String nodeFile 		= "osm_node.txt";
+	//static String wayFile 		= "osm_way.txt";
+	//static String wayInfoFile 	= "osm_way_info.txt";
+	//static String wktsFile 		= "map.osm.wkts";
+	
+	static String nodeFile	 	= "los_angeles_node.txt";
+	static String wayFile	 	= "los_angeles_way.txt";
+	static String wayInfoFile 	= "los_angeles_way_info.txt";
+	static String wktsFile 		= "los_angeles.osm.wkts";
 	/**
 	 * @param node
 	 */

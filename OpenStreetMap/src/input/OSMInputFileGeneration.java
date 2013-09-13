@@ -44,7 +44,7 @@ public class OSMInputFileGeneration {
 	/**
 	 * @param file
 	 */
-	static String root = "file";
+	static String root 			= "file";
 	//static String osmFile 		= "map.osm";
 	//static String nodeTxtFile 	= "osm_node.txt";
 	//static String wayTxtFile 	= "osm_way.txt";
