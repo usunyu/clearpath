@@ -187,6 +187,7 @@ public class Osm2Wkt {
 			long streetId = 0;
 			Vector<Long> streetLandmarks = null;
 			boolean eliminate = false;
+			boolean hasHighway = false;
 			String kAttr = null;
 			String vAttr = null;
 			while (eventReader.hasNext()) {
@@ -213,6 +214,7 @@ public class Osm2Wkt {
 						// set default
 						streetLandmarks = new Vector<Long>();
 						eliminate = false;
+						hasHighway = false;
 						Iterator<Attribute> attributes = startElement.getAttributes();
 						while (attributes.hasNext()) {
 							Attribute attribute = attributes.next();
@@ -252,6 +254,7 @@ public class Osm2Wkt {
 							if(vAttr.equals(XML_V_SERVICE)) {
 								eliminate = true;
 							}
+							hasHighway = true;
 						}
 						if(kAttr.equals(XML_K_BUILDING)) {
 							if(vAttr.equals(XML_V_YES)) {
@@ -293,6 +296,9 @@ public class Osm2Wkt {
 		        	}
 		        	
 		        	if (endElement.getName().getLocalPart().equals(XML_TAG_WAY)) {
+		        		// does not contain highway tag
+		        		if(!hasHighway)
+		        			eliminate = true;
 		        		// the way can be used for routing
 						if(!eliminate) {
 							// if we found landmarks for this street add street
