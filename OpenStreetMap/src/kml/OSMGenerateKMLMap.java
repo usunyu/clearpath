@@ -34,8 +34,8 @@ public class OSMGenerateKMLMap {
 		// TODO Auto-generated method stub
 		readNodeFile();
 		readWayFile();
-		//generateKML();
-		generateNullKML();
+		generateKML();
+		//generateNullKML();
 	}
 	
 	public static void generateNullKML() {
