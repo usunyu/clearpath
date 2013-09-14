@@ -19,6 +19,8 @@ public class OSMGenerateKMLMap {
 	static String nodeFile	 	= "los_angeles_node.txt";
 	static String wayFile	 	= "los_angeles_way.txt";
 	static String kmlFile 		= "los_angeles_map.kml";
+	// check highway type : null way
+	static String kmlNullFile	= "los_angeles_null_map.kml";
 	/**
 	 * @param node
 	 */
@@ -32,7 +34,63 @@ public class OSMGenerateKMLMap {
 		// TODO Auto-generated method stub
 		readNodeFile();
 		readWayFile();
-		generateKML();
+		//generateKML();
+		generateNullKML();
+	}
+	
+	public static void generateNullKML() {
+		System.out.println("generate null kml...");
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + kmlNullFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+
+			for (int i = 0; i < wayArrayList.size(); i++) {
+				debug++;
+				WayInfo wayInfo = wayArrayList.get(i);
+				long wayId = wayInfo.getWayId();
+				boolean isOneway = wayInfo.isOneway();
+				String name = wayInfo.getName();
+				String highway = wayInfo.getHighway();
+				ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
+				
+				String kmlStr = "<Placemark><name>Way:" + wayId + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "oneway:" + isOneway + "\r\n";
+				if(name.contains("&"))
+					name = name.replaceAll("&", "and");
+				kmlStr += "name:" + name + "\r\n";
+				kmlStr += "highway:" + highway + "\r\n";
+				if(!highway.equals("null"))
+					continue;
+				kmlStr += "ref:\r\n";
+				for(int j = 0; j < localNodeArrayList.size(); j++) {
+					long NodeId = localNodeArrayList.get(j);
+					kmlStr += NodeId + "\r\n";
+				}
+				kmlStr += "\r\n";
+				kmlStr += "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				for(int j = 0; j < localNodeArrayList.size(); j++) {
+					NodeInfo nodeInfo = nodeHashMap.get(localNodeArrayList.get(j));
+					LocationInfo location = nodeInfo.getLocation();
+					kmlStr += location.getLongitude() + "," + location.getLatitude() + ",0 ";
+				}
+				kmlStr += "</coordinates></LineString>";
+				kmlStr += "<Style><LineStyle>";
+				kmlStr += "<width>1</width>";
+				kmlStr += "</LineStyle></Style></Placemark>\n";
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("generateNullKML: debug code: " + debug);
+		}
+		System.out.println("generate null kml finish!");
 	}
 	
 	public static void generateKML() {
