@@ -1,4 +1,4 @@
-package map;
+package kml;
 
 import java.io.*;
 import java.util.*;
