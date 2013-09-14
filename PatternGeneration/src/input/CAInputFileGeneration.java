@@ -48,13 +48,13 @@ public class CAInputFileGeneration {
 		//fetchNodeCA();
 		//writeNodeFileCA();
 		
-		//readNodeFileCA();
+		readNodeFileCA();
 		
-		//fetchLinkCA();
-		//writeLinkFileCA();
+		fetchLinkCA();
+		writeLinkFileCA();
 		
-		fetchAvgTravelTimeCA();
-		writeAvgTravelTimeCA();
+		//fetchAvgTravelTimeCA();
+		//writeAvgTravelTimeCA();
 	}
 	
 	private static void writeAvgTravelTimeCA() {
@@ -275,7 +275,7 @@ public class CAInputFileGeneration {
 
 				CALinkList.add(CALink);
 
-				if (debug % 1000 == 0)
+				if (debug % 10000 == 0)
 					System.out.println("record " + debug + " finish!");
 				
 			}
@@ -420,7 +420,7 @@ public class CAInputFileGeneration {
 				
 				CANodeList.add(CANode);
 				
-				if (debug % 1000 == 0)
+				if (debug % 100000 == 0)
 					System.out.println("record " + debug + " finish!");
 			}
 			res.close();
