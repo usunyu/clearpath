@@ -37,7 +37,7 @@ public class RDFInputFileGeneration {
 		//writeNodeFile();
 		
 		fetchLink();
-		fetchGeometry();
+		//fetchGeometry();
 		writeLinkFile();
 	}
 	
@@ -116,9 +116,9 @@ public class RDFInputFileGeneration {
 				long linkId = RDFLink.getLinkId();
 				long refNodeId = RDFLink.getRefNodeId();
 				long nonRefNodeId = RDFLink.getNonRefNodeId();
-				int functionalClass = RDFLink.getFunctionalClass();
+				//int functionalClass = RDFLink.getFunctionalClass();
 				
-				String strLine = linkId + "|" + refNodeId + "|" + nonRefNodeId +  "|" + functionalClass + "\r\n";
+				String strLine = linkId + "|" + refNodeId + "|" + nonRefNodeId + "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -140,10 +140,12 @@ public class RDFInputFileGeneration {
 
 			con = getConnection();
 
-			sql =	"SELECT t1.link_id, t1.ref_node_id, t1.nonref_node_id, t2.functional_class " + 
-					"FROM rdf_link t1 " + 
-					"LEFT JOIN rdf_nav_link t2 " + 
-					"ON t1.link_id=t2.link_id";
+			//sql =	"SELECT t1.link_id, t1.ref_node_id, t1.nonref_node_id, t2.functional_class " + 
+			//		"FROM rdf_link t1 " + 
+			//		"LEFT JOIN rdf_nav_link t2 " + 
+			//		"ON t1.link_id=t2.link_id";
+			
+			sql = "SELECT link_id, ref_node_id, nonref_node_id FROM rdf_link";
 
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
@@ -154,14 +156,14 @@ public class RDFInputFileGeneration {
 				long linkId = res.getLong("link_id");
 				long refNodeId = res.getLong("ref_node_id");
 				long nonRefNodeId = res.getLong("nonref_node_id");
-				String checkFunClass = res.getString("functional_class");
+				//String checkFunClass = res.getString("functional_class");
 				int functionalClass;
-				if(checkFunClass == null)
-					functionalClass = -1;
-				else
-					functionalClass = res.getInt("functional_class");
+				//if(checkFunClass == null)
+				//	functionalClass = -1;
+				//else
+				//	functionalClass = res.getInt("functional_class");
 
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId, functionalClass);
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
 
 				linkList.add(RDFLink);
 

@@ -9,11 +9,11 @@ public class RDFLinkInfo {
 	int functionalClass;
 	LinkedList<LocationInfo> pointsList;
 	
-	public RDFLinkInfo(long linkId, long refNodeId, long nonRefNodeId, int functionalClass) {
+	public RDFLinkInfo(long linkId, long refNodeId, long nonRefNodeId/*, int functionalClass*/) {
 		this.linkId = linkId;
 		this.refNodeId = refNodeId;
 		this.nonRefNodeId = nonRefNodeId;
-		this.functionalClass = functionalClass;
+		//this.functionalClass = functionalClass;
 	}
 	
 	public void setPointsList(LinkedList<LocationInfo> pointsList) {
