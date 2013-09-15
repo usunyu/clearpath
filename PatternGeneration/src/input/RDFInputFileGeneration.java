@@ -37,7 +37,68 @@ public class RDFInputFileGeneration {
 		//writeNodeFile();
 		
 		fetchLink();
+		fetchGeometry();
 		writeLinkFile();
+	}
+	
+	private static void fetchGeometry() {
+		System.out.println("fetch geometry...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			
+			ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
+			long listSize = linkList.size();
+			
+			while(iterator.hasNext()) {
+				debug++;
+				RDFLinkInfo RDFLink = iterator.next();
+				long linkId = RDFLink.getLinkId();
+				
+				sql =	"SELECT lat, lon, zlevel " + 
+					"FROM rdf_link_geometry " + 
+					"WHERE link_id=" + RDFLink + " " +
+					"ORDER BY seq_num";
+				
+				pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				res = pstatement.executeQuery();
+				
+				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
+				while (res.next()) {
+					
+					double lat = 	res.getDouble("lat") / 100000;
+					double lng = 	res.getDouble("lon") / 100000;
+					int zLevel = 	res.getInt("zlevel");
+					
+					LocationInfo location = new LocationInfo(lat, lng, zLevel);
+					pointsList.add(location);
+				}
+				RDFLink.setPointsList(pointsList);
+				
+				if (debug % 250 == 0) {
+					// reconnect
+					res.close();
+					pstatement.close();
+					con.close();
+					con = getConnection();
+					System.out.println((double)debug / listSize * 100 + "% finish!");
+				}
+			}
+			if(!res.isClosed()) {
+				res.close();
+				pstatement.close();
+				con.close();
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("fetchGeometry: debug code: " + debug);
+		}
+		System.out.println("fetch geometry finish!");
 	}
 	
 	private static void writeLinkFile() {
@@ -107,7 +168,7 @@ public class RDFInputFileGeneration {
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			System.err.println("Error Code: " + debug);
+			System.err.println("fetchLink: debug code: " + debug);
 		}
 		System.out.println("fetch link finish!");
 	}
@@ -122,9 +183,10 @@ public class RDFInputFileGeneration {
 			while (iterator.hasNext()) {
 				RDFNodeInfo RDFNode = iterator.next();
 				long nodeId = RDFNode.getNodeId();
-				PairInfo location = RDFNode.getLocation();
-				String locationStr = location.getLati() + "," + location.getLongi();
-				String strLine = nodeId + "|" + locationStr + "\r\n";
+				LocationInfo location = RDFNode.getLocation();
+				String locationStr = location.getLatitude() + "," + location.getLongitude();
+				int zLevel = location.getZLevel();
+				String strLine = nodeId + "|" + locationStr + "|" + zLevel + "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -154,10 +216,11 @@ public class RDFInputFileGeneration {
 			while (res.next()) {
 				debug++;
 
-				long nodeId = res.getLong("node_id");
-				double lat = res.getDouble("lat") / 100000;
-				double lng = res.getDouble("lon") / 100000;
-				PairInfo location = new PairInfo(lat, lng);
+				long nodeId = 	res.getLong("node_id");
+				double lat = 	res.getDouble("lat") / 100000;
+				double lng = 	res.getDouble("lon") / 100000;
+				int zLevel = 	res.getInt("zlevel");
+				LocationInfo location = new LocationInfo(lat, lng, zLevel);
 
 				RDFNodeInfo RDFNode = new RDFNodeInfo(nodeId, location);
 				
@@ -172,7 +235,7 @@ public class RDFInputFileGeneration {
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			System.err.println("Error Code: " + debug);
+			System.err.println("fetchNode: debug code: " + debug);
 		}
 		System.out.println("fetch node finish!");
 	}

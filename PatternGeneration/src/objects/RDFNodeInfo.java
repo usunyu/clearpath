@@ -2,9 +2,9 @@ package objects;
 
 public class RDFNodeInfo {
 	long nodeId;
-	PairInfo location;
+	LocationInfo location;
 
-	public RDFNodeInfo(long nodeId, PairInfo location) {
+	public RDFNodeInfo(long nodeId, LocationInfo location) {
 		this.nodeId = nodeId;
 		this.location = location;
 	}
@@ -13,7 +13,7 @@ public class RDFNodeInfo {
 		return nodeId;
 	}
 
-	public PairInfo getLocation() {
+	public LocationInfo getLocation() {
 		return location;
 	}
 }
