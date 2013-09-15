@@ -156,7 +156,7 @@ public class RDFInputFileGeneration {
 				long nonRefNodeId = res.getLong("nonref_node_id");
 				String checkFunClass = res.getString("functional_class");
 				int functionalClass;
-				if(checkFunClass.equals("null"))
+				if(checkFunClass == null)
 					functionalClass = -1;
 				else
 					functionalClass = res.getInt("functional_class");
