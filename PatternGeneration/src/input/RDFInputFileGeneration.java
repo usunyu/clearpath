@@ -60,15 +60,18 @@ public class RDFInputFileGeneration {
 				long linkId = RDFLink.getLinkId();
 				
 				sql =	"SELECT lat, lon, zlevel " + 
-					"FROM rdf_link_geometry " + 
-					"WHERE link_id=" + RDFLink + " " +
-					"ORDER BY seq_num";
+						"FROM rdf_link_geometry " + 
+						"WHERE link_id=" + RDFLink + " " +
+						"ORDER BY seq_num";
 				
 				pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				res = pstatement.executeQuery();
 				
-				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
+				LinkedList<LocationInfo> pointsList = null;
 				while (res.next()) {
+					
+					if(pointsList == null)
+						pointsList = new LinkedList<LocationInfo>();
 					
 					double lat = 	res.getDouble("lat") / 100000;
 					double lng = 	res.getDouble("lon") / 100000;
@@ -138,9 +141,9 @@ public class RDFInputFileGeneration {
 			con = getConnection();
 
 			sql =	"SELECT t1.link_id, t1.ref_node_id, t1.nonref_node_id, t2.functional_class " + 
-				"FROM rdf_link t1 " + 
-				"LEFT JOIN rdf_nav_link t2 " + 
-				"ON t1.link_id=t2.link_id";
+					"FROM rdf_link t1 " + 
+					"LEFT JOIN rdf_nav_link t2 " + 
+					"ON t1.link_id=t2.link_id";
 
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
@@ -151,7 +154,12 @@ public class RDFInputFileGeneration {
 				long linkId = res.getLong("link_id");
 				long refNodeId = res.getLong("ref_node_id");
 				long nonRefNodeId = res.getLong("nonref_node_id");
-				int functionalClass = res.getInt("functional_class");
+				String checkFunClass = res.getString("functional_class");
+				int functionalClass;
+				if(checkFunClass.equals("null"))
+					functionalClass = -1;
+				else
+					functionalClass = res.getInt("functional_class");
 
 				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId, functionalClass);
 
