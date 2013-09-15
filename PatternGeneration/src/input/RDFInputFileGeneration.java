@@ -11,17 +11,17 @@ public class RDFInputFileGeneration {
 	/**
 	 * @param file
 	 */
-	static String root = "file";
+	static String root 		= "file";
 	// for write link file
-	static String linkFile = "RDF_Link.txt";
+	static String linkFile 		= "RDF_Link.txt";
 	// for write node file
-	static String nodeFile = "RDF_Node.txt";
+	static String nodeFile 	= "RDF_Node.txt";
 	/**
 	 * @param database
 	 */
-	static String urlHome = "jdbc:oracle:thin:@gd2.usc.edu:1521/navteq";
-	static String userName = "NAVTEQRDF";
-	static String password = "NAVTEQRDF";
+	static String urlHome 	= "jdbc:oracle:thin:@gd2.usc.edu:1521/navteq";
+	static String userName 	= "NAVTEQRDF";
+	static String password 	= "NAVTEQRDF";
 	static Connection connHome = null;
 	/**
 	 * @param node
@@ -37,6 +37,31 @@ public class RDFInputFileGeneration {
 		//writeNodeFile();
 		
 		fetchLink();
+		writeLinkFile();
+	}
+	
+	private static void writeLinkFile() {
+		System.out.println("write link file...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + linkFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
+			while(iterator.hasNext()) {
+				RDFLinkInfo RDFLink = iterator.next();
+				long linkId = RDFLink.getLinkId();
+				long refNodeId = RDFLink.getRefNodeId();
+				long nonRefNodeId = RDFLink.getNonRefNodeId();
+				
+				String strLine = linkId + "|" + refNodeId + "|" + nonRefNodeId +  "\r\n";
+				out.write(strLine);
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("write link file finish!");
 	}
 	
 	private static void fetchLink() {
@@ -66,7 +91,7 @@ public class RDFInputFileGeneration {
 
 				linkList.add(RDFLink);
 
-				if (debug % 10000 == 0)
+				if (debug % 100000 == 0)
 					System.out.println("record " + debug + " finish!");
 				
 			}
@@ -87,15 +112,14 @@ public class RDFInputFileGeneration {
 		try {
 			FileWriter fstream = new FileWriter(root + "/" + nodeFile);
 			BufferedWriter out = new BufferedWriter(fstream);
-			for (int i = 0; i < nodeList.size(); i++) {
-				RDFNodeInfo RDFNode = nodeList.get(i);
-				
+			
+			ListIterator<RDFNodeInfo> iterator = nodeList.listIterator();
+			while (iterator.hasNext()) {
+				RDFNodeInfo RDFNode = iterator.next();
 				long nodeId = RDFNode.getNodeId();
 				PairInfo location = RDFNode.getLocation();
 				String locationStr = location.getLati() + "," + location.getLongi();
-				
 				String strLine = nodeId + "|" + locationStr + "\r\n";
-				
 				out.write(strLine);
 			}
 			out.close();
