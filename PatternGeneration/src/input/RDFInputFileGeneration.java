@@ -76,9 +76,10 @@ public class RDFInputFileGeneration {
 
 			con = getConnection();
 
-			sql = "SELECT t1.link_id, t1.ref_node_id, t1.nonref_node_id, t2.functional_class " + 
-					"FROM rdf_link t1 LEFT JOIN rdf_nav_link t2 " + 
-					" ON t1.link_id=t2.link_id";
+			sql =	"SELECT t1.link_id, t1.ref_node_id, t1.nonref_node_id, t2.functional_class " + 
+				"FROM rdf_link t1 " + 
+				"LEFT JOIN rdf_nav_link t2 " + 
+				"ON t1.link_id=t2.link_id";
 
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
