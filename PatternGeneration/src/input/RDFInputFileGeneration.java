@@ -61,7 +61,7 @@ public class RDFInputFileGeneration {
 				
 				sql =	"SELECT lat, lon, zlevel " + 
 						"FROM rdf_link_geometry " + 
-						"WHERE link_id=" + RDFLink + " " +
+						"WHERE link_id=" + linkId + " " +
 						"ORDER BY seq_num";
 				
 				pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
