@@ -98,13 +98,7 @@ public class RDFInputFileGeneration {
 				}
 				linkBuffer.add(strLine + "|" + pointsListStr + "\r\n");
 				
-				if (debug % 250 == 0) {
-					// reconnect
-					res.close();
-					pstatement.close();
-					con.close();
-					con = getConnection();
-					
+				if (debug % 1000 == 0) {
 					// append write to temp
 					FileWriter tempFstream = new FileWriter(root + "/" + linkTempFile, true);
 					BufferedWriter out = new BufferedWriter(tempFstream);
@@ -118,10 +112,10 @@ public class RDFInputFileGeneration {
 					// free memory
 					linkBuffer = new LinkedList<String>();
 					
-					if (debug % 100000 == 0)
-						System.out.println("line " + debug + " finish!");
+					System.out.println("line " + debug + " finish!");
 				}
-				
+				res.close();
+				pstatement.close();
 			}
 			// read the rest
 			if(!linkBuffer.isEmpty()) {
