@@ -111,7 +111,6 @@ public class RDFInputFileGeneration {
 					out.close();
 					// free memory
 					linkBuffer = new LinkedList<String>();
-					
 					System.out.println("line " + debug + " finish!");
 				}
 				res.close();
@@ -131,11 +130,10 @@ public class RDFInputFileGeneration {
 				out.close();
 			}
 			
-			if(!res.isClosed()) {
-				res.close();
-				pstatement.close();
-				con.close();
-			}
+			res.close();
+			pstatement.close();
+			con.close();
+			
 			br.close();
 			in.close();
 			fstream.close();
