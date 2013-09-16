@@ -11,11 +11,12 @@ public class RDFInputFileGeneration {
 	/**
 	 * @param file
 	 */
-	static String root 		= "file";
+	static String root			= "file";
 	// for write link file
-	static String linkFile 		= "RDF_Link.txt";
+	static String linkFile		= "RDF_Link.txt";
+	static String lingTempFile	= "RDF_Link_Temp.txt";
 	// for write node file
-	static String nodeFile 	= "RDF_Node.txt";
+	static String nodeFile		= "RDF_Node.txt";
 	/**
 	 * @param database
 	 */
@@ -31,6 +32,7 @@ public class RDFInputFileGeneration {
 	 * @param link
 	 */
 	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
+	static LinkedList<String> linkBuffer = new LinkedList<String>();
 	
 	public static void main(String[] args) {
 		//fetchNode();
@@ -41,6 +43,112 @@ public class RDFInputFileGeneration {
 		//writeLinkFile();
 		
 		fetchWriteLink();
+		//readFetchWriteGeometry();
+	}
+	
+	/**
+	 * read from RDF_Link.txt, get link_id
+	 * fetch from DB, get geometry
+	 * append write to RDF_Link_Temp.txt
+	 * change RDF_Link_Temp.txt to RDF_Link.txt
+	 */
+	private static void readFetchWriteGeometry() {
+		System.out.println("read fetch and write geometry...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split("\\|");
+				String linkId = nodes[0];
+				
+				sql =	"SELECT lat, lon, zlevel " + 
+						"FROM rdf_link_geometry " + 
+						"WHERE link_id=" + linkId + " " +
+						"ORDER BY seq_num";
+				
+				pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				res = pstatement.executeQuery();
+				
+				String pointsListStr = "";
+				while (res.next()) {
+					
+					double lat = 	res.getDouble("lat") / 100000;
+					double lng = 	res.getDouble("lon") / 100000;
+					int zLevel = 	res.getInt("zlevel");
+					
+					pointsListStr += lat + "," + lng + "," + zLevel;
+					
+				
+				}
+				
+			}
+			
+			br.close();
+			in.close();
+			fstream.close();
+			
+			ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
+			long listSize = linkList.size();
+			
+			while(iterator.hasNext()) {
+				debug++;
+				RDFLinkInfo RDFLink = iterator.next();
+				long linkId = RDFLink.getLinkId();
+				
+				sql =	"SELECT lat, lon, zlevel " + 
+						"FROM rdf_link_geometry " + 
+						"WHERE link_id=" + linkId + " " +
+						"ORDER BY seq_num";
+				
+				pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				res = pstatement.executeQuery();
+				
+				LinkedList<LocationInfo> pointsList = null;
+				while (res.next()) {
+					
+					if(pointsList == null)
+						pointsList = new LinkedList<LocationInfo>();
+					
+					double lat = 	res.getDouble("lat") / 100000;
+					double lng = 	res.getDouble("lon") / 100000;
+					int zLevel = 	res.getInt("zlevel");
+					
+					LocationInfo location = new LocationInfo(lat, lng, zLevel);
+					pointsList.add(location);
+				}
+				RDFLink.setPointsList(pointsList);
+				
+				if (debug % 250 == 0) {
+					// reconnect
+					res.close();
+					pstatement.close();
+					con.close();
+					con = getConnection();
+					System.out.println((double)debug / listSize * 100 + "% finish!");
+				}
+			}
+			if(!res.isClosed()) {
+				res.close();
+				pstatement.close();
+				con.close();
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("readFetchWriteGeometry: debug code: " + debug);
+		}
+		System.out.println("read fetch and write geometry finish!");
 	}
 	
 	private static void fetchWriteLink() {
@@ -72,12 +180,7 @@ public class RDFInputFileGeneration {
 				long linkId = res.getLong("link_id");
 				long refNodeId = res.getLong("ref_node_id");
 				long nonRefNodeId = res.getLong("nonref_node_id");
-				String checkFunClass = res.getString("functional_class");
-				int functionalClass;
-				if(checkFunClass == null)
-					functionalClass = -1;
-				else
-					functionalClass = res.getInt("functional_class");
+				int functionalClass = res.getInt("functional_class");
 
 				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
 				RDFLink.setFunctionalClass(functionalClass);
@@ -108,6 +211,26 @@ public class RDFInputFileGeneration {
 					linkList = new LinkedList<RDFLinkInfo>();
 				}
 				
+			}
+			
+			// read the rest
+			if(!linkList.isEmpty()) {
+				// append write
+				FileWriter fstream = new FileWriter(root + "/" + linkFile, true);
+				BufferedWriter out = new BufferedWriter(fstream);
+				
+				ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
+				while(iterator.hasNext()) {
+					RDFLinkInfo writeRDFLink = iterator.next();
+					long writeLinkId = writeRDFLink.getLinkId();
+					long writeRefNodeId = writeRDFLink.getRefNodeId();
+					long writeNonRefNodeId = writeRDFLink.getNonRefNodeId();
+					int writeFunctionalClass = writeRDFLink.getFunctionalClass();
+					
+					String strLine = writeLinkId + "|" + writeRefNodeId + "|" + writeNonRefNodeId + "|" + writeFunctionalClass + "\r\n";
+					out.write(strLine);
+				}
+				out.close();
 			}
 
 			res.close();
