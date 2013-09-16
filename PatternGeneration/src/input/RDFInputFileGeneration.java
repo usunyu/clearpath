@@ -36,9 +36,89 @@ public class RDFInputFileGeneration {
 		//fetchNode();
 		//writeNodeFile();
 		
-		fetchLink();
+		//fetchLink();
 		//fetchGeometry();
-		writeLinkFile();
+		//writeLinkFile();
+		
+		fetchWriteLink();
+	}
+	
+	private static void fetchWriteLink() {
+		System.out.println("fetch and write link...");
+		int debug = 0;
+		try {
+			// delete file if it exists
+			File oldFile = new File(root + "/" + linkFile);
+			if(oldFile.exists()) oldFile.delete();
+			
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+
+			con = getConnection();
+
+			sql =	"SELECT t1.link_id, t1.ref_node_id, t1.nonref_node_id, t2.functional_class " + 
+					"FROM rdf_link t1 " + 
+					"LEFT JOIN rdf_nav_link t2 " + 
+					"ON t1.link_id=t2.link_id";
+
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+
+			while (res.next()) {
+				debug++;
+
+				long linkId = res.getLong("link_id");
+				long refNodeId = res.getLong("ref_node_id");
+				long nonRefNodeId = res.getLong("nonref_node_id");
+				String checkFunClass = res.getString("functional_class");
+				int functionalClass;
+				if(checkFunClass == null)
+					functionalClass = -1;
+				else
+					functionalClass = res.getInt("functional_class");
+
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+				RDFLink.setFunctionalClass(functionalClass);
+
+				linkList.add(RDFLink);
+
+				// data is too large to store all in memory
+				if (debug % 100000 == 0) {
+					// append write
+					FileWriter fstream = new FileWriter(root + "/" + linkFile, true);
+					BufferedWriter out = new BufferedWriter(fstream);
+					
+					ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
+					while(iterator.hasNext()) {
+						RDFLinkInfo writeRDFLink = iterator.next();
+						long writeLinkId = writeRDFLink.getLinkId();
+						long writeRefNodeId = writeRDFLink.getRefNodeId();
+						long writeNonRefNodeId = writeRDFLink.getNonRefNodeId();
+						int writeFunctionalClass = writeRDFLink.getFunctionalClass();
+						
+						String strLine = writeLinkId + "|" + writeRefNodeId + "|" + writeNonRefNodeId + "|" + writeFunctionalClass + "\r\n";
+						out.write(strLine);
+					}
+					out.close();
+					
+					System.out.println("record " + debug + " finish!");
+					// free the old memory
+					linkList = new LinkedList<RDFLinkInfo>();
+				}
+				
+			}
+
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("fetchWriteLink: debug code: " + debug);
+		}
+		System.out.println("fetch and write link finish!");
 	}
 	
 	private static void fetchGeometry() {
