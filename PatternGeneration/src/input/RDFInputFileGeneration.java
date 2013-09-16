@@ -64,69 +64,105 @@ public class RDFInputFileGeneration {
 
 			con = getConnection();
 
-			sql =	"SELECT t1.link_id, t1.ref_node_id, t1.nonref_node_id, t2.functional_class " + 
-					"FROM rdf_link t1 " + 
-					"LEFT JOIN rdf_nav_link t2 " + 
-					"ON t1.link_id=t2.link_id";
+			sql = "SELECT link_id, lat, lon, zlevel FROM rdf_link_geometry ORDER BY link_id, seq_num";
 
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
+			
+			long lastLinkId = -1;
+			RDFLinkInfo RDFLink = null;
 
 			while (res.next()) {
-				debug++;
 
-				long linkId = res.getLong("link_id");
-				long refNodeId = res.getLong("ref_node_id");
-				long nonRefNodeId = res.getLong("nonref_node_id");
-				int functionalClass = res.getInt("functional_class");
-
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
-				RDFLink.setFunctionalClass(functionalClass);
-
-				linkList.add(RDFLink);
-
-				// data is too large to store all in memory
-				if (debug % 100000 == 0) {
-					// append write
-					FileWriter fstream = new FileWriter(root + "/" + linkGeometryFile, true);
-					BufferedWriter out = new BufferedWriter(fstream);
-					
-					ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
-					while(iterator.hasNext()) {
-						RDFLinkInfo writeRDFLink = iterator.next();
-						long writeLinkId = writeRDFLink.getLinkId();
-						long writeRefNodeId = writeRDFLink.getRefNodeId();
-						long writeNonRefNodeId = writeRDFLink.getNonRefNodeId();
-						int writeFunctionalClass = writeRDFLink.getFunctionalClass();
-						
-						String strLine = writeLinkId + "|" + writeRefNodeId + "|" + writeNonRefNodeId + "|" + writeFunctionalClass + "\r\n";
-						out.write(strLine);
-					}
-					out.close();
-					
-					System.out.println("record " + debug + " finish!");
-					// free the old memory
-					linkList = new LinkedList<RDFLinkInfo>();
-				}
+				long linkId = 	res.getLong("link_id");
+				double lat = 	res.getDouble("lat") / 100000;
+				double lng = 	res.getDouble("lon") / 100000;
+				int zLevel = 	res.getInt("zlevel");
+				LocationInfo location = new LocationInfo(lat, lng, zLevel);
 				
+				if(linkId != lastLinkId) {
+					debug++;
+					
+					// data is too large to store all in memory
+					if (debug % 100000 == 0) {
+						// append write
+						FileWriter fstream = new FileWriter(root + "/" + linkGeometryFile, true);
+						BufferedWriter out = new BufferedWriter(fstream);
+						
+						ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
+						while(iterator.hasNext()) {
+							RDFLinkInfo writeRDFLink = iterator.next();
+							
+							long writeLinkId = writeRDFLink.getLinkId();
+							LinkedList<LocationInfo> pointsList = writeRDFLink.getPointsList();
+							
+							String pointsStr = "null";
+							ListIterator<LocationInfo> pIterator = pointsList.listIterator();
+							int i = 0;
+							while(pIterator.hasNext()) {
+								LocationInfo loc = pIterator.next();
+								if(i == 0)
+									pointsStr = loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+								else
+									pointsStr += ";" + loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+								
+							}
+							
+							String strLine = writeLinkId + "|" + pointsStr + "\r\n";
+							out.write(strLine);
+						}
+						out.close();
+						
+						System.out.println("record " + debug + " finish!");
+						// free the old memory
+						linkList = new LinkedList<RDFLinkInfo>();
+					}
+					
+					
+					RDFLink = new RDFLinkInfo();
+					LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
+					pointsList.add(location);
+					lastLinkId = linkId;
+					
+					linkList.add(RDFLink);
+				}
+				else {
+					LinkedList<LocationInfo> pointsList = RDFLink.getPointsList();
+					pointsList.add(location);
+				}				
 			}
 			
+			// read last RDFLink
+			linkList.add(RDFLink);
 			// read the rest
 			if(!linkList.isEmpty()) {
 				// append write
-				FileWriter fstream = new FileWriter(root + "/" + linkFile, true);
+				FileWriter fstream = new FileWriter(root + "/" + linkGeometryFile, true);
 				BufferedWriter out = new BufferedWriter(fstream);
 				
 				ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
 				while(iterator.hasNext()) {
 					RDFLinkInfo writeRDFLink = iterator.next();
-					long writeLinkId = writeRDFLink.getLinkId();
-					long writeRefNodeId = writeRDFLink.getRefNodeId();
-					long writeNonRefNodeId = writeRDFLink.getNonRefNodeId();
-					int writeFunctionalClass = writeRDFLink.getFunctionalClass();
 					
-					String strLine = writeLinkId + "|" + writeRefNodeId + "|" + writeNonRefNodeId + "|" + writeFunctionalClass + "\r\n";
+					long writeLinkId = writeRDFLink.getLinkId();
+					LinkedList<LocationInfo> pointsList = writeRDFLink.getPointsList();
+					
+					String pointsStr = "null";
+					ListIterator<LocationInfo> pIterator = pointsList.listIterator();
+					int i = 0;
+					while(pIterator.hasNext()) {
+						LocationInfo loc = pIterator.next();
+						if(i == 0)
+							pointsStr = loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+						else
+							pointsStr += ";" + loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+						
+					}
+					
+					String strLine = writeLinkId + "|" + pointsStr + "\r\n";
 					out.write(strLine);
+					// free the old memory
+					linkList = new LinkedList<RDFLinkInfo>();
 				}
 				out.close();
 			}
