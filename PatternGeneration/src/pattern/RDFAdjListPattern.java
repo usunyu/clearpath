@@ -1,6 +1,7 @@
 package pattern;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 
 public class RDFAdjListPattern {
 
@@ -9,7 +10,7 @@ public class RDFAdjListPattern {
 	 */
 	static String root 		= "file";
 	// for write link file
-	static String linkFile 		= "RDF_Link.txt";
+	static String linkFile 	= "RDF_Link.txt";
 	// for write node file
 	static String nodeFile 	= "RDF_Node.txt";
 	/**
@@ -25,4 +26,14 @@ public class RDFAdjListPattern {
 
 	}
 
+	private static Connection getConnection() {
+		try {
+			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+			connHome = DriverManager.getConnection(urlHome, userName, password);
+			return connHome;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return connHome;
+	}
 }

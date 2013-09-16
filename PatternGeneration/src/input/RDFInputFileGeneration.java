@@ -145,6 +145,18 @@ public class RDFInputFileGeneration {
 			br.close();
 			in.close();
 			fstream.close();
+			
+			// delete original link file
+			oldFile = new File(root + "/" + linkFile);
+			if(oldFile.exists()) oldFile.delete();
+			
+			oldFile =new File(root + "/" + linkTempFile);
+			File newFile =new File(root + "/" + linkFile);
+	 
+			if(oldFile.renameTo(newFile))
+				System.out.println("rename to " + root + "/" + linkTempFile + " succesful");
+			else
+				System.out.println("rename failed");
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
