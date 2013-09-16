@@ -124,6 +124,7 @@ public class RDFInputFileGeneration {
 					RDFLink = new RDFLinkInfo();
 					LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
 					pointsList.add(location);
+					RDFLink.setPointsList(pointsList);
 					lastLinkId = linkId;
 					
 					linkList.add(RDFLink);
@@ -175,7 +176,7 @@ public class RDFInputFileGeneration {
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			System.err.println("fetchWriteLink: debug code: " + debug);
+			System.err.println("fetchWriteGeometry: debug code: " + debug);
 		}
 		System.out.println("fetch write geometry finish!");
 	}
