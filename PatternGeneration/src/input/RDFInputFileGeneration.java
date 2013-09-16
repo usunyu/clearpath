@@ -14,7 +14,7 @@ public class RDFInputFileGeneration {
 	static String root			= "file";
 	// for write link file
 	static String linkFile		= "RDF_Link.txt";
-	static String lingTempFile	= "RDF_Link_Temp.txt";
+	static String linkTempFile	= "RDF_Link_Temp.txt";
 	// for write node file
 	static String nodeFile		= "RDF_Node.txt";
 	/**
@@ -42,8 +42,8 @@ public class RDFInputFileGeneration {
 		//fetchGeometry();
 		//writeLinkFile();
 		
-		fetchWriteLink();
-		//readFetchWriteGeometry();
+		//fetchWriteLink();
+		readFetchWriteGeometry();
 	}
 	
 	/**
@@ -56,6 +56,10 @@ public class RDFInputFileGeneration {
 		System.out.println("read fetch and write geometry...");
 		int debug = 0;
 		try {
+			// delete temp file if it exists
+			File oldFile = new File(root + "/" + linkTempFile);
+			if(oldFile.exists()) oldFile.delete();
+			
 			FileInputStream fstream = new FileInputStream(root + "/" + linkFile);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -80,54 +84,19 @@ public class RDFInputFileGeneration {
 				pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				res = pstatement.executeQuery();
 				
-				String pointsListStr = "";
+				String pointsListStr = "null";
+				int i = 0;
 				while (res.next()) {
-					
 					double lat = 	res.getDouble("lat") / 100000;
 					double lng = 	res.getDouble("lon") / 100000;
 					int zLevel = 	res.getInt("zlevel");
 					
-					pointsListStr += lat + "," + lng + "," + zLevel;
-					
-				
+					if(i++ == 0)
+						pointsListStr = lat + "," + lng + "," + zLevel;
+					else
+						pointsListStr += ";" + lat + "," + lng + "," + zLevel;
 				}
-				
-			}
-			
-			br.close();
-			in.close();
-			fstream.close();
-			
-			ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
-			long listSize = linkList.size();
-			
-			while(iterator.hasNext()) {
-				debug++;
-				RDFLinkInfo RDFLink = iterator.next();
-				long linkId = RDFLink.getLinkId();
-				
-				sql =	"SELECT lat, lon, zlevel " + 
-						"FROM rdf_link_geometry " + 
-						"WHERE link_id=" + linkId + " " +
-						"ORDER BY seq_num";
-				
-				pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-				res = pstatement.executeQuery();
-				
-				LinkedList<LocationInfo> pointsList = null;
-				while (res.next()) {
-					
-					if(pointsList == null)
-						pointsList = new LinkedList<LocationInfo>();
-					
-					double lat = 	res.getDouble("lat") / 100000;
-					double lng = 	res.getDouble("lon") / 100000;
-					int zLevel = 	res.getInt("zlevel");
-					
-					LocationInfo location = new LocationInfo(lat, lng, zLevel);
-					pointsList.add(location);
-				}
-				RDFLink.setPointsList(pointsList);
+				linkBuffer.add(strLine + "|" + pointsListStr + "\r\n");
 				
 				if (debug % 250 == 0) {
 					// reconnect
@@ -135,14 +104,47 @@ public class RDFInputFileGeneration {
 					pstatement.close();
 					con.close();
 					con = getConnection();
-					System.out.println((double)debug / listSize * 100 + "% finish!");
+					
+					// append write to temp
+					FileWriter tempFstream = new FileWriter(root + "/" + linkTempFile, true);
+					BufferedWriter out = new BufferedWriter(tempFstream);
+					
+					ListIterator<String> iterator = linkBuffer.listIterator();
+					while(iterator.hasNext()) {
+						String buffer = iterator.next();
+						out.write(buffer);
+					}
+					out.close();
+					// free memory
+					linkBuffer = new LinkedList<String>();
+					
+					if (debug % 100000 == 0)
+						System.out.println("line " + debug + " finish!");
 				}
+				
 			}
+			// read the rest
+			if(!linkBuffer.isEmpty()) {
+				// append write to temp
+				FileWriter tempFstream = new FileWriter(root + "/" + linkTempFile, true);
+				BufferedWriter out = new BufferedWriter(tempFstream);
+				
+				ListIterator<String> iterator = linkBuffer.listIterator();
+				while(iterator.hasNext()) {
+					String buffer = iterator.next();
+					out.write(buffer);
+				}
+				out.close();
+			}
+			
 			if(!res.isClosed()) {
 				res.close();
 				pstatement.close();
 				con.close();
 			}
+			br.close();
+			in.close();
+			fstream.close();
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
