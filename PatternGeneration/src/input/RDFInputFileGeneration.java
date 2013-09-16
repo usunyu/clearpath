@@ -103,7 +103,7 @@ public class RDFInputFileGeneration {
 							int i = 0;
 							while(pIterator.hasNext()) {
 								LocationInfo loc = pIterator.next();
-								if(i == 0)
+								if(i++ == 0)
 									pointsStr = loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
 								else
 									pointsStr += ";" + loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
@@ -121,7 +121,7 @@ public class RDFInputFileGeneration {
 					}
 					
 					
-					RDFLink = new RDFLinkInfo();
+					RDFLink = new RDFLinkInfo(linkId);
 					LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
 					pointsList.add(location);
 					RDFLink.setPointsList(pointsList);

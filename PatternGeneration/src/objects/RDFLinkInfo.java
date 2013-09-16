@@ -9,8 +9,8 @@ public class RDFLinkInfo {
 	int functionalClass;
 	LinkedList<LocationInfo> pointsList;
 	
-	public RDFLinkInfo() {
-		
+	public RDFLinkInfo(long linkId) {
+		this.linkId = linkId;
 	}
 	
 	public RDFLinkInfo(long linkId, long refNodeId, long nonRefNodeId) {
