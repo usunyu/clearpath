@@ -11,19 +11,20 @@ public class RDFInputFileGeneration {
 	/**
 	 * @param file
 	 */
-	static String root			= "file";
+	static String root				= "file";
 	// for write link file
-	static String linkFile		= "RDF_Link.txt";
-	static String linkTempFile	= "RDF_Link_Temp.txt";
+	static String linkFile			= "RDF_Link.txt";
+	static String linkGeometryFile	= "RDF_Link_Geometry.txt";
+	static String linkTempFile		= "RDF_Link_Temp.txt";
 	// for write node file
-	static String nodeFile		= "RDF_Node.txt";
+	static String nodeFile			= "RDF_Node.txt";
 	/**
 	 * @param database
 	 */
-	static String urlHome 	= "jdbc:oracle:thin:@gd2.usc.edu:1521/navteq";
-	static String userName 	= "NAVTEQRDF";
-	static String password 	= "NAVTEQRDF";
-	static Connection connHome = null;
+	static String urlHome			= "jdbc:oracle:thin:@gd2.usc.edu:1521/navteq";
+	static String userName			= "NAVTEQRDF";
+	static String password			= "NAVTEQRDF";
+	static Connection connHome		= null;
 	/**
 	 * @param node
 	 */
@@ -38,12 +39,107 @@ public class RDFInputFileGeneration {
 		//fetchNode();
 		//writeNodeFile();
 		
-		//fetchLink();
-		//fetchGeometry();
-		//writeLinkFile();
+		//fetchLink();				//deprecated
+		//fetchGeometry();			//deprecated
+		//writeLinkFile();			//deprecated
 		
 		//fetchWriteLink();
-		readFetchWriteGeometry();
+		//readFetchWriteGeometry();	//deprecated
+		
+		fetchWriteGeometry();
+	}
+	
+	private static void fetchWriteGeometry() {
+		System.out.println("fetch write geometry...");
+		int debug = 0;
+		try {
+			// delete file if it exists
+			File oldFile = new File(root + "/" + linkGeometryFile);
+			if(oldFile.exists()) oldFile.delete();
+			
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+
+			con = getConnection();
+
+			sql =	"SELECT t1.link_id, t1.ref_node_id, t1.nonref_node_id, t2.functional_class " + 
+					"FROM rdf_link t1 " + 
+					"LEFT JOIN rdf_nav_link t2 " + 
+					"ON t1.link_id=t2.link_id";
+
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+
+			while (res.next()) {
+				debug++;
+
+				long linkId = res.getLong("link_id");
+				long refNodeId = res.getLong("ref_node_id");
+				long nonRefNodeId = res.getLong("nonref_node_id");
+				int functionalClass = res.getInt("functional_class");
+
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+				RDFLink.setFunctionalClass(functionalClass);
+
+				linkList.add(RDFLink);
+
+				// data is too large to store all in memory
+				if (debug % 100000 == 0) {
+					// append write
+					FileWriter fstream = new FileWriter(root + "/" + linkGeometryFile, true);
+					BufferedWriter out = new BufferedWriter(fstream);
+					
+					ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
+					while(iterator.hasNext()) {
+						RDFLinkInfo writeRDFLink = iterator.next();
+						long writeLinkId = writeRDFLink.getLinkId();
+						long writeRefNodeId = writeRDFLink.getRefNodeId();
+						long writeNonRefNodeId = writeRDFLink.getNonRefNodeId();
+						int writeFunctionalClass = writeRDFLink.getFunctionalClass();
+						
+						String strLine = writeLinkId + "|" + writeRefNodeId + "|" + writeNonRefNodeId + "|" + writeFunctionalClass + "\r\n";
+						out.write(strLine);
+					}
+					out.close();
+					
+					System.out.println("record " + debug + " finish!");
+					// free the old memory
+					linkList = new LinkedList<RDFLinkInfo>();
+				}
+				
+			}
+			
+			// read the rest
+			if(!linkList.isEmpty()) {
+				// append write
+				FileWriter fstream = new FileWriter(root + "/" + linkFile, true);
+				BufferedWriter out = new BufferedWriter(fstream);
+				
+				ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
+				while(iterator.hasNext()) {
+					RDFLinkInfo writeRDFLink = iterator.next();
+					long writeLinkId = writeRDFLink.getLinkId();
+					long writeRefNodeId = writeRDFLink.getRefNodeId();
+					long writeNonRefNodeId = writeRDFLink.getNonRefNodeId();
+					int writeFunctionalClass = writeRDFLink.getFunctionalClass();
+					
+					String strLine = writeLinkId + "|" + writeRefNodeId + "|" + writeNonRefNodeId + "|" + writeFunctionalClass + "\r\n";
+					out.write(strLine);
+				}
+				out.close();
+			}
+
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("fetchWriteLink: debug code: " + debug);
+		}
+		System.out.println("fetch write geometry finish!");
 	}
 	
 	/**
@@ -51,6 +147,7 @@ public class RDFInputFileGeneration {
 	 * fetch from DB, get geometry
 	 * append write to RDF_Link_Temp.txt
 	 * change RDF_Link_Temp.txt to RDF_Link.txt
+	 * deprecated: too slow...
 	 */
 	private static void readFetchWriteGeometry() {
 		System.out.println("read fetch and write geometry...");
@@ -128,6 +225,8 @@ public class RDFInputFileGeneration {
 					out.write(buffer);
 				}
 				out.close();
+				// free memory
+				linkBuffer = new LinkedList<String>();
 			}
 			
 			res.close();
@@ -237,6 +336,8 @@ public class RDFInputFileGeneration {
 					out.write(strLine);
 				}
 				out.close();
+				// free the old memory
+				linkList = new LinkedList<RDFLinkInfo>();
 			}
 
 			res.close();
@@ -250,6 +351,9 @@ public class RDFInputFileGeneration {
 		System.out.println("fetch and write link finish!");
 	}
 	
+	/**
+	 * deprecated
+	 */
 	private static void fetchGeometry() {
 		System.out.println("fetch geometry...");
 		int debug = 0;
@@ -313,6 +417,9 @@ public class RDFInputFileGeneration {
 		System.out.println("fetch geometry finish!");
 	}
 	
+	/**
+	 * deprecated
+	 */
 	private static void writeLinkFile() {
 		System.out.println("write link file...");
 		try {
@@ -338,6 +445,9 @@ public class RDFInputFileGeneration {
 		System.out.println("write link file finish!");
 	}
 	
+	/**
+	 * deprecated
+	 */
 	private static void fetchLink() {
 		System.out.println("fetch link...");
 		int debug = 0;
