@@ -160,8 +160,7 @@ public class RDFInputFileGeneration {
 				pstatement.close();
 				con.close();
 				
-				if(p % 10 == 0)
-					System.out.println((double)p / postCodeList.size() * 100 + "%");
+				System.out.println("total " + (double)p / postCodeList.size() * 100 + "% finish!");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
