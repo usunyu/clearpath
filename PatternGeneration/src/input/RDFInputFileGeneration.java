@@ -171,8 +171,8 @@ public class RDFInputFileGeneration {
 	
 	private static void initialPostCode() {
 		System.out.println("initial post code...");
-		// add needed post code here, LA 90001 ~ 91335
-		for(int p = 90001; p <= 91335; p++)
+		// add needed post code here, LA 90001 ~ 90189
+		for(int p = 90001; p <= 90189; p++)
 			postCodeList.add(p);
 	}
 	
