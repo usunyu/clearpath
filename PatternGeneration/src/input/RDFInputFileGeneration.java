@@ -57,6 +57,19 @@ public class RDFInputFileGeneration {
 		initialPostCode();
 		fetchLinkByPostCode();
 		writeLinkByPostCode();
+		
+		// read the info from RDF_Link.txt
+		
+	}
+	
+	private static void readLinkFile() {
+		System.out.println("read link file...");
+		try {
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("read link file finish!");
 	}
 	
 	private static void writeLinkByPostCode() {
