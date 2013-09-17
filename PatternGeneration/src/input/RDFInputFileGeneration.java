@@ -11,7 +11,7 @@ public class RDFInputFileGeneration {
 	/**
 	 * @param file
 	 */
-	static String root			= "file";
+	static String root				= "file";
 	// for write link file
 	static String linkFile			= "RDF_Link.txt";
 	static String linkGeometryFile	= "RDF_Link_Geometry.txt";
@@ -22,13 +22,14 @@ public class RDFInputFileGeneration {
 	 * @param database
 	 */
 	static String urlHome			= "jdbc:oracle:thin:@gd2.usc.edu:1521/navteq";
-	static String userName		= "NAVTEQRDF";
+	static String userName			= "NAVTEQRDF";
 	static String password			= "NAVTEQRDF";
-	static Connection connHome	= null;
+	static Connection connHome		= null;
 	/**
 	 * @param node
 	 */
 	static LinkedList<RDFNodeInfo> nodeList = new LinkedList<RDFNodeInfo>();
+	static HashSet<Long> nodeSet = new HashSet<Long>();
 	/**
 	 * @param link
 	 */
@@ -53,21 +54,136 @@ public class RDFInputFileGeneration {
 		
 		//fetchWriteGeometry();
 		
-		// fetch link from post code
-		initialPostCode();
-		fetchLinkByPostCode();
-		writeLinkByPostCode();
+		/**
+		 *  Step 1) add the post code needed
+		 *  		fetch link from post code
+		 *  		write link info to RDF_Link.txt
+		 */
+		//initialPostCode();
+		//fetchLinkByPostCode();
+		//writeLinkByPostCode();
 		
-		// read the info from RDF_Link.txt
-		
+		/**
+		 *  Step 2) read the info from RDF_Link.txt
+		 *  		fetch the node info according the read data
+		 *  		write the node info to RDF_Node.txt
+		 */
+		readLinkFile();
+		fetchNodeBySet();
+		writeNodeFile();
+	}
+	
+	private static void addNodeByQuery(String query) {
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+
+			con = getConnection();
+			
+			sql = "SELECT node_id, lat, lon, zlevel FROM rdf_node WHERE node_id IN (" + query + ")";
+			
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			
+			while (res.next()) {
+				long 	nodeId 	= res.getLong("node_id");
+				double 	lat 	= res.getDouble("lat") / 100000;
+				double 	lon 	= res.getDouble("lon") / 100000;
+				int 	zLevel 	= res.getInt("zlevel");
+				LocationInfo location = new LocationInfo(lat, lon, zLevel);
+
+				RDFNodeInfo RDFNode = new RDFNodeInfo(nodeId, location);
+				
+				nodeList.add(RDFNode);
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void fetchNodeBySet() {
+		System.out.println("fetch node by set...");
+		int debug = 0;
+		try {
+			// build sql query
+			StringBuffer nodeStringBuffer = new StringBuffer();
+			Iterator<Long> iterator = nodeSet.iterator();
+			int i = 0;
+			while(iterator.hasNext()) {
+				debug++;
+				long id = iterator.next();
+				if(i++ == 0)
+					nodeStringBuffer.append(id);
+				else
+					nodeStringBuffer.append(", " + id);
+				
+				if(i % 500 == 0) {	// query will throw exception if too long
+					String nodeQuery = nodeStringBuffer.toString();
+					addNodeByQuery(nodeQuery);
+					i = 0;
+					nodeStringBuffer = new StringBuffer();
+				}
+				
+				if(debug % 1000 == 0)
+					System.out.println((double)debug / nodeSet.size() * 100 + "% finish!");
+			}
+			if(!nodeStringBuffer.toString().equals("")) {	// process rest
+				String nodeQuery = nodeStringBuffer.toString();
+				addNodeByQuery(nodeQuery);
+			}
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchNodeBySet: debug code: " + debug);
+		}
+		System.out.println("fetch node by set finish!");
 	}
 	
 	private static void readLinkFile() {
 		System.out.println("read link file...");
+		int debug = 0;
 		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
 			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split("\\|");
+				
+				long 	linkId 			= Long.parseLong(nodes[0]);
+				String 	streetName 		= nodes[1];
+				long 	refNodeId 		= Long.parseLong(nodes[2]);
+				long 	nonRefNodeId 	= Long.parseLong(nodes[3]);
+				int 	functionalClass = Integer.parseInt(nodes[4]);
+				String 	direction 		= nodes[5];
+				int 	speedCategory 	= Integer.parseInt(nodes[6]);
+				boolean ramp 			= nodes[7].equals("T") ? true : false;
+				boolean tollway 		= nodes[8].equals("T") ? true : false;
+				boolean carpool 		= nodes[9].equals("T") ? false : true;
+				
+				// gather node id
+				if(!nodeSet.contains(refNodeId))
+					nodeSet.add(refNodeId);
+				if(!nodeSet.contains(nonRefNodeId))
+					nodeSet.add(nonRefNodeId);
+				
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpool, speedCategory );
+				
+				linkList.add(RDFLink);
+
+				if (debug % 10000 == 0)
+					System.out.println("record " + debug + " finish!");
+			}
 		} catch(Exception e) {
 			e.printStackTrace();
+			System.err.println("readLinkFile: debug code: " + debug);
 		}
 		System.out.println("read link file finish!");
 	}
