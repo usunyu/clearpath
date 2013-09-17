@@ -84,6 +84,7 @@ public class RDFInputFileGeneration {
 			
 			sql = "SELECT node_id, lat, lon, zlevel FROM rdf_node WHERE node_id IN (" + query + ")";
 			
+			System.out.println("execute query... ");
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
 			
@@ -141,7 +142,7 @@ public class RDFInputFileGeneration {
 			e.printStackTrace();
 			System.err.println("fetchNodeBySet: debug code: " + debug);
 		}
-		System.out.println("fetch node by set finish!");
+		System.out.println("fetch " + nodeSet.size() + " nodes by set finish!");
 	}
 	
 	private static void readLinkFile() {
@@ -295,7 +296,7 @@ public class RDFInputFileGeneration {
 			e.printStackTrace();
 			System.err.println("fetchLinkByPostCode: debug code: " + debug);
 		}
-		System.out.println("fetch link by post code finish!");
+		System.out.println("fetch " + linkList.size() + " links by post code finish!");
 	}
 	
 	private static void initialPostCode() {
