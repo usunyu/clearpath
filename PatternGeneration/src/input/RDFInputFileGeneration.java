@@ -11,7 +11,7 @@ public class RDFInputFileGeneration {
 	/**
 	 * @param file
 	 */
-	static String root				= "file";
+	static String root			= "file";
 	// for write link file
 	static String linkFile			= "RDF_Link.txt";
 	static String linkGeometryFile	= "RDF_Link_Geometry.txt";
@@ -22,9 +22,9 @@ public class RDFInputFileGeneration {
 	 * @param database
 	 */
 	static String urlHome			= "jdbc:oracle:thin:@gd2.usc.edu:1521/navteq";
-	static String userName			= "NAVTEQRDF";
+	static String userName		= "NAVTEQRDF";
 	static String password			= "NAVTEQRDF";
-	static Connection connHome		= null;
+	static Connection connHome	= null;
 	/**
 	 * @param node
 	 */
