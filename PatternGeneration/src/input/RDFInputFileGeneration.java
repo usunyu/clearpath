@@ -45,9 +45,9 @@ public class RDFInputFileGeneration {
 		//fetchNode();
 		//writeNodeFile();
 		
-		//fetchLink();				//deprecated
-		//fetchGeometry();			//deprecated
-		//writeLinkFile();			//deprecated
+		//fetchLink();				/* deprecated */
+		//fetchGeometry();			/* deprecated */
+		//writeLinkFile();			/* deprecated */
 		
 		//fetchWriteLink();
 		//readFetchWriteGeometry();	//deprecated
@@ -182,6 +182,9 @@ public class RDFInputFileGeneration {
 				if (debug % 10000 == 0)
 					System.out.println("record " + debug + " finish!");
 			}
+			br.close();
+			in.close();
+			fstream.close();
 		} catch(Exception e) {
 			e.printStackTrace();
 			System.err.println("readLinkFile: debug code: " + debug);
