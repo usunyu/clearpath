@@ -103,15 +103,23 @@ public class RDFInputFileGeneration {
 				
 				con = getConnection();
 				
-				sql = 	"SELECT t4.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
+				sql = 	"SELECT t8.link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
+						"FROM " +
+						"(SELECT t6.link_id, road_name_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
+						"FROM " +
+						"(SELECT t4.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
 						"FROM " +
 						"(SELECT t1.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category " +
 						"FROM rdf_link t1, rdf_postal_area t2, rdf_nav_link t3 " +
 						"WHERE t2.postal_code = '" + postCode + "' " +
-						"AND (t2.postal_area_id = t1.left_postal_area_id OR t2.postal_area_id = t1.right_postal_area_id)" +
+						"AND (t2.postal_area_id = t1.left_postal_area_id OR t2.postal_area_id = t1.right_postal_area_id) " +
 						"AND t1.link_id = t3.link_id) t4 " +
 						"LEFT JOIN rdf_nav_link_attribute t5 " +
-						"ON t4.link_id = t5.link_id";
+						"ON t4.link_id = t5.link_id) t6 " +
+						"LEFT JOIN rdf_road_link t7 " +
+						"ON t6.link_id = t7.link_id) t8 " +
+						"LEFT JOIN rdf_road_name t9 " +
+						"on t8.road_name_id = t9.road_name_id ";
 				
 				System.out.println("execute query... ");
 				pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
