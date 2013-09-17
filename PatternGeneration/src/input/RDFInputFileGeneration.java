@@ -34,6 +34,10 @@ public class RDFInputFileGeneration {
 	 */
 	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
 	static LinkedList<String> linkBuffer = new LinkedList<String>();
+	/**
+	 * @param post code
+	 */
+	static ArrayList<Integer> postCodeList = new ArrayList<Integer>();
 	
 	public static void main(String[] args) {
 		//fetchNode();
@@ -46,7 +50,78 @@ public class RDFInputFileGeneration {
 		//fetchWriteLink();
 		//readFetchWriteGeometry();	//deprecated
 		
-		fetchWriteGeometry();
+		//fetchWriteGeometry();
+		
+		// fetch link from post code
+		initialPostCode();
+		fetchLinkByPostCode();
+	}
+	
+	private static void fetchLinkByPostCode() {
+		System.out.println("fetch link by post code...");
+		int debug = 0;
+		try {
+			for(int p = 0; p < postCodeList.size(); p++) {
+				int postCode = postCodeList.get(p);
+				
+				Connection con = null;
+				String sql = null;
+				PreparedStatement pstatement = null;
+				ResultSet res = null;
+				
+				con = getConnection();
+				
+				sql = 	"SELECT t4.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
+						"FROM " +
+						"(SELECT t1.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category " +
+						"FROM rdf_link t1, rdf_postal_area t2, rdf_nav_link t3 " +
+						"WHERE t2.postal_code = '" + postCode + "' " +
+						"AND (t2.postal_area_id = t1.left_postal_area_id OR t2.postal_area_id = t1.right_postal_area_id)" +
+						"AND t1.link_id = t3.link_id) t4 " +
+						"LEFT JOIN rdf_nav_link_attribute t5 " +
+						"ON t4.link_id = t5.link_id";
+				
+				pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+				res = pstatement.executeQuery();
+				
+				while (res.next()) {
+					debug++;
+
+					long linkId = res.getLong("link_id");
+					long refNodeId = res.getLong("ref_node_id");
+					long nonRefNodeId = res.getLong("nonref_node_id");
+					//String checkFunClass = res.getString("functional_class");
+					int functionalClass;
+					//if(checkFunClass == null)
+					//	functionalClass = -1;
+					//else
+					//	functionalClass = res.getInt("functional_class");
+
+					RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+
+					linkList.add(RDFLink);
+
+					if (debug % 100000 == 0)
+						System.out.println("record " + debug + " finish!");
+					
+				}
+
+				res.close();
+				pstatement.close();
+				con.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchLinkByPostCode: debug code: " + debug);
+		}
+		System.out.println("fetch link by post code finish!");
+	}
+	
+	private static void initialPostCode() {
+		System.out.println("initial post code...");
+		// add needed post code here
+		postCodeList.add(90007);
+		System.out.println("initial post code finish!");
 	}
 	
 	private static void fetchWriteGeometry() {
