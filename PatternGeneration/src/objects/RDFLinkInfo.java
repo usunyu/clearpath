@@ -4,6 +4,7 @@ import java.util.*;
 
 public class RDFLinkInfo {
 	long linkId;
+	String streetName;
 	long refNodeId;
 	long nonRefNodeId;
 	int functionalClass;
@@ -24,9 +25,10 @@ public class RDFLinkInfo {
 		this.nonRefNodeId = nonRefNodeId;
 	}
 	
-	public RDFLinkInfo(long linkId, long refNodeId, long nonRefNodeId, int functionalClass, String direction, 
-			boolean ramp, boolean tollway, boolean carpool, int speedCategory) {
+	public RDFLinkInfo(long linkId, String streetName, long refNodeId, long nonRefNodeId, int functionalClass, 
+			String direction, boolean ramp, boolean tollway, boolean carpool, int speedCategory) {
 		this.linkId = linkId;
+		this.streetName = streetName;
 		this.refNodeId = refNodeId;
 		this.nonRefNodeId = nonRefNodeId;
 		this.functionalClass = functionalClass;
@@ -47,6 +49,10 @@ public class RDFLinkInfo {
 	
 	public long getLinkId() {
 		return linkId;
+	}
+	
+	public String getStreetName() {
+		return streetName;
 	}
 	
 	public long getRefNodeId() {

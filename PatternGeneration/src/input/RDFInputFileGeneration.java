@@ -33,6 +33,7 @@ public class RDFInputFileGeneration {
 	 * @param link
 	 */
 	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
+	static HashSet<Long> linkDuplicate = new HashSet<Long>();
 	static LinkedList<String> linkBuffer = new LinkedList<String>();
 	/**
 	 * @param post code
@@ -68,6 +69,7 @@ public class RDFInputFileGeneration {
 			while(iterator.hasNext()) {
 				RDFLinkInfo RDFLink = iterator.next();
 				long linkId = RDFLink.getLinkId();
+				String streetName = RDFLink.getStreetName();
 				long refNodeId = RDFLink.getRefNodeId();
 				long nonRefNodeId = RDFLink.getNonRefNodeId();
 				int functionalClass = RDFLink.getFunctionalClass();
@@ -77,8 +79,8 @@ public class RDFInputFileGeneration {
 				int speedCategory = RDFLink.getSpeedCategory();
 				boolean carpool = RDFLink.isCarpool();
 				
-				String strLine = linkId + "|" + refNodeId + "|" + nonRefNodeId + "|" + functionalClass + "|" + direction +"|" +
-						ramp + "|" + tollway + "|" + speedCategory + "|" + carpool + "\r\n";
+				String strLine = linkId + "|" + streetName + "|" + refNodeId + "|" + nonRefNodeId + "|" + functionalClass + "|" + direction +"|" +
+						speedCategory + "|" + (ramp ? "T" : "F") + "|" + (tollway ? "T" : "F") + "|" + (carpool ? "T" : "F") + "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -129,6 +131,13 @@ public class RDFInputFileGeneration {
 					debug++;
 
 					long linkId = res.getLong("link_id");
+					
+					if(linkDuplicate.contains(linkId))
+						continue;
+					else
+						linkDuplicate.add(linkId);
+					
+					String streetName = res.getString("street_name");
 					long refNodeId = res.getLong("ref_node_id");
 					long nonRefNodeId = res.getLong("nonref_node_id");
 					int functionalClass = res.getInt("functional_class");
@@ -138,7 +147,7 @@ public class RDFInputFileGeneration {
 					int speedCategory = res.getInt("speed_category");
 					boolean carpool = res.getString("carpool_road") == null ? false : true;
 
-					RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpool, speedCategory );
+					RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpool, speedCategory );
 
 					linkList.add(RDFLink);
 
@@ -163,8 +172,9 @@ public class RDFInputFileGeneration {
 	
 	private static void initialPostCode() {
 		System.out.println("initial post code...");
-		// add needed post code here
-		postCodeList.add(90007);
+		// add needed post code here, LA 90001 ~ 91335
+		for(int p = 90001; p <= 91335; p++)
+			postCodeList.add(p);
 	}
 	
 	private static void fetchWriteGeometry() {
