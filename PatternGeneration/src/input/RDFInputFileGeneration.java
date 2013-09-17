@@ -183,6 +183,7 @@ public class RDFInputFileGeneration {
 			
 			long lastLinkId = -1;
 			RDFLinkInfo RDFLink = null;
+			LinkedList<LocationInfo> pointsList = null;
 
 			while (res.next()) {
 
@@ -193,10 +194,13 @@ public class RDFInputFileGeneration {
 				LocationInfo location = new LocationInfo(lat, lng, zLevel);
 				
 				if(linkId != lastLinkId) {
+					if(debug > 0)
+						linkList.add(RDFLink);
+					
 					debug++;
 					
 					// data is too large to store all in memory
-					if (debug % 100000 == 0) {
+					if (debug % 10000 == 0) {
 						// append write
 						FileWriter fstream = new FileWriter(root + "/" + linkGeometryFile, true);
 						BufferedWriter out = new BufferedWriter(fstream);
@@ -206,7 +210,7 @@ public class RDFInputFileGeneration {
 							RDFLinkInfo writeRDFLink = iterator.next();
 							
 							long writeLinkId = writeRDFLink.getLinkId();
-							LinkedList<LocationInfo> pointsList = writeRDFLink.getPointsList();
+							pointsList = writeRDFLink.getPointsList();
 							
 							String pointsStr = "null";
 							ListIterator<LocationInfo> pIterator = pointsList.listIterator();
@@ -230,17 +234,14 @@ public class RDFInputFileGeneration {
 						linkList = new LinkedList<RDFLinkInfo>();
 					}
 					
-					
 					RDFLink = new RDFLinkInfo(linkId);
-					LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
+					pointsList = new LinkedList<LocationInfo>();
 					pointsList.add(location);
 					RDFLink.setPointsList(pointsList);
 					lastLinkId = linkId;
-					
-					linkList.add(RDFLink);
 				}
 				else {
-					LinkedList<LocationInfo> pointsList = RDFLink.getPointsList();
+					pointsList = RDFLink.getPointsList();
 					pointsList.add(location);
 				}				
 			}
@@ -258,7 +259,7 @@ public class RDFInputFileGeneration {
 					RDFLinkInfo writeRDFLink = iterator.next();
 					
 					long writeLinkId = writeRDFLink.getLinkId();
-					LinkedList<LocationInfo> pointsList = writeRDFLink.getPointsList();
+					pointsList = writeRDFLink.getPointsList();
 					
 					String pointsStr = "null";
 					ListIterator<LocationInfo> pIterator = pointsList.listIterator();
