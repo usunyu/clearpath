@@ -19,44 +19,41 @@ public class NullSQLResult {
 	static Connection connHome = null;
 	
 	public static void main(String[] args) {
-		String a = null;
-		if(a == null)
-			System.out.println(a);
-		
-//		try {
-//			Connection con = null;
-//			String sql = null;
-//			PreparedStatement pstatement = null;
-//			ResultSet res = null;
-//
-//			con = getConnection();
-//
-//			sql = "SELECT zlevel, z_coord FROM rdf_link_geometry WHERE link_id=34026544";
-//
-//			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-//			res = pstatement.executeQuery();
-//
-//			while (res.next()) {
-//				int zLevel = res.getInt("zlevel");
-//				
-//				String zCoordCheck = res.getString("z_coord");
-//
-//				int zCoord = 0;
-//
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+
+			con = getConnection();
+
+			sql = "SELECT zlevel, z_coord FROM rdf_link_geometry WHERE link_id=34026544";
+
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+
+			while (res.next()) {
+				int zLevel = res.getInt("zlevel");
+				
+				String zCoordCheck = res.getString("z_coord");
+
+				int zCoord = 0;
+
 //				if(zCoordCheck.equals("null"))
-//					zCoord = -1;
-//				else
-//					zCoord = res.getInt("z_coord");
-//					
-//				System.out.println(zLevel + "," + zCoord);
-//			}
-//			res.close();
-//			pstatement.close();
-//			con.close();
-//		} catch (Exception e) {
-//			// TODO: handle exception
-//			e.printStackTrace();
-//		}
+				if(zCoordCheck == null)
+					zCoord = -1;
+				else
+					zCoord = res.getInt("z_coord");
+					
+				System.out.println(zLevel + "," + zCoord);
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 	}
 
 	private static Connection getConnection() {

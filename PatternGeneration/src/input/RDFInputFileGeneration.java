@@ -55,6 +55,38 @@ public class RDFInputFileGeneration {
 		// fetch link from post code
 		initialPostCode();
 		fetchLinkByPostCode();
+		writeLinkByPostCode();
+	}
+	
+	private static void writeLinkByPostCode() {
+		System.out.println("write link file...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + linkFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
+			while(iterator.hasNext()) {
+				RDFLinkInfo RDFLink = iterator.next();
+				long linkId = RDFLink.getLinkId();
+				long refNodeId = RDFLink.getRefNodeId();
+				long nonRefNodeId = RDFLink.getNonRefNodeId();
+				int functionalClass = RDFLink.getFunctionalClass();
+				String direction = RDFLink.getDirection();
+				boolean ramp = RDFLink.isRamp();
+				boolean tollway = RDFLink.isTollway();
+				int speedCategory = RDFLink.getSpeedCategory();
+				boolean carpool = RDFLink.isCarpool();
+				
+				String strLine = linkId + "|" + refNodeId + "|" + nonRefNodeId + "|" + functionalClass + "|" + direction +"|" +
+						ramp + "|" + tollway + "|" + speedCategory + "|" + carpool + "\r\n";
+				out.write(strLine);
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("write link file finish!");
 	}
 	
 	private static void fetchLinkByPostCode() {
@@ -81,6 +113,7 @@ public class RDFInputFileGeneration {
 						"LEFT JOIN rdf_nav_link_attribute t5 " +
 						"ON t4.link_id = t5.link_id";
 				
+				System.out.println("execute query... ");
 				pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				res = pstatement.executeQuery();
 				
@@ -90,18 +123,18 @@ public class RDFInputFileGeneration {
 					long linkId = res.getLong("link_id");
 					long refNodeId = res.getLong("ref_node_id");
 					long nonRefNodeId = res.getLong("nonref_node_id");
-					//String checkFunClass = res.getString("functional_class");
-					int functionalClass;
-					//if(checkFunClass == null)
-					//	functionalClass = -1;
-					//else
-					//	functionalClass = res.getInt("functional_class");
+					int functionalClass = res.getInt("functional_class");
+					String direction = res.getString("travel_direction");
+					boolean ramp = res.getString("ramp").equals("Y") ? true : false;
+					boolean tollway = res.getString("tollway").equals("Y") ? true : false;
+					int speedCategory = res.getInt("speed_category");
+					boolean carpool = res.getString("carpool_road") == null ? false : true;
 
-					RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+					RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpool, speedCategory );
 
 					linkList.add(RDFLink);
 
-					if (debug % 100000 == 0)
+					if (debug % 1000 == 0)
 						System.out.println("record " + debug + " finish!");
 					
 				}
@@ -109,6 +142,9 @@ public class RDFInputFileGeneration {
 				res.close();
 				pstatement.close();
 				con.close();
+				
+				if(p % 10 == 0)
+					System.out.println((double)p / postCodeList.size() * 100 + "%");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -121,7 +157,6 @@ public class RDFInputFileGeneration {
 		System.out.println("initial post code...");
 		// add needed post code here
 		postCodeList.add(90007);
-		System.out.println("initial post code finish!");
 	}
 	
 	private static void fetchWriteGeometry() {
@@ -261,7 +296,7 @@ public class RDFInputFileGeneration {
 	 * fetch from DB, get geometry
 	 * append write to RDF_Link_Temp.txt
 	 * change RDF_Link_Temp.txt to RDF_Link.txt
-	 * deprecated: too slow...
+	 * deprecated: too slow :(
 	 */
 	private static void readFetchWriteGeometry() {
 		System.out.println("read fetch and write geometry...");
@@ -684,6 +719,7 @@ public class RDFInputFileGeneration {
 	}
 	
 	private static Connection getConnection() {
+		System.out.println("connect to database... ");
 		try {
 			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
 			connHome = DriverManager.getConnection(urlHome, userName, password);
