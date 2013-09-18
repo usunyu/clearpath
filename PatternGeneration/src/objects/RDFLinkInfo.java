@@ -8,15 +8,16 @@ public class RDFLinkInfo {
 	long refNodeId;
 	long nonRefNodeId;
 	int functionalClass;
-	String direction;
+	String travelDirection;
 	boolean ramp;
 	boolean tollway;
 	boolean carpool;
 	int speedCategory;
 	LinkedList<LocationInfo> pointsList;
 	
-	RDFNodeInfo refNodeInfo;
-	RDFNodeInfo nonRefNodeInfo;
+	String allDirection;
+	
+	LinkedList<SensorInfo> matchSensorList;
 	
 	public RDFLinkInfo(long linkId) {
 		this.linkId = linkId;
@@ -29,33 +30,45 @@ public class RDFLinkInfo {
 	}
 	
 	public RDFLinkInfo(long linkId, String streetName, long refNodeId, long nonRefNodeId, int functionalClass, 
-			String direction, boolean ramp, boolean tollway, boolean carpool, int speedCategory) {
+			String travelDirection, boolean ramp, boolean tollway, boolean carpool, int speedCategory) {
 		this.linkId = linkId;
 		this.streetName = streetName;
 		this.refNodeId = refNodeId;
 		this.nonRefNodeId = nonRefNodeId;
 		this.functionalClass = functionalClass;
-		this.direction = direction;
+		this.travelDirection = travelDirection;
 		this.ramp = ramp;
 		this.tollway = tollway;
 		this.carpool = carpool;
 		this.speedCategory = speedCategory ;
 	}
 	
-	public void setRefNodeInfo(RDFNodeInfo nodeInfo) {
-		refNodeInfo = nodeInfo;
+	public boolean containsSensor(SensorInfo sensor) {
+		ListIterator<SensorInfo> sensorIterator = matchSensorList.listIterator();
+		while(sensorIterator.hasNext()) {
+			SensorInfo containedSensor = sensorIterator.next();
+			if(containedSensor.getSensorId() == sensor.getSensorId())
+				return true;
+		}
+		return false;
+	}
+
+	public void addSensor(SensorInfo sensor) {
+		if(matchSensorList == null)
+			matchSensorList = new LinkedList<SensorInfo>();
+		matchSensorList.add(sensor);
+	}
+
+	public LinkedList<SensorInfo> getSensorList() {
+		return matchSensorList;
 	}
 	
-	public void setNonRefNodeInfo(RDFNodeInfo nodeInfo) {
-		nonRefNodeInfo = nodeInfo;
+	public void setAllDirection(String allDirection) {
+		this.allDirection = allDirection;
 	}
 	
-	public RDFNodeInfo getRefNodeInfo() {
-		return refNodeInfo;
-	}
-	
-	public RDFNodeInfo getNonRefNodeInfo() {
-		return nonRefNodeInfo;
+	public String getAllDirection() {
+		return allDirection;
 	}
 	
 	public void setPointsList(LinkedList<LocationInfo> pointsList) {
@@ -90,8 +103,8 @@ public class RDFLinkInfo {
 		return functionalClass;
 	}
 	
-	public String getDirection() {
-		return direction;
+	public String getTravelDirection() {
+		return travelDirection;
 	}
 	
 	public boolean isRamp() {

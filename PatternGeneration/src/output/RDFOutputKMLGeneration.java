@@ -17,6 +17,7 @@ public class RDFOutputKMLGeneration {
 	static String nodeFile			= "RDF_Node.txt";
 	// for write kml file
 	static String kmlLinkFile		= "RDF_Link.kml";
+	static String kmlNodeFile		= "RDF_Node.kml";
 	/**
 	 * @param link
 	 */
@@ -24,13 +25,48 @@ public class RDFOutputKMLGeneration {
 	/**
 	 * @param node
 	 */
-	static HashMap<Long, RDFNodeInfo> nodeMap = new HashMap<Long, RDFNodeInfo>();
+	static LinkedList<RDFNodeInfo> nodeList = new LinkedList<RDFNodeInfo>();
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		//readNodeFile();
+		readNodeFile();
+		generateNodeKML();
 		readLinkFile();
 		generateLinkKML();
+	}
+	
+	private static void generateNodeKML() {
+		System.out.println("generate node kml...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + kmlNodeFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			
+			ListIterator<RDFNodeInfo> iterator = nodeList.listIterator();
+			while(iterator.hasNext()) {
+				RDFNodeInfo node = iterator.next();
+				long nodeId = node.getNodeId();
+				LocationInfo location = node.getLocation();
+				double lati = location.getLatitude();
+				double longi = location.getLongitude();
+				int zLevel = location.getZLevel();
+				
+				String kmlStr = "<Placemark><name>" + nodeId + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "ZLevel: " + zLevel;
+				kmlStr += "</description>";
+				kmlStr += "<Point><coordinates>";
+				kmlStr +=  longi + "," + lati +  "," + zLevel;
+				kmlStr += "</coordinates></Point></Placemark>";
+				
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate node kml finish!");
 	}
 	
 	private static void generateLinkKML() {
@@ -44,10 +80,10 @@ public class RDFOutputKMLGeneration {
 				RDFLinkInfo link 	= iterator.next();
 				long linkId 		= link.getLinkId();
 				String streetName 	= link.getStreetName();
-				//long refNodeId 		= link.getRefNodeId();
-				//long nonRefNodeId 	= link.getNonRefNodeId();
+				long refNodeId 		= link.getRefNodeId();
+				long nonRefNodeId 	= link.getNonRefNodeId();
 				int functionalClass = link.getFunctionalClass();
-				String direction 	= link.getDirection();
+				String travelDirection 	= link.getTravelDirection();
 				boolean ramp		= link.isRamp();
 				boolean tollway		= link.isTollway();
 				boolean carpool 	= link.isCarpool();
@@ -57,9 +93,11 @@ public class RDFOutputKMLGeneration {
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
 				kmlStr += "<description>";
 				kmlStr += "Name:" 		+ streetName + "\r\n";
+				kmlStr += "Ref:" 			+ refNodeId + "\r\n";
+				kmlStr += "Nonref:" 		+ nonRefNodeId + "\r\n";
 				kmlStr += "Class:" 		+ functionalClass + "\r\n";
 				kmlStr += "Category:" 	+ speedCategory + "\r\n";
-				kmlStr += "Dir:" 		+ direction + "\r\n";
+				kmlStr += "TraDir:" 		+ travelDirection + "\r\n";
 				kmlStr += "Ramp:" 		+ ramp + "\r\n";
 				kmlStr += "Tollway:" 	+ tollway + "\r\n";
 				kmlStr += "Carpool:" 	+ carpool + "\r\n";
@@ -102,7 +140,7 @@ public class RDFOutputKMLGeneration {
 				
 				RDFNodeInfo RDFNode = new RDFNodeInfo(nodeId, location);
 				
-				nodeMap.put(nodeId, RDFNode);
+				nodeList.add(RDFNode);
 
 				if (debug % 10000 == 0)
 					System.out.println("record " + debug + " finish!");

@@ -94,7 +94,7 @@ public class RDFInputFileGeneration {
 				long refNodeId = RDFLink.getRefNodeId();
 				long nonRefNodeId = RDFLink.getNonRefNodeId();
 				int functionalClass = RDFLink.getFunctionalClass();
-				String direction = RDFLink.getDirection();
+				String travelDirection = RDFLink.getTravelDirection();
 				boolean ramp = RDFLink.isRamp();
 				boolean tollway = RDFLink.isTollway();
 				int speedCategory = RDFLink.getSpeedCategory();
@@ -113,7 +113,7 @@ public class RDFInputFileGeneration {
 					
 				}
 				
-				String strLine = linkId + "|" + streetName + "|" + refNodeId + "|" + nonRefNodeId + "|" + functionalClass + "|" + direction +"|" +
+				String strLine = linkId + "|" + streetName + "|" + refNodeId + "|" + nonRefNodeId + "|" + functionalClass + "|" + travelDirection +"|" +
 						speedCategory + "|" + (ramp ? "T" : "F") + "|" + (tollway ? "T" : "F") + "|" + (carpool ? "T" : "F") + "|" + pointsStr + "\r\n";
 				out.write(strLine);
 			}
@@ -259,13 +259,13 @@ public class RDFInputFileGeneration {
 				long refNodeId = RDFLink.getRefNodeId();
 				long nonRefNodeId = RDFLink.getNonRefNodeId();
 				int functionalClass = RDFLink.getFunctionalClass();
-				String direction = RDFLink.getDirection();
+				String travelDirection = RDFLink.getTravelDirection();
 				boolean ramp = RDFLink.isRamp();
 				boolean tollway = RDFLink.isTollway();
 				int speedCategory = RDFLink.getSpeedCategory();
 				boolean carpool = RDFLink.isCarpool();
 				
-				String strLine = linkId + "|" + streetName + "|" + refNodeId + "|" + nonRefNodeId + "|" + functionalClass + "|" + direction +"|" +
+				String strLine = linkId + "|" + streetName + "|" + refNodeId + "|" + nonRefNodeId + "|" + functionalClass + "|" + travelDirection +"|" +
 						speedCategory + "|" + (ramp ? "T" : "F") + "|" + (tollway ? "T" : "F") + "|" + (carpool ? "T" : "F") + "\r\n";
 				out.write(strLine);
 			}
