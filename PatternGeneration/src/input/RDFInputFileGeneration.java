@@ -77,16 +77,16 @@ public class RDFInputFileGeneration {
 		 *  		fetch the node info according the read data
 		 *  		write the node info to RDF_Node.txt
 		 */
-		//readLinkFile();
-		//fetchNodeBySet();
-		//writeNodeFile();
+		readLinkFile();
+		fetchNodeBySet();
+		writeNodeFile();
 		/**
 		 *  Step 3) read the info from RDF_Link.txt
 		 *		fetch geometry points
 		 */
-		//readLinkFile();
-		//fetchGeometry();
-		//writeLinkWithGeometry();
+		readLinkFile();
+		fetchGeometry();
+		writeLinkWithGeometry();
 	}
 	
 	private static void fetchLinkByArea() {
