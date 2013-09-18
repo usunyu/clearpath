@@ -34,7 +34,7 @@ public class RDFInputFileGeneration {
 	 * @param link
 	 */
 	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
-	static HashSet<Long> linkDuplicate = new HashSet<Long>();
+	static HashMap<Long, RDFLinkInfo> linkMap = new HashMap<Long, RDFLinkInfo>();
 	static LinkedList<String> linkBuffer = new LinkedList<String>();
 	/**
 	 * @param post code
@@ -62,7 +62,6 @@ public class RDFInputFileGeneration {
 		//initialPostCode();
 		//fetchLinkByPostCode();
 		//writeLinkByPostCode();
-		
 		/**
 		 *  Step 2) read the info from RDF_Link.txt
 		 *  		fetch the node info according the read data
@@ -318,10 +317,12 @@ public class RDFInputFileGeneration {
 
 					long linkId = res.getLong("link_id");
 					
-					if(linkDuplicate.contains(linkId))
+					if(linkMap.containsKey(linkId)) {
+						String secondName = res.getString("street_name");
+						RDFLinkInfo existLink = linkMap.get(linkId);
+						existLink.addStreetName(secondName);
 						continue;
-					else
-						linkDuplicate.add(linkId);
+					}
 					
 					String streetName = res.getString("street_name");
 					long refNodeId = res.getLong("ref_node_id");
@@ -336,6 +337,7 @@ public class RDFInputFileGeneration {
 					RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpool, speedCategory );
 
 					linkList.add(RDFLink);
+					linkMap.put(linkId, RDFLink);
 
 					if (debug % 1000 == 0)
 						System.out.println("record " + debug + " finish!");

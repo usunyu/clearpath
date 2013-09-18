@@ -84,6 +84,10 @@ public class RDFLinkInfo {
 	public long getLinkId() {
 		return linkId;
 	}
+
+	public void addStreetName(String secondName) {
+		streetName += ";" + secondName;
+	}
 	
 	public String getStreetName() {
 		return streetName;
