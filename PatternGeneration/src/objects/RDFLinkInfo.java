@@ -15,6 +15,9 @@ public class RDFLinkInfo {
 	int speedCategory;
 	LinkedList<LocationInfo> pointsList;
 	
+	RDFNodeInfo refNodeInfo;
+	RDFNodeInfo nonRefNodeInfo;
+	
 	public RDFLinkInfo(long linkId) {
 		this.linkId = linkId;
 	}
@@ -37,6 +40,22 @@ public class RDFLinkInfo {
 		this.tollway = tollway;
 		this.carpool = carpool;
 		this.speedCategory = speedCategory ;
+	}
+	
+	public void setRefNodeInfo(RDFNodeInfo nodeInfo) {
+		refNodeInfo = nodeInfo;
+	}
+	
+	public void setNonRefNodeInfo(RDFNodeInfo nodeInfo) {
+		nonRefNodeInfo = nodeInfo;
+	}
+	
+	public RDFNodeInfo getRefNodeInfo() {
+		return refNodeInfo;
+	}
+	
+	public RDFNodeInfo getNonRefNodeInfo() {
+		return nonRefNodeInfo;
 	}
 	
 	public void setPointsList(LinkedList<LocationInfo> pointsList) {
