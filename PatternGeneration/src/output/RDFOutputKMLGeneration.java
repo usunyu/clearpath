@@ -1,7 +1,6 @@
 package output;
 
 import java.io.*;
-import java.sql.*;
 import java.util.*;
 
 import objects.*;
@@ -29,7 +28,7 @@ public class RDFOutputKMLGeneration {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		readNodeFile();
+		//readNodeFile();
 		readLinkFile();
 		generateLinkKML();
 	}
@@ -45,14 +44,15 @@ public class RDFOutputKMLGeneration {
 				RDFLinkInfo link 	= iterator.next();
 				long linkId 		= link.getLinkId();
 				String streetName 	= link.getStreetName();
-				long refNodeId 		= link.getRefNodeId();
-				long nonRefNodeId 	= link.getNonRefNodeId();
+				//long refNodeId 		= link.getRefNodeId();
+				//long nonRefNodeId 	= link.getNonRefNodeId();
 				int functionalClass = link.getFunctionalClass();
 				String direction 	= link.getDirection();
 				boolean ramp		= link.isRamp();
 				boolean tollway		= link.isTollway();
 				boolean carpool 	= link.isCarpool();
 				int speedCategory 	= link.getSpeedCategory();
+				LinkedList<LocationInfo> pointsList = link.getPointsList();
 				
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
 				kmlStr += "<description>";
@@ -64,12 +64,12 @@ public class RDFOutputKMLGeneration {
 				kmlStr += "Tollway:" 	+ tollway + "\r\n";
 				kmlStr += "Carpool:" 	+ carpool + "\r\n";
 				kmlStr += "</description>";
-				
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
-				LocationInfo loc1 = nodeMap.get(refNodeId).getLocation();
-				kmlStr += loc1.getLongitude()+ "," + loc1.getLatitude()+ "," + loc1.getZLevel() + " ";
-				LocationInfo loc2 = nodeMap.get(nonRefNodeId).getLocation();
-				kmlStr += loc2.getLongitude()+ "," + loc2.getLatitude()+ "," + loc2.getZLevel() + " ";
+				ListIterator<LocationInfo> pIterator = pointsList.listIterator();
+				while(pIterator.hasNext()) {
+					LocationInfo loc = pIterator.next();
+					kmlStr += loc.getLongitude()+ "," + loc.getLatitude()+ "," + loc.getZLevel() + " ";
+				}
 				kmlStr += "</coordinates></LineString></Placemark>\n";
 				
 				out.write(kmlStr);
@@ -142,6 +142,19 @@ public class RDFOutputKMLGeneration {
 				boolean carpool 		= nodes[9].equals("T") ? true : false;
 				
 				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpool, speedCategory );
+				
+				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
+				String[] pointsListStr		= nodes[10].split(";");
+				for(int i = 0; i < pointsListStr.length; i++) {
+					String[] locStr = pointsListStr[i].split(",");
+					double lat = Double.parseDouble(locStr[0]);
+					double lon = Double.parseDouble(locStr[1]);
+					int z = Integer.parseInt(locStr[2]);
+					LocationInfo loc = new LocationInfo(lat, lon, z);
+					pointsList.add(loc);
+				}
+				
+				RDFLink.setPointsList(pointsList);
 				
 				linkList.add(RDFLink);
 

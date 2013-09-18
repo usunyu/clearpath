@@ -11,7 +11,7 @@ public class RDFMatchSensorLink {
 	/**
 	 * @param file
 	 */
-	static String root 				= "file";
+	static String root 			= "file";
 	static String linkFile			= "RDF_Link.txt";
 	static String nodeFile			= "RDF_Node.txt";
 	/**
