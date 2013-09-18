@@ -26,6 +26,14 @@ public class RDFInputFileGeneration {
 	static String password			= "NAVTEQRDF";
 	static Connection connHome		= null;
 	/**
+	 * @param args
+	 */
+	static double UNIT				= 100000;
+	static double LosAngelesLat1 	= 33.85   * UNIT;
+	static double LosAngelesLat2 	= 34.17   * UNIT;
+	static double LosAngelesLon1 	= -118.47 * UNIT;
+	static double LosAngelesLon2 	= -118.14 * UNIT;
+	/**
 	 * @param node
 	 */
 	static LinkedList<RDFNodeInfo> nodeList = new LinkedList<RDFNodeInfo>();
@@ -45,23 +53,25 @@ public class RDFInputFileGeneration {
 		//fetchNode();
 		//writeNodeFile();
 		
-		//fetchLink();				/* deprecated */
-		//fetchGeometry();			/* deprecated */
-		//writeLinkFile();			/* deprecated */
+		/*fetchLink();					deprecated */
+		/*fetchGeometry();				deprecated */
+		/*writeLinkFile();			 	deprecated */
 		
 		//fetchWriteLink();
-		//readFetchWriteGeometry();	/* deprecated */
+		/*readFetchWriteGeometry();	 	deprecated */
 		
 		//fetchWriteGeometry();
 		
 		/**
-		 *  Step 1) add the post code needed
-		 *  		fetch link from post code
+		 *  Step 1) add the post code needed (deprecated not accurate and continue) 
+		 *  		fetch link from post code (deprecated)
+		 *  		fetch link by area (lat, lon)
 		 *  		write link info to RDF_Link.txt
 		 */
-		//initialPostCode();
-		//fetchLinkByPostCode();
-		//writeLinkByPostCode();
+		/*initialPostCode();		 	deprecated */
+		/*fetchLinkByPostCode();	 	deprecated */
+		fetchLinkByArea();
+		writeLinkDetail();
 		/**
 		 *  Step 2) read the info from RDF_Link.txt
 		 *  		fetch the node info according the read data
@@ -74,9 +84,84 @@ public class RDFInputFileGeneration {
 		 *  Step 3) read the info from RDF_Link.txt
 		 *		fetch geometry points
 		 */
-		readLinkFile();
-		fetchGeometry();
-		writeLinkWithGeometry();
+		//readLinkFile();
+		//fetchGeometry();
+		//writeLinkWithGeometry();
+	}
+	
+	private static void fetchLinkByArea() {
+		System.out.println("fetch link by area...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			
+			con = getConnection();
+			
+			sql = 	"SELECT t8.link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
+					"FROM " +
+					"(SELECT t6.link_id, road_name_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
+					"FROM " +
+					"(SELECT t4.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
+					"FROM " +
+					"(SELECT t1.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category " +
+					"FROM rdf_link t1, rdf_node t2, rdf_nav_link t3 " +
+					"WHERE ref_node_id = node_id " +
+					"AND lat >= " + LosAngelesLat1 + " AND lat <= " + LosAngelesLat2 + " " +
+					"AND lon >= " + LosAngelesLon1 + " AND lon <= " + LosAngelesLon2 + " " +
+					"AND t1.link_id = t3.link_id) t4 " +
+					"LEFT JOIN rdf_nav_link_attribute t5 " +
+					"ON t4.link_id = t5.link_id) t6 " +
+					"LEFT JOIN rdf_road_link t7 " +
+					"ON t6.link_id = t7.link_id) t8 " +
+					"LEFT JOIN rdf_road_name t9 " +
+					"on t8.road_name_id = t9.road_name_id ";
+			
+			System.out.println("execute query... ");
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			
+			while (res.next()) {
+				debug++;
+				long linkId = res.getLong("link_id");
+				
+				if(linkMap.containsKey(linkId)) {
+					String secondName = res.getString("street_name");
+					RDFLinkInfo existLink = linkMap.get(linkId);
+					existLink.addStreetName(secondName);
+					continue;
+				}
+				
+				String streetName = res.getString("street_name");
+				long refNodeId = res.getLong("ref_node_id");
+				long nonRefNodeId = res.getLong("nonref_node_id");
+				int functionalClass = res.getInt("functional_class");
+				String direction = res.getString("travel_direction");
+				boolean ramp = res.getString("ramp").equals("Y") ? true : false;
+				boolean tollway = res.getString("tollway").equals("Y") ? true : false;
+				int speedCategory = res.getInt("speed_category");
+				boolean carpool = res.getString("carpool_road") == null ? false : true;
+
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpool, speedCategory );
+
+				linkList.add(RDFLink);
+				linkMap.put(linkId, RDFLink);
+
+				if (debug % 10000 == 0)
+					System.out.println("record " + debug + " finish!");
+			
+			}
+
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchLinkByPostCode: debug code: " + debug);
+		}
+		System.out.println("fetch " + linkList.size() + " links by area finish!");
 	}
 	
 	private static void writeLinkWithGeometry() {
@@ -140,8 +225,8 @@ public class RDFInputFileGeneration {
 			
 			while (res.next()) {
 				long 	nodeId 	= res.getLong("node_id");
-				double 	lat 	= res.getDouble("lat") / 100000;
-				double 	lon 	= res.getDouble("lon") / 100000;
+				double 	lat 	= res.getDouble("lat") / UNIT;
+				double 	lon 	= res.getDouble("lon") / UNIT;
 				int 	zLevel 	= res.getInt("zlevel");
 				LocationInfo location = new LocationInfo(lat, lon, zLevel);
 
@@ -244,7 +329,7 @@ public class RDFInputFileGeneration {
 		System.out.println("read link file finish!");
 	}
 	
-	private static void writeLinkByPostCode() {
+	private static void writeLinkDetail() {
 		System.out.println("write link file...");
 		try {
 			FileWriter fstream = new FileWriter(root + "/" + linkFile);
@@ -276,6 +361,9 @@ public class RDFInputFileGeneration {
 		System.out.println("write link file finish!");
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	private static void fetchLinkByPostCode() {
 		System.out.println("fetch link by post code...");
 		int debug = 0;
@@ -357,6 +445,9 @@ public class RDFInputFileGeneration {
 		System.out.println("fetch " + linkList.size() + " links by post code finish!");
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	private static void initialPostCode() {
 		System.out.println("initial post code...");
 		// add needed post code here, LA 90001 ~ 90084, 90086 ~ 90089, 90091, 90093 ~ 90097,
@@ -408,8 +499,8 @@ public class RDFInputFileGeneration {
 			while (res.next()) {
 
 				long linkId = 	res.getLong("link_id");
-				double lat = 	res.getDouble("lat") / 100000;
-				double lng = 	res.getDouble("lon") / 100000;
+				double lat = 	res.getDouble("lat") / UNIT;
+				double lng = 	res.getDouble("lon") / UNIT;
 				int zLevel = 	res.getInt("zlevel");
 				LocationInfo location = new LocationInfo(lat, lng, zLevel);
 				
@@ -517,7 +608,8 @@ public class RDFInputFileGeneration {
 	 * fetch from DB, get geometry
 	 * append write to RDF_Link_Temp.txt
 	 * change RDF_Link_Temp.txt to RDF_Link.txt
-	 * deprecated: too slow :(
+	 * too slow :(
+	 * @deprecated
 	 */
 	private static void readFetchWriteGeometry() {
 		System.out.println("read fetch and write geometry...");
@@ -554,8 +646,8 @@ public class RDFInputFileGeneration {
 				String pointsListStr = "null";
 				int i = 0;
 				while (res.next()) {
-					double lat = 	res.getDouble("lat") / 100000;
-					double lng = 	res.getDouble("lon") / 100000;
+					double lat = 	res.getDouble("lat") / UNIT;
+					double lng = 	res.getDouble("lon") / UNIT;
 					int zLevel = 	res.getInt("zlevel");
 					
 					if(i++ == 0)
@@ -753,8 +845,8 @@ public class RDFInputFileGeneration {
 					if(pointsList == null)
 						pointsList = new LinkedList<LocationInfo>();
 					
-					double lat = 	res.getDouble("lat") / 100000;
-					double lng = 	res.getDouble("lon") / 100000;
+					double lat = 	res.getDouble("lat") / UNIT;
+					double lng = 	res.getDouble("lon") / UNIT;
 					int zLevel = 	res.getInt("zlevel");
 					
 					LocationInfo location = new LocationInfo(lat, lng, zLevel);
@@ -783,7 +875,7 @@ public class RDFInputFileGeneration {
 	}
 	
 	/**
-	 * deprecated
+	 * @deprecated
 	 */
 	private static void writeLinkFile() {
 		System.out.println("write link file...");
@@ -811,7 +903,7 @@ public class RDFInputFileGeneration {
 	}
 	
 	/**
-	 * deprecated
+	 * @deprecated
 	 */
 	private static void fetchLink() {
 		System.out.println("fetch link...");
@@ -911,8 +1003,8 @@ public class RDFInputFileGeneration {
 				debug++;
 
 				long nodeId = 	res.getLong("node_id");
-				double lat = 	res.getDouble("lat") / 100000;
-				double lng = 	res.getDouble("lon") / 100000;
+				double lat = 	res.getDouble("lat") / UNIT;
+				double lng = 	res.getDouble("lon") / UNIT;
 				int zLevel = 	res.getInt("zlevel");
 				LocationInfo location = new LocationInfo(lat, lng, zLevel);
 
