@@ -167,7 +167,7 @@ public class RDFInputFileGeneration {
 				int 	speedCategory 	= Integer.parseInt(nodes[6]);
 				boolean ramp 			= nodes[7].equals("T") ? true : false;
 				boolean tollway 		= nodes[8].equals("T") ? true : false;
-				boolean carpool 		= nodes[9].equals("T") ? false : true;
+				boolean carpool 		= nodes[9].equals("T") ? true : false;
 				
 				// gather node id
 				if(!nodeSet.contains(refNodeId))

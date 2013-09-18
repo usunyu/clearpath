@@ -139,7 +139,7 @@ public class RDFOutputKMLGeneration {
 				int 	speedCategory 	= Integer.parseInt(nodes[6]);
 				boolean ramp 			= nodes[7].equals("T") ? true : false;
 				boolean tollway 		= nodes[8].equals("T") ? true : false;
-				boolean carpool 		= nodes[9].equals("T") ? false : true;
+				boolean carpool 		= nodes[9].equals("T") ? true : false;
 				
 				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpool, speedCategory );
 				
