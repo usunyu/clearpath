@@ -282,8 +282,7 @@ public class RDFInputFileGeneration {
 	
 	private static void readLinkFile() {
 		System.out.println("read link file...");
-		if(linkList.size() > 0)
-			return;
+		linkList = new LinkedList<RDFLinkInfo>();
 		int debug = 0;
 		try {
 			FileInputStream fstream = new FileInputStream(root + "/" + linkFile);
