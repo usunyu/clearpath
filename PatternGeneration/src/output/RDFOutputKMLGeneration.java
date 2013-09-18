@@ -1,7 +1,14 @@
 package output;
 
 import java.io.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.*;
+
+import oracle.spatial.geometry.JGeometry;
+import oracle.sql.STRUCT;
 
 import objects.*;
 
@@ -11,28 +18,159 @@ public class RDFOutputKMLGeneration {
 	 * @param file
 	 */
 	static String root				= "file";
-	// for write link file
 	static String linkFile			= "RDF_Link.txt";
-	// for write node file
 	static String nodeFile			= "RDF_Node.txt";
-	// for write kml file
 	static String kmlLinkFile		= "RDF_Link.kml";
 	static String kmlNodeFile		= "RDF_Node.kml";
+	static String matchSensorFile	= "RDF_Sensor_Match.txt";
+	static String matchSensorKML	= "RDF_Sensor_Match.kml";
+	/**
+	 * @param database
+	 */
+	static String urlHome = "jdbc:oracle:thin:@gd.usc.edu:1521/adms";
+	static String userName = "clearp";
+	static String password = "clearp";
+	static Connection connHome = null;
 	/**
 	 * @param link
 	 */
 	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
+	static HashMap<Long, RDFLinkInfo> linkMap = new HashMap<Long, RDFLinkInfo>();
 	/**
 	 * @param node
 	 */
 	static LinkedList<RDFNodeInfo> nodeList = new LinkedList<RDFNodeInfo>();
+	/**
+	 * @param sensor
+	 */
+	static LinkedList<SensorInfo> sensorList = new LinkedList<SensorInfo>();
+	static HashMap<Integer, SensorInfo> sensorMap = new HashMap<Integer, SensorInfo>();
 	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		
 		readNodeFile();
 		generateNodeKML();
+		
 		readLinkFile();
+		
+		fetchSensor();
+		readMatchSensor();
+		generateSensorKML();
+		
 		generateLinkKML();
+	}
+	
+	private static void generateSensorKML() {
+		System.out.println("generate sensor kml...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + matchSensorKML);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			
+			ListIterator<SensorInfo> iterator = sensorList.listIterator();
+			while(iterator.hasNext()) {
+				SensorInfo sensor = iterator.next();
+				int sensorId = sensor.getSensorId();
+				String onStreet = sensor.getOnStreet();
+				String fromStreet = sensor.getFromStreet();
+				int direction = sensor.getDirection();
+				
+				LocationInfo location = sensor.getLocation();
+				double lati = location.getLatitude();
+				double longi = location.getLongitude();
+				int zLevel = location.getZLevel();
+				
+				String kmlStr = "<Placemark><name>" + sensorId + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "On: " + onStreet + "\r\n";
+				kmlStr += "From: " + fromStreet + "\r\n";
+				kmlStr += "Dir: " + direction + "\r\n";
+				kmlStr += "</description>";
+				kmlStr += "<Point><coordinates>";
+				kmlStr +=  longi + "," + lati +  "," + zLevel;
+				kmlStr += "</coordinates></Point></Placemark>";
+				
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate sensor kml finish!");
+	}
+	
+	private static void readMatchSensor() {
+		System.out.println("read match sensor...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + matchSensorFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split("\\|");
+				
+				long 	linkId 		= Long.parseLong(nodes[0]);
+				String[] sensorStr	= nodes[1].split(",");
+				
+				RDFLinkInfo RDFLink = linkMap.get(linkId);
+				for(int i = 0; i < sensorStr.length; i++) {
+					int sensorId = Integer.parseInt(sensorStr[i]);
+					SensorInfo sensor 	= sensorMap.get(sensorId);
+					RDFLink.addSensor(sensor);
+					
+					if(!sensorList.contains(sensor))
+						sensorList.add(sensor);
+				}
+
+				if (debug % 1000 == 0)
+					System.out.println("record " + debug + " finish!");
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("readMatchSensor: debug code: " + debug);
+		}
+		System.out.println("read match sensor finish!");
+	}
+	
+	private static void fetchSensor() {
+		System.out.println("fetch sensor...");
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = getConnection();
+			sql = "SELECT link_id, onstreet, fromstreet, start_lat_long, direction FROM highway_congestion_config ";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while (res.next()) {
+				int sensorId = res.getInt(1);
+				String onStreet = res.getString(2);
+				String fromStreet = res.getString(3);
+				STRUCT st = (STRUCT) res.getObject(4);
+				JGeometry geom = JGeometry.load(st);
+				LocationInfo location = new LocationInfo(geom.getPoint()[1], geom.getPoint()[0], 0);
+				int direction = res.getInt(5);
+				
+				if(!sensorMap.containsKey(sensorId)) {
+					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, location, direction);
+					sensorMap.put(sensorId, sensorInfo);
+				}
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("fetch sensor finish!");
 	}
 	
 	private static void generateNodeKML() {
@@ -90,6 +228,8 @@ public class RDFOutputKMLGeneration {
 				int speedCategory 	= link.getSpeedCategory();
 				LinkedList<LocationInfo> pointsList = link.getPointsList();
 				
+				LinkedList<SensorInfo>	sensorList = link.getSensorList();
+				
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
 				kmlStr += "<description>";
 				kmlStr += "Name:" 		+ streetName + "\r\n";
@@ -101,6 +241,19 @@ public class RDFOutputKMLGeneration {
 				kmlStr += "Ramp:" 		+ ramp + "\r\n";
 				kmlStr += "Tollway:" 	+ tollway + "\r\n";
 				kmlStr += "Carpool:" 	+ carpool + "\r\n";
+				if(sensorList != null && sensorList.size() != 0) {
+					String sensorStr = "null";
+					ListIterator<SensorInfo> sensorIt = sensorList.listIterator();
+					int i = 0;
+					while(sensorIt.hasNext()) {
+						SensorInfo sensor = sensorIt.next();
+						if(i++ == 0)
+							sensorStr = String.valueOf(sensor.getSensorId());
+						else
+							sensorStr += "," + sensor.getSensorId();
+					}
+					kmlStr += "Sensor:" + sensorStr + "\r\n";
+				}
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
 				ListIterator<LocationInfo> pIterator = pointsList.listIterator();
@@ -195,6 +348,7 @@ public class RDFOutputKMLGeneration {
 				RDFLink.setPointsList(pointsList);
 				
 				linkList.add(RDFLink);
+				linkMap.put(linkId, RDFLink);
 
 				if (debug % 10000 == 0)
 					System.out.println("record " + debug + " finish!");
@@ -209,4 +363,15 @@ public class RDFOutputKMLGeneration {
 		System.out.println("read link file finish!");
 	}
 
+	private static Connection getConnection() {
+		try {
+			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+			connHome = DriverManager.getConnection(urlHome, userName, password);
+			return connHome;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return connHome;
+
+	}
 }

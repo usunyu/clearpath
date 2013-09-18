@@ -70,3 +70,4 @@ on t8.road_name_id = t9.road_name_id
 SELECT * FROM rdf_node
 SELECT node_id, lat, lon, zlevel FROM rdf_node WHERE node_id IN (211128985, 211141355)
 
+
