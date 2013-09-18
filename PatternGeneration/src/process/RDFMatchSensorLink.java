@@ -18,6 +18,7 @@ public class RDFMatchSensorLink {
 	static String linkFile			= "RDF_Link.txt";
 	static String nodeFile			= "RDF_Node.txt";
 	static String kmlLinkFile		= "RDF_Link.kml";
+	static String sensorMatchFile		= "RDF_Sensor_Match.txt";
 	/**
 	 * @param database
 	 */
@@ -42,6 +43,12 @@ public class RDFMatchSensorLink {
 	 */
 	static HashMap<Long, RDFNodeInfo> nodeMap = new HashMap<Long, RDFNodeInfo>();
 	/**
+	 * @param connect
+	 */
+	static HashMap<Long, LinkedList<Long>> adjNodeList = new HashMap<Long, LinkedList<Long>>();
+	// two nodes decide one link
+	static HashMap<String, RDFLinkInfo> nodeToLink = new HashMap<String, RDFLinkInfo>();
+	/**
 	 * @param sensor
 	 */
 	static HashSet<Integer> sensorDuplicate = new HashSet<Integer>();
@@ -55,6 +62,40 @@ public class RDFMatchSensorLink {
 		//generateLinkKML();
 		fetchSensor();
 		matchLinkSensor();
+		writeSensorMatch();
+	}
+	
+	private static void writeSensorMatch() {
+		System.out.println("write sensor match...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + sensorMatchFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
+			while (iterator.hasNext()) {
+				RDFLinkInfo RDFLink = iterator.next();
+				LinkedList<SensorInfo> sensorList = RDFLink.getSensorList();
+				if(sensorList == null || sensorList.size() == 0)
+					continue;
+				ListIterator<SensorInfo> sIt = sensorList.listIterator();
+				String sensorStr = "null";
+				int i = 0;
+				while(sIt.hasNext()) {
+					SensorInfo sensor = sIt.next();
+					if(i++ == 0)
+						sensorStr = String.valueOf(sensor.getSensorId());
+					else
+						sensorStr += "," + sensor.getSensorId();
+				}
+				long linkId = RDFLink.getLinkId();
+				String strLine = linkId + "|" + sensorStr + "\r\n";
+				out.write(strLine);
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("write sensor match finish!");
 	}
 	
 	private static void matchLinkSensor() {
@@ -63,10 +104,10 @@ public class RDFMatchSensorLink {
 		// 1) match same direction
 		firstRoundMatch();
 		// 2) match direction 0 to 3, 1 to 2
-		//secondRoundMatch();
+		secondRoundMatch();
 		// 3) match nearest link
 		for (int i = 0; i < thirdRoundTime; i++)
-			//thirdRoundMatch();
+			thirdRoundMatch();
 		// 4) match smallest distance
 		// forthRoundMatch();
 		System.out.println("match Sensors finish!");
@@ -79,6 +120,9 @@ public class RDFMatchSensorLink {
 		while(linkIterator.hasNext()) {
 			debug++;
 			RDFLinkInfo link = linkIterator.next();
+			// just match highway
+			if(link.getFunctionalClass() != 1 && link.getFunctionalClass() != 2)
+				continue;
 			LinkedList<LocationInfo> pointsList = link.getPointsList();
 			for (double step = searchDistance / devide; step < searchDistance; step += step) {
 				ListIterator<LocationInfo> pointIterator = pointsList.listIterator();
@@ -117,19 +161,25 @@ public class RDFMatchSensorLink {
 	
 	private static void secondRoundMatch() {
 		System.out.println("second round...");
-		for (int i = 0; i < linkList.size(); i++) {
-			LinkInfo link = linkList.get(i);
-			if (link.getSensorList().size() > 0)
+		ListIterator<RDFLinkInfo> linkIterator = linkList.listIterator();
+		int debug = 0;
+		while(linkIterator.hasNext()) {
+			debug++;
+			RDFLinkInfo link = linkIterator.next();
+			// just match highway
+			if(link.getFunctionalClass() != 1 && link.getFunctionalClass() != 2)
 				continue;
-			ArrayList<PairInfo> nodeList = link.getNodeList();
+			LinkedList<LocationInfo> pointsList = link.getPointsList();
 			for (double step = corssSearchDistance / devide; step < searchDistance; step += step) {
-				for (int j = 0; j < nodeList.size(); j++) {
-					PairInfo node1 = nodeList.get(j);
-					for (int k = 0; k < sensorList.size(); k++) {
-						SensorInfo sensor = sensorList.get(k);
-						PairInfo node2 = sensor.getNode();
+				ListIterator<LocationInfo> pointIterator = pointsList.listIterator();
+				while(pointIterator.hasNext()) {
+					LocationInfo nLoc = pointIterator.next();
+					ListIterator<SensorInfo> sensorIterator = sensorList.listIterator();
+					while(sensorIterator.hasNext()) {
+						SensorInfo sensor = sensorIterator.next();
+						LocationInfo sLoc = sensor.getLocation();
 						// same direction
-						String allDir = link.getAllDir();
+						String allDir = link.getAllDirection();
 						String[] dirList = allDir.split(",");
 						for (int d = 0; d < dirList.length; d++) {
 							// 0 : 3, 1 : 2
@@ -137,15 +187,15 @@ public class RDFMatchSensorLink {
 									|| (sensor.getDirection() == 3 && Integer.parseInt(dirList[d]) == 0)
 									|| (sensor.getDirection() == 1 && Integer.parseInt(dirList[d]) == 2)
 									|| (sensor.getDirection() == 2 && Integer.parseInt(dirList[d]) == 1)) {
-								double distance = DistanceCalculator.CalculationByDistance(node1, node2);
+								double distance = Geometry.calculateDistance(nLoc, sLoc);
 								// in the search area
 								if (distance < step) {
 									// match sensor
-									if (!link.containSensor(sensor))
+									if (!link.containsSensor(sensor))
 										link.addSensor(sensor);
-									if (!checkMatchSensor.contains(sensor.getSensorId())) {
+									if (!matchSensorDuplicate.contains(sensor.getSensorId())) {
 										matchSensorList.add(sensor);
-										checkMatchSensor.add(sensor.getSensorId());
+										matchSensorDuplicate.add(sensor.getSensorId());
 									}
 								}
 							}
@@ -153,10 +203,78 @@ public class RDFMatchSensorLink {
 					}
 				}
 			}
-			if (i % 1000 == 0 || i == linkList.size())
-				System.out.println((float) i / linkList.size() * 100 + "%");
+			if (debug % 1000 == 0 || debug == linkList.size())
+				System.out.println((float) debug / linkList.size() * 100 + "%");
 		}
 		System.out.println("second round finish!");
+	}
+	
+	private static void thirdRoundMatch() {
+		System.out.println("third round...");
+		ListIterator<RDFLinkInfo> linkIterator = linkList.listIterator();
+		int debug = 0;
+		while(linkIterator.hasNext()) {
+			debug++;
+			RDFLinkInfo link = linkIterator.next();
+			// just match highway
+			if(link.getFunctionalClass() != 1 && link.getFunctionalClass() != 2)
+				continue;
+			LinkedList<SensorInfo> linkSensorList = link.getSensorList();
+			if(linkSensorList == null || linkSensorList.size() == 0)
+				continue;
+			long nodeId1 = link.getRefNodeId();
+			LinkedList<Long> adjList1 = adjNodeList.get(nodeId1);
+			ListIterator<Long> adjIterator1 = adjList1.listIterator();
+			while(adjIterator1.hasNext()) {
+				long nodeId2 = adjIterator1.next();
+				String nodesStr = nodeId1 + "," + nodeId2;
+				RDFNodeInfo nearNode = nodeMap.get(nodeId2);
+				if (nodeToLink.containsKey(nodesStr)) {
+					RDFLinkInfo nearLink = nodeToLink.get(nodesStr);
+					if (nearLink.getSensorList() == null || nearLink.getSensorList().size() == 0) {
+						// match
+						ListIterator<SensorInfo> sensorIterator = linkSensorList.listIterator();
+						SensorInfo nearestSensor = sensorIterator.next();
+						double minDis = Geometry.calculateDistance(nearNode.getLocation(), nearestSensor.getLocation());
+						while(sensorIterator.hasNext()) {
+							SensorInfo otherSensor = sensorIterator.next();
+							double dis = Geometry.calculateDistance(nearNode.getLocation(), otherSensor.getLocation());
+							if (dis < minDis) {
+								nearestSensor = otherSensor;
+							}
+						}
+						nearLink.addSensor(nearestSensor);
+					}
+				}
+			}
+			
+			long nodeId3 = link.getNonRefNodeId();
+			LinkedList<Long> adjList2 = adjNodeList.get(nodeId3);
+			ListIterator<Long> adjIterator2 = adjList1.listIterator();
+			while(adjIterator2.hasNext()) {
+				long nodeId4 = adjIterator2.next();
+				String nodesStr = nodeId3 + "," + nodeId4;
+				RDFNodeInfo nearNode = nodeMap.get(nodeId4);
+				if (nodeToLink.containsKey(nodesStr)) {
+					RDFLinkInfo nearLink = nodeToLink.get(nodesStr);
+					if (nearLink.getSensorList() == null || nearLink.getSensorList().size() == 0) {
+						// match
+						ListIterator<SensorInfo> sensorIterator = linkSensorList.listIterator();
+						SensorInfo nearestSensor = sensorIterator.next();
+						double minDis = Geometry.calculateDistance(nearNode.getLocation(), nearestSensor.getLocation());
+						while(sensorIterator.hasNext()) {
+							SensorInfo otherSensor = sensorIterator.next();
+							double dis = Geometry.calculateDistance(nearNode.getLocation(), otherSensor.getLocation());
+							if (dis < minDis) {
+								nearestSensor = otherSensor;
+							}
+						}
+						nearLink.addSensor(nearestSensor);
+					}
+				}
+			}
+		}
+		System.out.println("third round finish!");
 	}
 	
 	private static void fetchSensor() {
@@ -281,6 +399,34 @@ public class RDFMatchSensorLink {
 				RDFLink.setAllDirection(allDir);
 				
 				linkList.add(RDFLink);
+				
+				// add connect
+				if (adjNodeList.containsKey(refNodeId)) {
+					LinkedList<Long> tempList = adjNodeList.get(refNodeId);
+					if (!tempList.contains(nonRefNodeId))
+						tempList.add(nonRefNodeId);
+				} else {
+					LinkedList<Long> newList = new LinkedList<Long>();
+					newList.add(nonRefNodeId);
+					adjNodeList.put(refNodeId, newList);
+				}
+
+				if (adjNodeList.containsKey(nonRefNodeId)) {
+					LinkedList<Long> tempList = adjNodeList.get(nonRefNodeId);
+					if (!tempList.contains(refNodeId))
+						tempList.add(refNodeId);
+				} else {
+					LinkedList<Long> newList = new LinkedList<Long>();
+					newList.add(refNodeId);
+					adjNodeList.put(nonRefNodeId, newList);
+				}
+				
+				String nodesStr1 = refNodeId + "," + nonRefNodeId;
+				String nodesStr2 = nonRefNodeId + "," + refNodeId;
+				if (!nodeToLink.containsKey(nodesStr1))
+					nodeToLink.put(nodesStr1, RDFLink);
+				if (!nodeToLink.containsKey(nodesStr2))
+					nodeToLink.put(nodesStr2, RDFLink);
 
 				if (debug % 10000 == 0)
 					System.out.println("record " + debug + " finish!");

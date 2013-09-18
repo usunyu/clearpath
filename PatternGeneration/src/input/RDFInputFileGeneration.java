@@ -359,8 +359,8 @@ public class RDFInputFileGeneration {
 		System.out.println("initial post code...");
 		// add needed post code here, LA 90001 ~ 90084, 90086 ~ 90089, 90091, 90093 ~ 90097,
 		//								 90099, 90101 ~ 90103, 90174, 90185, 90189, 91331, 91335
-		for(int p = 90001; p <= 90189; p++)
-			postCodeList.add(p);
+		//for(int p = 90001; p <= 90189; p++)
+		//	postCodeList.add(p);
 		//for(int p = 90086; p <= 90089; p++)
 		//	postCodeList.add(p);
 		//postCodeList.add(90091);
@@ -374,6 +374,7 @@ public class RDFInputFileGeneration {
 		//postCodeList.add(90189);
 		//postCodeList.add(91331);
 		//postCodeList.add(91335);
+		postCodeList.add(90007);
 	}
 	
 	private static void fetchWriteGeometry() {

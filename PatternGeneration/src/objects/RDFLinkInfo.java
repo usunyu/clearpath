@@ -44,6 +44,8 @@ public class RDFLinkInfo {
 	}
 	
 	public boolean containsSensor(SensorInfo sensor) {
+		if(matchSensorList == null)
+			return false;
 		ListIterator<SensorInfo> sensorIterator = matchSensorList.listIterator();
 		while(sensorIterator.hasNext()) {
 			SensorInfo containedSensor = sensorIterator.next();
