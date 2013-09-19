@@ -60,8 +60,8 @@ public class RDFAdjListPattern {
 		readMatchSensor();
 		fetchSensorPattern(8, 0);
 		buildAdjList();
-		
-		createAdjList(0);
+		createPattern();
+		//createAdjList(0);
 	}
 	
 	private static void createAdjList(int day) {
@@ -75,7 +75,7 @@ public class RDFAdjListPattern {
 			while(nodeIterator.hasNext()) {
 				RDFNodeInfo nodeInfo = nodeIterator.next();
 				long nodeId = nodeInfo.getNodeId();
-				String strLine = "";
+				String strLine = "n" + nodeId + "|";
 				
 				ArrayList<Long> toList = adjList.get(nodeId);
 				if(toList == null || toList.isEmpty()) {
@@ -87,19 +87,22 @@ public class RDFAdjListPattern {
 					long toNodeId = toList.get(j);
 					String nodesStr = nodeId + "," + toNodeId;
 					RDFLinkInfo link = nodeToLink.get(nodesStr);
-					double dis = getLength(link.getPointsList());
-					
-					// if the link is highway
-					if(link.getFunctionalClass() == 1 || link.getFunctionalClass() == 2) {
-						double[] pattern = getHighwayPattern(link.getSensorList());
+					if(link == null) {
+						System.err.println(nodesStr + " no associated link found");
+						continue;
 					}
-					else {	// the link is arterial
-						if(link.getFunctionalClass() == 5) { // use fixed value
-							
+					int[] pattern = link.getPattern();
+					if(link.getFunctionalClass() == 5) {
+						strLine += "n" + toNodeId + "(F):" + pattern[0] + ";";
+					}
+					else {
+						strLine += "n" + toNodeId + "(V):";
+						for(int i = 0; i < 60; i++) {
+							strLine += pattern[i] + ",";
 						}
+						strLine += ";";
 					}
 				}
-				
 			}
 			out.close();
 		} catch(Exception e) {
@@ -109,13 +112,104 @@ public class RDFAdjListPattern {
 	}
 	
 	private static void createPattern() {
-		
+		System.out.println("create pattern...");
+		int debug = 0;
+		ListIterator<RDFLinkInfo> linkIterator = linkList.listIterator();
+		try {
+			while(linkIterator.hasNext()) {
+				debug++;
+				if(debug == 49)
+					System.out.print("Error");
+				RDFLinkInfo link = linkIterator.next();
+				int[] pattern;
+				// if the link is highway
+				if(link.getFunctionalClass() == 1 || link.getFunctionalClass() == 2)
+					pattern = getHighwayPattern(link);
+				else 	// the link is arterial
+					pattern = getArterialPattern(link);
+				link.setPattern(pattern);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("createPattern: debug code: " + debug);
+		}
+		System.out.println("create pattern finish!");		
 	}
 	
-	private static double[] getHighwayPattern(LinkedList<SensorInfo> sensorList) {
-		double[] pattern = null;
-		
+	private static int[] getArterialPattern(RDFLinkInfo link) {
+		int[] pattern;
+		double dis = getLength(link.getPointsList());
+		boolean fixed = false;
+		if(link.getFunctionalClass() == 5)
+			fixed = true;
+		if(fixed) {
+			pattern = new int[1];
+			pattern[0] = (int) Math.round(dis / 8 * 60 * 60);
+		}
+		else {
+			pattern = new int[60];
+			for(int i = 0; i < 60; i++) {
+				double speed = getSpeed(link, i);
+				pattern[i] = (int) Math.round( dis / speed * 60 * 60 );
+			}
+		}
 		return pattern;
+	}
+	
+	private static int[] getHighwayPattern(RDFLinkInfo link) {
+		int[] pattern = new int[60];
+		double dis = getLength(link.getPointsList());
+		LinkedList<SensorInfo> sensorList = link.getSensorList();
+		if(sensorList != null && sensorList.size() != 0) {
+			ListIterator<SensorInfo> sensorIt = sensorList.listIterator();
+			int[] count = new int[60];
+			double[] speedPattern = new double[60];
+			while(sensorIt.hasNext()) {
+				SensorInfo sensor = sensorIt.next();
+				double[] speedList = sensor.getPattern();
+				for(int i = 0; i < 60; i++) {
+					double speed = speedList[i];
+					if(speed > 0) {	// count this speed
+						speedPattern[i] += speed;
+						count[i]++;
+					}
+				}
+			}
+			for(int i = 0; i < 60; i++) {
+				// calculate average speed
+				if(count[i] > 0)
+					speedPattern[i] /= count[i];
+			}
+			for(int i = 0; i < 60; i++) {
+				double speed;
+				if(speedPattern[i] > 0)
+					speed = speedPattern[i];
+				else
+					speed = getSpeed(link, i);
+				pattern[i] = (int) Math.round( dis / speed * 60 * 60 );
+			}
+		}
+		else {
+			for(int i = 0; i < 60; i++) {
+				double speed = getSpeed(link, i);
+				pattern[i] = (int) Math.round( dis / speed * 60 * 60 );
+			}
+		}
+		return pattern;
+	}
+	
+	private static double getSpeed(RDFLinkInfo link, int index) {
+		int funcClass = link.getFunctionalClass();
+		int speedCat = link.getSpeedCategory();
+		double penalty = 1.;
+		if ((index >= 3 && index <= 12) || (index >= 43 && index <= 52))
+			penalty *= 0.9;
+		if(funcClass == 3 || funcClass == 4 || funcClass == 5)
+			penalty *= 0.75;
+		double originalSpeed = speedCategory[speedCat];
+		if (funcClass == 5)
+			originalSpeed = 8;
+		return penalty * originalSpeed;
 	}
 	
 	private static double getLength(LinkedList<LocationInfo> pointsList) {
@@ -234,6 +328,8 @@ public class RDFAdjListPattern {
 				String time = res.getString("time");
 				int index = UtilClass.getIndex(time);
 				sensor.addPattern(speed, index);
+				if(debug % 1000 == 0)
+					System.out.println("record " + debug + " finish!");
 			}
 			
 		} catch (Exception e) {

@@ -19,6 +19,8 @@ public class RDFLinkInfo {
 	
 	LinkedList<SensorInfo> matchSensorList;
 	
+	int[] pattern;
+	
 	public RDFLinkInfo(long linkId) {
 		this.linkId = linkId;
 	}
@@ -41,6 +43,14 @@ public class RDFLinkInfo {
 		this.tollway = tollway;
 		this.carpool = carpool;
 		this.speedCategory = speedCategory ;
+	}
+	
+	public int[] getPattern() {
+		return pattern;
+	}
+	
+	public void setPattern(int[] pattern) {
+		this.pattern = pattern;
 	}
 	
 	public boolean containsSensor(SensorInfo sensor) {
