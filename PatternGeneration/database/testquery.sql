@@ -33,6 +33,8 @@ AND t1.link_id = t3.link_id
 
 /* RDFDB: fetch carpool */
 SELECT link_id, carpool_road FROM rdf_nav_link_attribute WHERE carpool_road IS NOT NULL
+/* RDFDB: test I-110 */
+SELECT * FROM rdf_nav_link_attribute WHERE link_id = 121235036
 /* Example */
 SELECT t4.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road
 FROM

@@ -18,6 +18,7 @@ public class RDFAdjListPattern {
 	static String linkFile 			= "RDF_Link.txt";
 	static String nodeFile 			= "RDF_Node.txt";
 	static String matchSensorFile	= "RDF_Sensor_Match.txt";
+	static String adjListFile		= "RDF_AdjList.txt";
 	/**
 	 * @param database
 	 */
@@ -30,6 +31,7 @@ public class RDFAdjListPattern {
 	 */
 	static String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 	static String[] months = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+	static double[] speedCategory = {-1, 80, 65, 55, 41, 31, 21, 15, 6};
 	/**
 	 * @param link
 	 */
@@ -38,6 +40,7 @@ public class RDFAdjListPattern {
 	/**
 	 * @param node
 	 */
+	static LinkedList<RDFNodeInfo> nodeList = new LinkedList<RDFNodeInfo>();
 	static HashMap<Long, RDFNodeInfo> nodeMap = new HashMap<Long, RDFNodeInfo>();
 	/**
 	 * @param sensor
@@ -48,6 +51,7 @@ public class RDFAdjListPattern {
 	 * @param pattern
 	 */
 	static HashMap<Long, ArrayList<Long>> adjList = new HashMap<Long, ArrayList<Long>>();
+	static HashMap<String, RDFLinkInfo> nodeToLink = new HashMap<String, RDFLinkInfo>();
 	
 	public static void main(String[] args) {
 		readNodeFile();
@@ -57,6 +61,77 @@ public class RDFAdjListPattern {
 		fetchSensorPattern(8, 0);
 		buildAdjList();
 		
+		createAdjList(0);
+	}
+	
+	private static void createAdjList(int day) {
+		System.out.println("create adj list...");
+		try {
+			String[] file = adjListFile.split(".");
+			adjListFile = file[0] + "_" + days[day] + "." + file[1];
+			FileWriter fstream = new FileWriter(root + "/" + adjListFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			ListIterator<RDFNodeInfo> nodeIterator = nodeList.listIterator();
+			while(nodeIterator.hasNext()) {
+				RDFNodeInfo nodeInfo = nodeIterator.next();
+				long nodeId = nodeInfo.getNodeId();
+				String strLine = "";
+				
+				ArrayList<Long> toList = adjList.get(nodeId);
+				if(toList == null || toList.isEmpty()) {
+					System.err.print(nodeId + " doesn't have adj node");
+					continue;
+				}
+				
+				for(int j = 0; j < toList.size(); j++) {
+					long toNodeId = toList.get(j);
+					String nodesStr = nodeId + "," + toNodeId;
+					RDFLinkInfo link = nodeToLink.get(nodesStr);
+					double dis = getLength(link.getPointsList());
+					
+					// if the link is highway
+					if(link.getFunctionalClass() == 1 || link.getFunctionalClass() == 2) {
+						double[] pattern = getHighwayPattern(link.getSensorList());
+					}
+					else {	// the link is arterial
+						if(link.getFunctionalClass() == 5) { // use fixed value
+							
+						}
+					}
+				}
+				
+			}
+			out.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("create adj list finish!");
+	}
+	
+	private static void createPattern() {
+		
+	}
+	
+	private static double[] getHighwayPattern(LinkedList<SensorInfo> sensorList) {
+		double[] pattern = null;
+		
+		return pattern;
+	}
+	
+	private static double getLength(LinkedList<LocationInfo> pointsList) {
+		ListIterator<LocationInfo> pointIt = pointsList.listIterator();
+		LocationInfo lastLoc = null;
+		double dis = 0;
+		while(pointIt.hasNext()) {
+			LocationInfo location = pointIt.next();
+			if(lastLoc == null) {
+				lastLoc = location;
+				continue;
+			}
+			dis += Geometry.calculateDistance(lastLoc, location);
+			lastLoc = location;
+		}
+		return dis;
 	}
 	
 	private static void buildAdjList() {
@@ -108,6 +183,9 @@ public class RDFAdjListPattern {
 					ArrayList<Long> toList = adjList.get(refNode);
 					toList.add(nonRefNode);
 				}
+			}
+			else {
+				System.err.println("undefine travel direction!");
 			}
 			
 		}
@@ -279,6 +357,24 @@ public class RDFAdjListPattern {
 				
 				linkList.add(RDFLink);
 				linkMap.put(linkId, RDFLink);
+				
+				if(direction.equals("T")) {
+					String nodeStr = nonRefNodeId + "," + refNodeId;
+					nodeToLink.put(nodeStr, RDFLink);
+				}
+				else if(direction.equals("F")) {
+					String nodeStr = refNodeId + "," + nonRefNodeId;
+					nodeToLink.put(nodeStr, RDFLink);
+				}
+				else if(direction.equals("B")) {
+					String nodeStr = nonRefNodeId + "," + refNodeId;
+					nodeToLink.put(nodeStr, RDFLink);
+					nodeStr = refNodeId + "," + nonRefNodeId;
+					nodeToLink.put(nodeStr, RDFLink);
+				}
+				else {
+					System.err.println("direction undefined");
+				}
 
 				if (debug % 10000 == 0)
 					System.out.println("record " + debug + " finish!");
@@ -313,6 +409,7 @@ public class RDFAdjListPattern {
 				
 				RDFNodeInfo RDFNode = new RDFNodeInfo(nodeId, location);
 				
+				nodeList.add(RDFNode);
 				nodeMap.put(nodeId, RDFNode);
 
 				if (debug % 10000 == 0)
