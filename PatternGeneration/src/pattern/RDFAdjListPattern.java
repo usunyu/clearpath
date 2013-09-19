@@ -68,8 +68,8 @@ public class RDFAdjListPattern {
 		System.out.println("create adj list...");
 		try {
 			String[] file = adjListFile.split(".");
-			adjListFile = file[0] + "_" + days[day] + "." + file[1];
-			FileWriter fstream = new FileWriter(root + "/" + adjListFile);
+			String specAdjFile = file[0] + "_" + days[day] + "." + file[1];
+			FileWriter fstream = new FileWriter(root + "/" + specAdjFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			ListIterator<RDFNodeInfo> nodeIterator = nodeList.listIterator();
 			while(nodeIterator.hasNext()) {
