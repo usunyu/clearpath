@@ -8,6 +8,8 @@ public class SensorInfo {
 	int direction;
 	
 	LocationInfo location;
+
+	double[] pattern;
 	
 	public SensorInfo(int sensorId, String onStreet, String fromStreet, LocationInfo location, int direction) {
 		this.sensorId = sensorId;
@@ -31,4 +33,18 @@ public class SensorInfo {
 	public PairInfo getNode() { return node; }
 	public LocationInfo getLocation() { return location; }
 	public int getDirection() { return direction; }
+
+	public void setPattern(double[] pattern) {
+		this.pattern = pattern;
+	}
+
+	public double[] getPattern() {
+		return pattern;
+	}
+
+	public void addPattern(double speed, int index) {
+		if(pattern == null)
+			pattern = new double[60];
+		pattern[index] = speed;
+	}
 }

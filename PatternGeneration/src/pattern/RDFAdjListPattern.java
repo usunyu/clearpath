@@ -44,6 +44,10 @@ public class RDFAdjListPattern {
 	 */
 	static LinkedList<SensorInfo> matchSensorList = new LinkedList<SensorInfo>();
 	static HashMap<Integer, SensorInfo> sensorMap = new HashMap<Integer, SensorInfo>();
+	/**
+	 * @param pattern
+	 */
+	static HashMap<Long, ArrayList<Long>> adjList = new HashMap<Long, ArrayList<Long>>();
 	
 	public static void main(String[] args) {
 		readNodeFile();
@@ -51,6 +55,63 @@ public class RDFAdjListPattern {
 		fetchSensor();
 		readMatchSensor();
 		fetchSensorPattern(8, 0);
+		buildAdjList();
+		
+	}
+	
+	private static void buildAdjList() {
+		System.out.println("build adj list...");
+		ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
+		while(iterator.hasNext()) {
+			RDFLinkInfo link = iterator.next();
+			long refNode = link.getRefNodeId();
+			long nonRefNode = link.getNonRefNodeId();
+			String travelDir = link.getTravelDirection();
+			if(travelDir.equals("T")) {	//from nonref to ref
+				if(!adjList.containsKey(nonRefNode)) {
+					ArrayList<Long> toList = new ArrayList<Long>();
+					toList.add(refNode);
+					adjList.put(nonRefNode, toList);
+				}
+				else {
+					ArrayList<Long> toList = adjList.get(nonRefNode);
+					toList.add(refNode);
+				}
+			}
+			else if(travelDir.equals("F")) { //from ref to nonref
+				if(!adjList.containsKey(refNode)) {
+					ArrayList<Long> toList = new ArrayList<Long>();
+					toList.add(nonRefNode);
+					adjList.put(refNode, toList);
+				}
+				else {
+					ArrayList<Long> toList = adjList.get(refNode);
+					toList.add(nonRefNode);
+				}
+			}
+			else if(travelDir.equals("B")) { // bi-direction
+				if(!adjList.containsKey(nonRefNode)) {
+					ArrayList<Long> toList = new ArrayList<Long>();
+					toList.add(refNode);
+					adjList.put(nonRefNode, toList);
+				}
+				else {
+					ArrayList<Long> toList = adjList.get(nonRefNode);
+					toList.add(refNode);
+				}
+				if(!adjList.containsKey(refNode)) {
+					ArrayList<Long> toList = new ArrayList<Long>();
+					toList.add(nonRefNode);
+					adjList.put(refNode, toList);
+				}
+				else {
+					ArrayList<Long> toList = adjList.get(refNode);
+					toList.add(nonRefNode);
+				}
+			}
+			
+		}
+		System.out.println("build adj list finish!");
 	}
 	
 	private static void fetchSensorPattern(int month, int day) {
@@ -62,17 +123,44 @@ public class RDFAdjListPattern {
 			SensorInfo sensor = msIt.next();
 			sensorMap.put(sensor.getSensorId(), sensor);
 		}
+		
+		String tableName;
+		switch(month) {
+			case 7:
+				tableName = "highway_averages_august_clean";
+				break;
+			case 8:
+				tableName = "highway_averages_sep_clean";
+				break;
+			default:
+				tableName = "null";
+				break;
+		}
+		int debug = 0;
 		try {
 			Connection con = null;
 			String sql = null;
 			PreparedStatement pstatement = null;
 			ResultSet res = null;
 			con = getConnection();
-			sql = "SELECT link_id, onstreet, fromstreet, start_lat_long, direction FROM highway_congestion_config ";
-			
+			sql = "SELECT link_id, speed, time FROM " + tableName + " where day='" + days[day] + "'";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while (res.next()) {
+				debug++;
+				int sensorId = res.getInt("link_id");
+				if(!sensorMap.containsKey(sensorId))
+					continue;
+				SensorInfo sensor = sensorMap.get(sensorId);
+				double speed = res.getDouble("speed");
+				String time = res.getString("time");
+				int index = UtilClass.getIndex(time);
+				sensor.addPattern(speed, index);
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.err.println("fetchSensorPattern: debug code: " + debug);
 		}
 		System.out.println("fetch sensor pattern finish!");		
 	}
