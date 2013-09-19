@@ -61,7 +61,7 @@ public class RDFAdjListPattern {
 		fetchSensorPattern(8, 0);
 		buildAdjList();
 		createPattern();
-		//createAdjList(0);
+		createAdjList(0);
 	}
 	
 	private static void createAdjList(int day) {
@@ -103,6 +103,8 @@ public class RDFAdjListPattern {
 						strLine += ";";
 					}
 				}
+				strLine += "\r\n";
+				out.write(strLine);
 			}
 			out.close();
 		} catch(Exception e) {
@@ -118,8 +120,6 @@ public class RDFAdjListPattern {
 		try {
 			while(linkIterator.hasNext()) {
 				debug++;
-				if(debug == 49)
-					System.out.print("Error");
 				RDFLinkInfo link = linkIterator.next();
 				int[] pattern;
 				// if the link is highway
@@ -167,6 +167,8 @@ public class RDFAdjListPattern {
 			while(sensorIt.hasNext()) {
 				SensorInfo sensor = sensorIt.next();
 				double[] speedList = sensor.getPattern();
+				if(speedList == null) // don't have valid speed pattern
+					continue;
 				for(int i = 0; i < 60; i++) {
 					double speed = speedList[i];
 					if(speed > 0) {	// count this speed
@@ -286,16 +288,7 @@ public class RDFAdjListPattern {
 		System.out.println("build adj list finish!");
 	}
 	
-	private static void fetchSensorPattern(int month, int day) {
-		System.out.println("fetch sensor pattern...");
-		// make sensorMap just contain matchedSenor
-		sensorMap = new HashMap<Integer, SensorInfo>();	// free old memory
-		ListIterator<SensorInfo> msIt = matchSensorList.listIterator();
-		while(msIt.hasNext()) {
-			SensorInfo sensor = msIt.next();
-			sensorMap.put(sensor.getSensorId(), sensor);
-		}
-		
+	private static void fetchSensorByQuery(String query, int month, int day) {
 		String tableName;
 		switch(month) {
 			case 7:
@@ -308,30 +301,74 @@ public class RDFAdjListPattern {
 				tableName = "null";
 				break;
 		}
-		int debug = 0;
+		
 		try {
 			Connection con = null;
 			String sql = null;
 			PreparedStatement pstatement = null;
 			ResultSet res = null;
 			con = getConnection();
-			sql = "SELECT link_id, speed, time FROM " + tableName + " where day='" + days[day] + "'";
+			
+			sql = "SELECT link_id, speed, time FROM " + tableName + " WHERE day='" + days[day] + "' AND link_id IN ( " + query + " )";
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
 			while (res.next()) {
-				debug++;
 				int sensorId = res.getInt("link_id");
 				if(!sensorMap.containsKey(sensorId))
-					continue;
+					System.out.println("did not find sensor in the hashmap");
+				
 				SensorInfo sensor = sensorMap.get(sensorId);
 				double speed = res.getDouble("speed");
 				String time = res.getString("time");
 				int index = UtilClass.getIndex(time);
 				sensor.addPattern(speed, index);
-				if(debug % 1000 == 0)
-					System.out.println("record " + debug + " finish!");
 			}
 			
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void fetchSensorPattern(int month, int day) {
+		System.out.println("fetch sensor pattern...");
+		// make sensorMap just contain matchedSenor
+		sensorMap = new HashMap<Integer, SensorInfo>();	// free old memory
+		ListIterator<SensorInfo> msIt = matchSensorList.listIterator();
+		while(msIt.hasNext()) {
+			SensorInfo sensor = msIt.next();
+			sensorMap.put(sensor.getSensorId(), sensor);
+		}
+		int debug = 0;
+		try {
+			msIt = matchSensorList.listIterator();
+			// build sql query
+			StringBuffer sensorStringBuffer = new StringBuffer();
+			int i = 0;
+			while(msIt.hasNext()) {
+				debug++;
+				SensorInfo sensor = msIt.next();
+				if(i++ == 0)
+					sensorStringBuffer.append(sensor.getSensorId());
+				else
+					sensorStringBuffer.append(", " + sensor.getSensorId());
+				
+				if(i % 500 == 0) {	// query will throw exception if too long
+					String nodeQuery = sensorStringBuffer.toString();
+					fetchSensorByQuery(nodeQuery, month, day);
+					i = 0;
+					sensorStringBuffer = new StringBuffer();
+				}
+				
+				if(debug % 1000 == 0)
+					System.out.println((double)debug / matchSensorList.size() * 100 + "% finish!");
+			}
+			if(!sensorStringBuffer.toString().equals("")) {	// process rest
+				String nodeQuery = sensorStringBuffer.toString();
+				fetchSensorByQuery(nodeQuery, month, day);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println("fetchSensorPattern: debug code: " + debug);
