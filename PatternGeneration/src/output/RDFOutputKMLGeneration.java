@@ -232,6 +232,8 @@ public class RDFOutputKMLGeneration {
 				
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
 				kmlStr += "<description>";
+				if(streetName.contains("&"))
+					streetName = streetName.replaceAll("&", " and ");				
 				kmlStr += "Name:" 		+ streetName + "\r\n";
 				kmlStr += "Ref:" 			+ refNodeId + "\r\n";
 				kmlStr += "Nonref:" 		+ nonRefNodeId + "\r\n";
