@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:javaee="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" id="WebApp_ID" version="2.4">
+  <display-name>
+	TDSP Application</display-name>
+  <servlet>
+    <description></description>
+    <display-name>TDSPQueryMatrix</display-name>
+    <servlet-name>TDSPQueryMatrix</servlet-name>
+    <servlet-class>tdsp.servlets.TDSPQueryMatrix</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>TDSPQueryMatrix</servlet-name>
+    <url-pattern>/TDSPQueryMatrix</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>TDSPQuerySuper6</display-name>
+    <servlet-name>TDSPQuerySuper6</servlet-name>
+    <servlet-class>tdsp.servlets.TDSPQuerySuper6</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>TDSPQuerySuper6</servlet-name>
+    <url-pattern>/TDSPQuerySuper6</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>TDSPQuerySuper6JSON</display-name>
+    <servlet-name>TDSPQuerySuper6JSON</servlet-name>
+    <servlet-class>tdsp.servlets.TDSPQuerySuper6JSON</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>TDSPQuerySuper6JSON</servlet-name>
+    <url-pattern>/TDSPQuerySuper6JSON</url-pattern>
+  </servlet-mapping>  
+  <servlet>
+    <description></description>
+    <display-name>TDSPCarpoolIndicator</display-name>
+    <servlet-name>TDSPCarpoolIndicator</servlet-name>
+    <servlet-class>tdsp.servlets.TDSPCarpoolIndicator</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>TDSPCarpoolIndicator</servlet-name>
+    <url-pattern>/TDSPCarpoolIndicator</url-pattern>
+  </servlet-mapping>  
+ </web-app>
