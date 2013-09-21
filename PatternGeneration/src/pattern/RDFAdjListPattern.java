@@ -79,7 +79,7 @@ public class RDFAdjListPattern {
 				
 				ArrayList<Long> toList = adjList.get(nodeId);
 				if(toList == null || toList.isEmpty()) {
-					System.err.println("warning: " + nodeId + " does not have adj node, please check");
+					System.err.println("warning: " + nodeId + " does not have adj node");
 					continue;
 				}
 				
