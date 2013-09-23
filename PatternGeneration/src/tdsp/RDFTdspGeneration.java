@@ -60,6 +60,7 @@ public class RDFTdspGeneration {
 		String preStName = "";
 		int preDir = -1;
 		double distance = 0;
+		RDFLinkInfo preLinkInfo == null;
 		DecimalFormat df = new DecimalFormat("#0.0");
 		for(int i = 0; i < pathNodeList.size(); i++) {
 			if(i == 0) {
@@ -78,9 +79,9 @@ public class RDFTdspGeneration {
 			
 			String curStName = linkInfo.getStreetName();
 			
-			String[] nameNode = curStName.split(";");
-			if(nameNode.length > 1)
-				curStName = nameNode[0] + "(" + nameNode[1] + ")";
+			String[] namePart = curStName.split(";");
+			if(namePart.length > 1)
+				curStName = namePart[0] + "(" + namePart[1] + ")";
 			
 			if(i == 1) {
 				preStName = curStName;
@@ -92,7 +93,12 @@ public class RDFTdspGeneration {
 				distance += Geometry.calculateDistance(linkInfo.getPointsList());
 			}
 			else if(!preStName.equals(curStName) && curDir == preDir) {	// change road
-				System.out.println("Go ahead on " + preStName + " for " + df.format(distance) + " miles.");
+				if(!preStName.equals("null"))
+					System.out.println("Go ahead on " + preStName + " for " + df.format(distance) + " miles.");
+				else {
+					if(preLinkInfo.isRamp())
+						System.out.println("Take ramp to " + curStName);
+				}
 				distance = 0;
 			}
 			else {	// change direction
@@ -116,6 +122,7 @@ public class RDFTdspGeneration {
 			preNodeId = curNodeId;
 			preStName = curStName;
 			preDir = curDir;
+			preLinkInfo = linkInfo;
 		}
 		System.out.println("turn by turn finish!");
 	}

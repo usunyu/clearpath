@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Plugins xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://xsdhost/xml/schema/Plugins.xsd">
+
+	<RdfPlugins>
+		<Plugin Name="Import File" Class="com.nokia.rdfviewer.fileimexporter.Controller"/>
+
+		<Plugin Name="DB Browser" Class="com.navteq.database_browser.Controller">
+			<MaxDisplayedRecords>15</MaxDisplayedRecords>
+		</Plugin>
+
+		<Plugin Name="Compiler" Class="com.navteq.rdf_psf_lite_compiler_gui.Controller"/>
+
+		<Plugin Name="Geocoder" Class="com.navteq.RDFViewerGeocoder.Controller"/>
+
+		<Plugin Name="3D Landmarks" Class="com.navteq.building_display.Controller">
+			<Layer>RDFPL_LANDMARK_BIG</Layer>
+			<Layer>RDFPL_LANDMARK_SMALL</Layer>
+			<ThreeDObjectType>Landmark_OBJ</ThreeDObjectType>
+		</Plugin>
+
+		<Plugin Name="Motorway Junction Objects" Class="com.navteq.building_display.Controller">
+			<Layer>RDFPL_MOTORWAY_JUNCTION</Layer>
+			<ThreeDObjectType>Junction_COLLADA</ThreeDObjectType>
+		</Plugin>
+
+		<Plugin Name="Enhanced 3D City Models" Class="com.navteq.building_display.Controller">
+			<Layer>RDFPL_3D_CITY_MODEL</Layer>
+			<ThreeDObjectType>City_Tile_COLLADA</ThreeDObjectType>
+		</Plugin>
+
+		<Plugin Name="Queries" Class="com.navteq.query_display.Controller">
+			<!-- Whitespace inside the DefaultQuery element cause a layout change in the Query plugin-->
+			<DefaultQuery>
+select LAT as point_lat
+     , LON as point_lon
+  from RDF_LOCATION l
+     , RDF_CITY_POI cp
+     , RDF_FEATURE_NAMES fns
+     , RDF_FEATURE_NAME fn
+ where l.LOCATION_ID = cp.LOCATION_ID
+   and (cp.ORDER8_ID = fns.FEATURE_ID or cp.BUILTUP_ID = fns.FEATURE_ID)
+   and fns.NAME_ID = fn.NAME_ID
+   and fn.NAME like '%Frankfurt%'
+			</DefaultQuery>
+		</Plugin>
+
+		<Plugin Name="Router" Class="com.navteq.router_gui.Controller"/>
+
+		<Plugin Name="Tile Services" Class="com.navteq.tile_services_display.Controller"/>
+
+		<Plugin Name="Junction View" Class="com.navteq.junction_view.Controller"/>
+
+		<Plugin Name="Junction View Generic" Class="com.navteq.junction_view_generic.JVGenericController"/>
+
+		<Plugin Name="AlternateFuel" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_ALTFUEL</TableName>
+		</Plugin>
+
+		<Plugin Name="FuelTypes" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_FUELTYPE</TableName>
+		</Plugin>
+
+		<Plugin Name="ExtendedListings" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_EXTLIST</TableName>
+		</Plugin>
+
+		<Plugin Name="CameraAlert_RoadSense" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_ROADSENSE</TableName>
+		</Plugin>
+
+		<Plugin Name="ACSICampGuide" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_ACSICAMP</TableName>
+		</Plugin>
+
+		<Plugin Name="LonelyPlanetTravelGuide" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_LONEPLAN</TableName>
+		</Plugin>
+
+		<Plugin Name="Truck_POI" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_TRUCK</TableName>
+		</Plugin>
+
+		<Plugin Name="CorePOIs" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_COREPOI</TableName>
+		</Plugin>
+
+		<Plugin Name="FalkTravelGuide" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_FALKTRAVGUID</TableName>
+		</Plugin>
+
+		<Plugin Name="FalkGuidedTours" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_FALKGUIDTOUR</TableName>
+			<GuidedTour>true</GuidedTour>
+		</Plugin>
+
+		<Plugin Name="MerianGuidedTours" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_MERIGUIDTOUR</TableName>
+			<GuidedTour>true</GuidedTour>
+		</Plugin>
+
+		<Plugin Name="ZagatSurvey" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_ZAGAT</TableName>
+			<GuidedTour>true</GuidedTour>
+		</Plugin>
+
+		<Plugin Name="MichelinGuidedTours" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_MICHGUIDTOUR</TableName>
+			<GuidedTour>true</GuidedTour>
+		</Plugin>
+
+		<Plugin Name="WildbeanCafe" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_WILDBEAN</TableName>
+			<GuidedTour>false</GuidedTour>
+		</Plugin>
+
+		<Plugin Name="BaseExtendedListings" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_BASEEXTLIST</TableName>
+			<GuidedTour>false</GuidedTour>
+		</Plugin>
+
+		<Plugin Name="ParkingPreview" Class="com.navteq.poi_xml_display.Controller">
+			<TableName>RDFPL_XMLPOI_PARKINGPREV</TableName>
+			<GuidedTour>false</GuidedTour>
+		</Plugin>
+
+		<Plugin Name="DB Schema" Class="com.navteq.database_schema_graph.Controller">
+			<DefaultProperties/>
+		</Plugin>
+
+		<Plugin Name="Air Travel" Class="com.navteq.cds.airtravelstatus.AirTravelStatusPlugin"/>
+
+		<Plugin Name="Real Time Traffic" Class="com.navteq.RealTimeTraffic.Controller"/>
+
+		<Plugin Name="Traffic Cameras" Class="com.navteq.traffic_cams.Controller"/>		
+		
+		<Plugin Name="DMO Projects" Class="com.navteq.dmo_project.Controller"/>
+
+		<Plugin Name="RDF Display" Class="com.navteq.rdf_psf_lite_mapdisplay.Controller"/>
+
+		<Plugin Name="Brand Icons" Class="com.navteq.brandicons.BrandIconPluginGUI"/>
+
+		<Plugin Name="Lanes" Class="com.navteq.lanes.Controller"/>
+
+		<Plugin Name="LinkAttributes" Class="com.navteq.linkAttributes.Controller"/>
+		
+		<Plugin Name="NLP Search + Places" Class="com.navteq.search6.Controller"/>
+
+		<Plugin Name="NLP Routing" Class="com.navteq.routing6.Controller"/>
+
+		<Plugin Name="Natural Guidance" Class="com.navteq.natural_guidance.Controller"/>
+
+		<Plugin Name="Discover Cities" Class="com.navteq.dici.DiscoverCities"/>
+
+		<Plugin Name="TrafficPatterns" Class="com.navteq.traffic_patterns.Controller"/>
+
+		<Plugin Name="Road Signs and Signals" Class="com.navteq.roadsignsignal.RoadSignSignalPluginGUI"/>
+
+		<Plugin Name="Conditions" Class="com.navteq.conditions.ConditionsPluginGUI"/>	
+		
+		<Plugin Name="Speed Limits" Class="com.navteq.speedlimits.SpeedLimitsPluginGUI"/>			
+
+		<Plugin Name="Disputed Territories" Class="com.navteq.disputedterritories.DisputedTerritoryGUI"/>		
+
+		<Plugin Name="ADASAttributes" Class="com.navteq.ADAS.Controller"/>
+
+		<Plugin Name="LidarPointClouds" Class="com.navteq.LidarPointClouds.Controller"/>
+
+		<Plugin Name="Digital Terrain Model" Class="com.navteq.rdfviewer.dtm.Controller"/>
+		
+		<Plugin Name="Digital Terrain Model REST" Class="com.nokia.rdfviewer.dtmREST.Controller"/>
+
+		<Plugin Name="Venue Map" Class="com.navteq.destmap.DestMapController">
+			<TableName>RDFPL_DEST_MAP_OUTLINES</TableName>
+		</Plugin>
+		
+		<Plugin Name="NLP Matrix Routing" Class="com.navteq.matrixrouting.MatrixController">
+			<Algorithm>com.navteq.matrixrouting.MatrixAlgorithmBasic</Algorithm>
+			<Algorithm>com.navteq.matrixrouting.MatrixAlgorithmProjectEz1</Algorithm>
+			<Algorithm>com.navteq.matrixrouting.MatrixAlgorithmProjectEz2</Algorithm>			
+		</Plugin>
+		
+		<Plugin Name="Batch Geocoding" Class="com.nokia.batchgeocoding.BatchGeocodeController">
+			<AlgorithmSingleGeocode>com.nokia.batchgeocoding.BatchGeocodeAlgorithmFreeSearchTextViaFile</AlgorithmSingleGeocode>	
+			<AlgorithmSingleGeocode>com.nokia.batchgeocoding.BatchGeocodeAlgorithmDefinedFieldsViaFile</AlgorithmSingleGeocode>	
+			<AlgorithmSingleGeocode>com.nokia.batchgeocoding.BatchGeocodeAlgorithmDefinedFieldsViaTable</AlgorithmSingleGeocode>
+			<AlgorithmBatchGeocode>com.nokia.batchgeocoding.BatchGeocodeAlgorithmBatchViaFile</AlgorithmBatchGeocode>
+		</Plugin>
+		
+		<Plugin Name="Geocoding Framework" Class="com.nokia.geocodeframework.GeocodeFrameworkController"/>
+		
+		<Plugin Name="Auto Cloud" Class="com.nokia.autoextapi.AutoExtApiController"/>
+		
+		<Plugin Name="Carto ID(s) to WKT Polygon(s)" Class="com.nokia.cartotowktpoly.CartoToWktController"/>
+		
+		<!-- disabled until new map reporter interface is on production -->
+		<!-- Plugin Name="Mapreporter" Class="com.nokia.rdfviewer.mapreporter.Controller"/ -->
+		
+		<Plugin Name="GPS Receiver" Class="com.nokia.rdfviewer.gps_receiver.Controller"/>
+		
+		<Plugin Name="2D Landmarks" Class="com.nokia.rdfviewer.landmarks_2D.Controller"/>
+		
+		<Plugin Name="RDF Installer" Class="com.nokia.rdfviewer.installer_gui.Controller"/>
+		
+		<Plugin Name="POI XML Creator" Class="com.navteq.rdfviewer.poixml.creator.Controller"/>
+
+		<Plugin Name="DDF Viewer" Class="com.navteq.ddf.DDFPlugin"/>
+		
+		<Plugin Name="Augmented Reality Service" Class="com.navteq.rdfviewer.augmented.reality.Controller"/>
+
+		<Plugin Name="Signposts" Class="com.nokia.rdfviewer.signpost.Controller"/>
+
+		<Plugin Name="Roundabouts" Class="com.nokia.rdfviewer.roundabout.Controller"/>
+		
+		<Plugin Name="RTM Client" Class="com.nokia.realtimemap.client.Controller"/>
+		
+		<Plugin Name="Transit" Class="com.nokia.transit.TransitController">
+			<LineTable>RDFPL_TRNST_LINES_DISP</LineTable>
+			<StopTable>RDFPL_TRNST_STOPS_DISP</StopTable>
+		</Plugin>
+	</RdfPlugins>
+</Plugins>
