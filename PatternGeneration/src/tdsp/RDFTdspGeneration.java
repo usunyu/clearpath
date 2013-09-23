@@ -85,6 +85,9 @@ public class RDFTdspGeneration {
 			if(curDir == preDir) {
 				distance += Geometry.calculateDistance(preNode.getLocation(), curNode.getLocation());
 			}
+			else if(preStName.equals(curStName)) {
+				
+			}
 			else {
 				System.out.println("Go straight on " + preStName + " for " + df.format(distance) + " miles.");
 				int turn = Geometry.getTurn(preDir, curDir);
