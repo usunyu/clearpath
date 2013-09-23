@@ -263,7 +263,7 @@ public class RDFOutputKMLGeneration {
 					LocationInfo loc = pIterator.next();
 					kmlStr += loc.getLongitude()+ "," + loc.getLatitude()+ "," + loc.getZLevel() + " ";
 				}
-				kmlStr += "</coordinates></LineString></Placemark>\n";
+				kmlStr += "</coordinates></LineString></Placemark>";
 				
 				out.write(kmlStr);
 			}

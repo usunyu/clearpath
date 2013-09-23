@@ -130,17 +130,33 @@ public class RDFTdspGeneration {
 				
 				long nodeId = pathNodeList.get(i);
 				
-				RDFNodeInfo lastNode = nodeMap.get(lastNodeId);
-				RDFNodeInfo currentNode = nodeMap.get(nodeId);
+				//RDFNodeInfo lastNode = nodeMap.get(lastNodeId);
+				//RDFNodeInfo currentNode = nodeMap.get(nodeId);
+				
+				RDFLinkInfo link = nodeToLink.get(lastNodeId + "," + nodeId);
+				LinkedList<LocationInfo> pointsList = link.getPointsList();
+				ListIterator<LocationInfo> iterator = pointsList.listIterator();
 				
 				String kmlStr = "<Placemark>";
-				kmlStr += "<description>";
+				kmlStr += "<description>";				
+				kmlStr += "street:" + link.getStreetName() + "\r\n";
+				kmlStr += "funclass:" + link.getFunctionalClass() + "\r\n";
+				kmlStr += "dir:" + link.getAllDirection() + "\r\n";
+				kmlStr += "speedcat:" + link.getSpeedCategory() + "\r\n";
+				kmlStr += "speedcat:" + link.getSpeedCategory() + "\r\n";
+				kmlStr += "travel:" + link.getTravelDirection() + "\r\n";
+				kmlStr += "carpool:" + link.isCarpool() + "\r\n";
+				kmlStr += "ramp:" + link.isRamp() + "\r\n";
+				kmlStr += "tollway:" + link.isTollway() + "\r\n";
+				
 				kmlStr += "start:" + lastNodeId + "\r\n";
 				kmlStr += "end:" + nodeId + "\r\n";
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
-				kmlStr += lastNode.getLocation().getLongitude() + "," + lastNode.getLocation().getLatitude() + ",0 ";
-				kmlStr += currentNode.getLocation().getLongitude() + "," + currentNode.getLocation().getLatitude() + ",0 ";
+				while(iterator.hasNext()) {
+					LocationInfo location = iterator.next();
+					kmlStr += location.getLongitude() + "," + location.getLatitude() + "," + location.getZLevel() + " ";
+				}
 				kmlStr += "</coordinates></LineString>";
 				kmlStr += "<Style><LineStyle>";
 				kmlStr += "<color>#FF00FF14</color>";
