@@ -60,8 +60,8 @@ import java.util.ArrayList;
  * @see TDSPQueryListJavaCodeFibo1234
  */
 public class TDSPQuerySuper6 extends HttpServlet {
-	
-	//static ArrayList<String> nodesInfo = new ArrayList<String>(); 
+
+    //static ArrayList<String> nodesInfo = new ArrayList<String>(); 
 	static StringBuffer nodesInfo = new StringBuffer("");
 	static ArrayList<String> pathInfo = new ArrayList<String>();
 	
@@ -82,68 +82,65 @@ public class TDSPQuerySuper6 extends HttpServlet {
 	static boolean isCarpool = false;
 	
 	//accident table
-      // static HashMap<String, String> accident = new HashMap<String, String>();
+    // static HashMap<String, String> accident = new HashMap<String, String>();
 	
 	//accident table ends
-	
-	
 	
 	private static final long serialVersionUID = 1L;
     public static NodeConnectionValues[][] graphTDSP;
     //public static NodeConnectionValues[][] graphTDSP2;
    
-    
     public static double[][] nodes;
-     Map<Integer, Integer> midPoints;
-     double[][] midPointOrds;
-	 LinkInfo links [] = new LinkInfo[1100000];
-	 int link_count = 0;
-	 private int length1; 
-	 private int length2; 
-	 private String day;
-	 private double accidentLat;
-	 private double accidentLongi;
-	 private int accidentSeverity;
-	 private int accidentStTime;
-	 private int accidentendTime;
-	 private double accidentBacklog;
-	 private int dayIndex;
-	 private int timeIndex;
-	 private int length3;
-	 private static String [] days = {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
-     PrintWriter out;
+    Map<Integer, Integer> midPoints;
+    double[][] midPointOrds;
+    LinkInfo links [] = new LinkInfo[1100000];
+    int link_count = 0;
+    private int length1; 
+    private int length2; 
+    private String day;
+    private double accidentLat;
+    private double accidentLongi;
+    private int accidentSeverity;
+    private int accidentStTime;
+    private int accidentendTime;
+    private double accidentBacklog;
+    private int dayIndex;
+    private int timeIndex;
+    private int length3;
+    private static String [] days = {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
+    PrintWriter out;
   
-     public HashMap<Integer, String> lookup = new HashMap<Integer, String>(); 
-     public static HashMap<String, String> eventLU = new HashMap<String, String>();
-     public static HashMap<String, Integer> CarpoolLU = new HashMap<String, Integer>();
+    public HashMap<Integer, String> lookup = new HashMap<Integer, String>(); 
+    public static HashMap<String, String> eventLU = new HashMap<String, String>();
+    public static HashMap<String, Integer> CarpoolLU = new HashMap<String, Integer>();
      
     // public ArrayList<String> tempPath = new ArrayList<String>();
      
-     static public double Radius;
+    static public double Radius;
  
-     public static double singleDistance = 0.;
+    public static double singleDistance = 0.;
      
-     public double[] gpsSt = new double[2];
-     public double[] gpsEnd = new double[2];
+    public double[] gpsSt = new double[2];
+    public double[] gpsEnd = new double[2];
      
-     public static int NNcount = 0;
-     public int starthitIn = 0;
-     public int endhitIn = 0;
-     public int starthitOut = 0;
-     public int endhitOut = 0;
-     
-     
-     //public static String[][] edgesGrid = new String[500][500];
-     public static String[] nodesMap = new String[496821];
+    public static int NNcount = 0;
+    public int starthitIn = 0;
+    public int endhitIn = 0;
+    public int starthitOut = 0;
+    public int endhitOut = 0;
      
      
-     //test variables
+    //public static String[][] edgesGrid = new String[500][500];
+    public static String[] nodesMap = new String[496821];
+     
+     
+    // test variables
     // public String lastlineIn;
-   //  public String lastputIn;
-   //  public String lastlineOut;
-   //  public String lastputOut;
+    // public String lastputIn;
+    // public String lastlineOut;
+    // public String lastputOut;
     // public StringBuffer findbuf = new StringBuffer("");
-     //test variables ends
+    // test variables ends
      
      
      //set these two variables to static may cause problems , just for testing now
@@ -153,7 +150,7 @@ public class TDSPQuerySuper6 extends HttpServlet {
     @Override
     public void init(ServletConfig config){
     	try {
-			super.init(config);
+            super.init(config);
 		} catch (ServletException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -166,27 +163,27 @@ public class TDSPQuerySuper6 extends HttpServlet {
     	
     	//my mod
     	//this one is for realtime compare and accident update
-    	 readEdgeFile();
+    	readEdgeFile();
     	 
-    	 readEdgeFile2();
+    	readEdgeFile2();
     	 
     	//my mod ends
     	 
-    	 //read in the edges grid information
-    	 readInEdgesGrid();
+    	//read in the edges grid information
+    	readInEdgesGrid();
     }
      
   
     private void readEdgeFile2(){
-    	try{
+    	try {
     		InputStream is = getServletContext().getResourceAsStream("\\WEB-INF\\classes\\TDSP Files12345\\Edges_withDA.csv");
     		DataInputStream in = new DataInputStream(is);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 			//int stID = 0;
 			while ((strLine = br.readLine()) != null){
-			  String[] nodes = strLine.split(",");
-			  streets2.put(nodes[5]+","+nodes[6]+","+nodes[7]+","+nodes[8], strLine);
+                String[] nodes = strLine.split(",");
+                streets2.put(nodes[5]+","+nodes[6]+","+nodes[7]+","+nodes[8], strLine);
 			}
 			br.close();
 			in.close();
@@ -210,22 +207,17 @@ public class TDSPQuerySuper6 extends HttpServlet {
 		return connHome;
 
 	}
-    
-    
-	
-    
-    
    
     private void readEdgeFile(){
-    	try{
+    	try {
     		InputStream is = getServletContext().getResourceAsStream("\\WEB-INF\\classes\\TDSP Files12345\\Edges_withDistance.csv");
     		DataInputStream in = new DataInputStream(is);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 			//int stID = 0;
-			while ((strLine = br.readLine()) != null){
-			  String[] nodes = strLine.split(",");
-			  streets.put(nodes[3]+","+nodes[4], strLine);
+            while ((strLine = br.readLine()) != null){
+                String[] nodes = strLine.split(",");
+                streets.put(nodes[3]+","+nodes[4], strLine);
 			}
 			br.close();
 			in.close();
@@ -243,8 +235,6 @@ public class TDSPQuerySuper6 extends HttpServlet {
 			br.close();
 			in.close();
 			is.close();
-			
-			
     	}catch(Exception e){
     		e.printStackTrace();
     		System.exit(-1);
@@ -252,119 +242,112 @@ public class TDSPQuerySuper6 extends HttpServlet {
     }
     
     @Override
-    public void doGet(HttpServletRequest request,
-                      HttpServletResponse response)
-        throws IOException, ServletException
-    {
-    	
-        ResourceBundle rb =
-            ResourceBundle.getBundle("LocalStrings",request.getLocale());
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        ResourceBundle rb = ResourceBundle.getBundle("LocalStrings",request.getLocale());
+        
         response.setContentType("text/plain");
-
         response.setHeader("Access-Control-Allow-Origin", "*"); //add
-
 
         out = response.getWriter();
         
         //out.print("test5");
        
-        
         link_count=0;
         int startNodeID;
         int endNodeID;
-       try{
-        
-        if( request.getParameter("update").equals("False1")&&request.getParameter("Carpool").equals("False") ){//Departure time without carpool
+        try{
+            if( request.getParameter("update").equals("False1")&&request.getParameter("Carpool").equals("False") ){//Departure time without carpool
                  	
-        	//add Ending points
-        	EndingNode startEnd = new EndingNode();
-        	EndingNode endEnd = new EndingNode();
-        	//add Ending points ends
+                //add Ending points
+                EndingNode startEnd = new EndingNode();
+                EndingNode endEnd = new EndingNode();
+                //add Ending points ends
+
+                day = request.getParameter("day");
+
+                for(int i=0;i<days.length;i++) {
+                    if(days[i].equals(day))
+                        dayIndex = i;
+                }
         	
-        	 day = request.getParameter("day");
-             for(int i=0;i<days.length;i++)
-             {
-             	if(days[i].equals(day))
-             		dayIndex = i;
-             }
-        	
-            String[] startOrds = request.getParameter("start").split(",");
-            String[] endOrds = request.getParameter("end").split(",");
-            startNodeID = findNN1(Double.parseDouble(startOrds[0]), Double.parseDouble(startOrds[1]), startEnd, endEnd);
-            endNodeID = findNN2(Double.parseDouble(endOrds[0]), Double.parseDouble(endOrds[1]), startEnd, endEnd);
+                String[] startOrds = request.getParameter("start").split(",");
+                String[] endOrds = request.getParameter("end").split(",");
+                startNodeID = findNN1(Double.parseDouble(startOrds[0]), Double.parseDouble(startOrds[1]), startEnd, endEnd);
+                endNodeID = findNN2(Double.parseDouble(endOrds[0]), Double.parseDouble(endOrds[1]), startEnd, endEnd);
         
-            gpsSt[0] =  Double.parseDouble(startOrds[0]);
-            gpsSt[1] =  Double.parseDouble(startOrds[1]);
+                gpsSt[0] =  Double.parseDouble(startOrds[0]);
+                gpsSt[1] =  Double.parseDouble(startOrds[1]);
             
-            gpsEnd[0] = Double.parseDouble(endOrds[0]);
-            gpsEnd[1] = Double.parseDouble(endOrds[1]);
+                gpsEnd[0] = Double.parseDouble(endOrds[0]);
+                gpsEnd[1] = Double.parseDouble(endOrds[1]);
             
-            int time = Integer.parseInt(request.getParameter("time"));
+                int time = Integer.parseInt(request.getParameter("time"));
         
-          //add
-            if(nodesInfo.length()!=0)
-              nodesInfo.delete(0,nodesInfo.length());
-            if(pathInfo.size()!=0)
-              pathInfo.clear();
-           //add ends
-            //load accidents
-           // accidentModifyForQuery();
-            //tdsp0A(startNodeID, endNodeID, time);
+                //add
+                if(nodesInfo.length()!=0)
+                    nodesInfo.delete(0,nodesInfo.length());
+                if(pathInfo.size()!=0)
+                    pathInfo.clear();
+
+                //add ends
+                //load accidents
+                // accidentModifyForQuery();
+                //tdsp0A(startNodeID, endNodeID, time);
             
             
-            //out.print("startEnd Info: "+startEnd.getLat()+","+startEnd.getLon()+"\n");
-            //out.print("EndEnd Info: "+endEnd.getLat()+","+endEnd.getLon()+"\n");
-            //out.print("enter tdspA\n");
+                //out.print("startEnd Info: "+startEnd.getLat()+","+startEnd.getLon()+"\n");
+                //out.print("EndEnd Info: "+endEnd.getLat()+","+endEnd.getLon()+"\n");
+                //out.print("enter tdspA\n");
             
-            tdspA(startNodeID, endNodeID, time, startEnd, endEnd);
+                tdspA(startNodeID, endNodeID, time, startEnd, endEnd);
             
-            //out.print("exit tdspA\n");
+                //out.print("exit tdspA\n");
             
-            out.print("-"+startNodeID+"-"+endNodeID+"-"+time+"-"+singleDistance);
-            nodesInfo.append("-"+startNodeID+"-"+endNodeID+"-"+time);
+                out.print("-"+startNodeID+"-"+endNodeID+"-"+time+"-"+singleDistance);
+                nodesInfo.append("-"+startNodeID+"-"+endNodeID+"-"+time);
             
-            findPathInfo(startEnd, endEnd);
-            turn_by_turn_new();
+                findPathInfo(startEnd, endEnd);
+                turn_by_turn_new();
             
-            showaccident(startNodeID, endNodeID);
-            accidentdisplay.clear();
+                showaccident(startNodeID, endNodeID);
+                accidentdisplay.clear();
            
-            /*
-           //test only
-            String[] nodes = nodesInfo.toString().split(";");
-            out.write("\n");
-            out.write("nodesInfo:\n");
-            for(int i=0; i<nodes.length;i++){
-            	out.write(nodes[i]+"\n");
-            }
+                /*
+                //test only
+                String[] nodes = nodesInfo.toString().split(";");
+                out.write("\n");
+                out.write("nodesInfo:\n");
+
+                for(int i=0; i<nodes.length;i++){
+                    out.write(nodes[i]+"\n");
+                }
             
-            out.write("startEndRoadInfo: "+startEnd.getstInfo()+"\n");
-            out.write("endEndRoadInfo: "+endEnd.getstInfo()+"\n");
-            out.write("starthitIn = "+starthitIn+"\n");
-            out.write("starthitOut = "+starthitOut+"\n");
-            out.write("endhitIn = "+endhitIn+"\n");
-            out.write("ednhitOut = "+endhitOut+"\n");
-            out.write("lastlineIn = "+lastlineIn+"\n");
-            out.write("lastputIn = "+lastputIn+"\n");
-            out.write("lastlineOut = "+lastlineOut+"\n");
-            out.write("lastputOut = "+lastputOut+"\n");
-            out.write("the info inside the findPathInfo block:\n");
-            out.write(findbuf.toString());
+                out.write("startEndRoadInfo: "+startEnd.getstInfo()+"\n");
+                out.write("endEndRoadInfo: "+endEnd.getstInfo()+"\n");
+                out.write("starthitIn = "+starthitIn+"\n");
+                out.write("starthitOut = "+starthitOut+"\n");
+                out.write("endhitIn = "+endhitIn+"\n");
+                out.write("ednhitOut = "+endhitOut+"\n");
+                out.write("lastlineIn = "+lastlineIn+"\n");
+                out.write("lastputIn = "+lastputIn+"\n");
+                out.write("lastlineOut = "+lastlineOut+"\n");
+                out.write("lastputOut = "+lastputOut+"\n");
+                out.write("the info inside the findPathInfo block:\n");
+                out.write(findbuf.toString());
             
-            out.write("\npathInfo:\n");
-            for(int i = 0; i < pathInfo.size(); i++){
-		    	out.write(pathInfo.get(i)+"\n");
-		    	
-		    }
-           //test ends
-            */
+                out.write("\npathInfo:\n");
+                for(int i = 0; i < pathInfo.size(); i++){
+                    out.write(pathInfo.get(i)+"\n");
+                }
+                //test ends
+                */
             
-            if(nodesInfo.length()!=0)
-                nodesInfo.delete(0,nodesInfo.length());
-            if(pathInfo.size()!=0)
-                pathInfo.clear();
-            
-        }else if(request.getParameter("update").equals("False1")&&request.getParameter("Carpool").equals("True")){//departure time & Carpool
+                if(nodesInfo.length()!=0)
+                    nodesInfo.delete(0,nodesInfo.length());
+                if(pathInfo.size()!=0)
+                    pathInfo.clear();
+
+            }else if(request.getParameter("update").equals("False1")&&request.getParameter("Carpool").equals("True")){//departure time & Carpool
         	isCarpool = true;
         	 day = request.getParameter("day");
              for(int i=0;i<days.length;i++)
@@ -1381,7 +1364,7 @@ public class TDSPQuerySuper6 extends HttpServlet {
     }
     
     public  void readInEdgesGrid(){
-    	try{
+    	try {
     		InputStream is = getServletContext().getResourceAsStream("\\WEB-INF\\classes\\TDSP Files12345\\NodesEdgesMap.txt");
     		DataInputStream in = new DataInputStream(is);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -1389,7 +1372,7 @@ public class TDSPQuerySuper6 extends HttpServlet {
     		int count = 0;
 			
     		while((strLine = br.readLine())!=null){
-			    nodesMap[count++] = strLine;
+                nodesMap[count++] = strLine;
 			}
 			
 		    br.close();
@@ -1445,11 +1428,9 @@ public class TDSPQuerySuper6 extends HttpServlet {
 	}
 	
 	
-	public static int findNN1(double lat, double lon, EndingNode startEnd, EndingNode endEnd){
+	public static int findNN1(double lat, double lon, EndingNode startEnd, EndingNode endEnd) {
     	try{
-    		
     		//NNcount++; // indicate startNode or endNode
-    		
     		//out.print("im inside FindNN1:\n");//////
     		
     		int NNID = 1;
@@ -1458,33 +1439,32 @@ public class TDSPQuerySuper6 extends HttpServlet {
     	    double[][] array = new double[8][2];
     		//find the nearest 5 nodes
     		for(int i=0; i<8;i++){
-    		  double distance = (lat-nodes[i][0])*(lat-nodes[i][0]) + (lon-nodes[i][1])*(lon-nodes[i][1]);
-    		  if(distance>maxdistance){
-    			  maxdistance = distance;
-    			  maxIndex = i;
-    		  }
-    		  array[i][0] = i;
-    		  array[i][1] = distance;
-    		}
+                double distance = (lat-nodes[i][0])*(lat-nodes[i][0]) + (lon-nodes[i][1])*(lon-nodes[i][1]);
+                if(distance>maxdistance){
+                    maxdistance = distance;
+                    maxIndex = i;
+                }
+                array[i][0] = i;
+                array[i][1] = distance;
+            }
     		
     		for(int i = 8; i<nodes.length; i++){
-    			double dist = (lat-nodes[i][0])*(lat-nodes[i][0]) + (lon-nodes[i][1])*(lon-nodes[i][1]);
-    			if(dist<maxdistance){
+                double dist = (lat-nodes[i][0])*(lat-nodes[i][0]) + (lon-nodes[i][1])*(lon-nodes[i][1]);
+                if(dist<maxdistance){
     				array[maxIndex][0] = i;
     				array[maxIndex][1] = dist;
     			
-    			   //get the new maxIndex and new MaxVlaue
-    			   maxdistance = Double.MIN_VALUE;
-    			   maxIndex = -1;
-    			   for(int k=0;k<8;k++){
-    				  if(array[k][1]>maxdistance){
-    					  maxdistance = array[k][1];
-    					  maxIndex = k;
-    				  } 
-    			   }
-    			 }
-    			
-    		}
+                    //get the new maxIndex and new MaxVlaue
+                    maxdistance = Double.MIN_VALUE;
+                    maxIndex = -1;
+                    for(int k=0;k<8;k++){
+                        if(array[k][1]>maxdistance){
+                            maxdistance = array[k][1];
+                            maxIndex = k;
+                        } 
+                    }
+                }
+            }
     		
     		//out.print("found the nearest 5 nodes"); //////
     	
@@ -2511,8 +2491,8 @@ public class TDSPQuerySuper6 extends HttpServlet {
 	        
 	        CSVReader reader = new CSVReader(new InputStreamReader(exitInput),',');
 	        
-//	        DataInputStream exitIn = new DataInputStream(exitInput);
-//	        BufferedReader exitBr = new BufferedReader(new InputStreamReader(exitIn));
+            //DataInputStream exitIn = new DataInputStream(exitInput);
+            //BufferedReader exitBr = new BufferedReader(new InputStreamReader(exitIn));
 	        String[] strLines;
 	        int count = 0;
 	        
@@ -2530,7 +2510,7 @@ public class TDSPQuerySuper6 extends HttpServlet {
 		        	}
 		        	String highwayData = exitData[7]+";"+exitData[8];//highway number ; direction
 		        	count++;
-//		 	        System.out.println(count); 	
+                    //System.out.println(count); 	
 		 	       
 		 	        String value = "";
 		 	        if(exitDataWithLocation.containsKey(srclocation+","+dstlocation)){
@@ -2539,14 +2519,14 @@ public class TDSPQuerySuper6 extends HttpServlet {
 		 	        }
 		        	exitDataWithLocation.put(srclocation+","+dstlocation, value+exitData[3]+";"+exitName+";"+highwayData); // skannan-comment : key is srclink_id,dstlink_id 
 		        																											//seq_num refers to func_class of dca1 street table
-//		        	location = exitData[1]; //,dst_linkid
-//		        	exitDataWithLocation.put(location+","+exitData[3], exitName+";"+highwayData); // skannan-comment : key is link_id,seq_num seq_num refers to func_class of dca1 street table
+                    //location = exitData[1]; //,dst_linkid
+                    //exitDataWithLocation.put(location+","+exitData[3], exitName+";"+highwayData); // skannan-comment : key is link_id,seq_num seq_num refers to func_class of dca1 street table
 	        	}
 	        }
 	        
-//	        exitBr.close();
-//	        exitIn.close();
-//	        exitInput.close();
+            //exitBr.close();
+            //exitIn.close();
+            //exitInput.close();
 	        
 	        reader.close();
 	       
@@ -2562,105 +2542,99 @@ public class TDSPQuerySuper6 extends HttpServlet {
     }
 
     private void readListTDSP(int index, String day) {
-
     	try {
-    			InputStream is = getServletContext().getResourceAsStream(getFileName(day));
+            // get adjlist file
+            InputStream is = getServletContext().getResourceAsStream(getFileName(day));
   			//FileInputStream fstream = new FileInputStream("C:\\Users\\Shireesh\\Desktop\\IMSC DR\\My Work\\March Work\\AdjList.txt");
-				 DataInputStream in = new DataInputStream(is);
-	        	 BufferedReader file = new BufferedReader(new InputStreamReader(in));
-	       	     String tmp , temp, temp2;
-	            tmp = file.readLine();
-	            
-	              
-	            int i = 0;
-	            while (tmp != null) {
-	            	
-	            	if(!(tmp.equals("NA")))
-	            		{
-	            		graphTDSP[i][index] = new NodeConnectionValues();
-	            		StringTokenizer sT = new StringTokenizer(tmp, ";");
-	            		
-		                int j = 0, k=0;
-		                while (sT.hasMoreTokens()) {
-		                	temp = sT.nextToken(); 
-		                	
-		                	j = Integer.parseInt(temp.substring(1, temp.indexOf("(")));
-		                    String type = temp.substring(temp.indexOf("(")+1, temp.indexOf(")"));
-		                    int values [] = new int[60];
-		                    if(type.equals("V"))
-		                    {
-		                    	k = 0;
-			                    
-			                    StringTokenizer sT2 = new StringTokenizer(temp, ",");
-			                    
-			                    while(sT2.hasMoreTokens()) {
-			                        temp2 = sT2.nextToken();
-			                        if(temp2.indexOf(":")!= -1)
-			                        {values[k++] = Integer.parseInt(temp2.substring(temp2.indexOf(":")+1));
-			                        }
-			                        else
-			                        {values[k++] = Integer.parseInt(temp2);
-			                        
-			                        }
-			                    }
-		                    }
-		                    else
-		                    {
-		                    	for(k=0;k<length3;k++)
-		                    		{values[k] = Integer.parseInt(temp.substring(temp.indexOf(":")+1));
-		                    		
-		                    		}
-		                    }
-		                    graphTDSP[i][index].nodes.remove(j);
-		                	graphTDSP[i][index].nodes.put(j, new NodeValues(j,values));
-		                	
+            DataInputStream in = new DataInputStream(is);
+            BufferedReader file = new BufferedReader(new InputStreamReader(in));
+            String tmp , temp, temp2;
+            tmp = file.readLine();
 
-		                	if(!reverseList.containsKey(j)){
-		                		ArrayList<Integer> G = new ArrayList<Integer>();
-		                		G.add(i);
-		                		reverseList.put(j, G);
-		                	}
-		                	else{
-		                		if(!reverseList.get(j).contains(i)){
-		                	          ArrayList<Integer> G = reverseList.get(j);
-		                	          G.add(i);
-		                	          reverseList.remove(j);
-		                	          reverseList.put(j, G);
-		                		}
-		                    }
+            // new node id
+            int i = 0;
+            while (tmp != null) {
+
+                if(!(tmp.equals("NA"))) {
+                    graphTDSP[i][index] = new NodeConnectionValues();
+	            	StringTokenizer sT = new StringTokenizer(tmp, ";");
+	            		
+                    int j = 0, k=0;
+                    while (sT.hasMoreTokens()) {
+                        temp = sT.nextToken(); 
 		                	
-		                	if(!forwardList.containsKey(i)){
-		                		ArrayList<Integer> G = new ArrayList<Integer>();
-		                		G.add(j);
-		                		forwardList.put(i, G);
-		                	}
-		                	else{
-		                		if(!forwardList.get(i).contains(j)){
-		                	          ArrayList<Integer> G = forwardList.get(i);
-		                	          G.add(j);
-		                	          forwardList.remove(i);
-		                	          forwardList.put(i, G);
-		                		}
-		                    }
-		                }		
+                        j = Integer.parseInt(temp.substring(1, temp.indexOf("(")));
+                        String type = temp.substring(temp.indexOf("(")+1, temp.indexOf(")"));
+                        int values [] = new int[60];
+                        if(type.equals("V")) {
+                            k = 0;
+
+                            StringTokenizer sT2 = new StringTokenizer(temp, ",");
+
+                            while(sT2.hasMoreTokens()) {
+
+                                temp2 = sT2.nextToken();
+                                if(temp2.indexOf(":")!= -1) {
+                                    values[k++] = Integer.parseInt(temp2.substring(temp2.indexOf(":")+1));
+                                }
+                                else {
+                                    values[k++] = Integer.parseInt(temp2);
+                                }
+                            }
+                        }
+                        else {
+                            for(k=0;k<length3;k++) {
+                                values[k] = Integer.parseInt(temp.substring(temp.indexOf(":")+1));
+                            }
+                        }
+                        graphTDSP[i][index].nodes.remove(j);
+                        graphTDSP[i][index].nodes.put(j, new NodeValues(j,values));
+
+                        if(!reverseList.containsKey(j)){
+                            ArrayList<Integer> G = new ArrayList<Integer>();
+                            G.add(i);
+                            reverseList.put(j, G);
+                        }
+                        else{
+                            if(!reverseList.get(j).contains(i)){
+                                ArrayList<Integer> G = reverseList.get(j);
+                                G.add(i);
+                                reverseList.remove(j);
+                                reverseList.put(j, G);
+                            }
+                        }
+		                	
+                        if(!forwardList.containsKey(i)){
+                            ArrayList<Integer> G = new ArrayList<Integer>();
+                            G.add(j);
+                            forwardList.put(i, G);
+                        }
+                        else{
+                            if(!forwardList.get(i).contains(j)){
+                                ArrayList<Integer> G = forwardList.get(i);
+                                G.add(j);
+                                forwardList.remove(i);
+                                forwardList.put(i, G);
+                            }
+                        }
+                    }		
 	            	
 	            }
-	            	
-	                i++;
-	                tmp = file.readLine();
-	            
-	            }
-	            file.close();
-	            
-	        }
-	        catch (IOException io) {
-	            io.printStackTrace();
-	            System.exit(1);
-	        } 
-	        catch (RuntimeException re) {
-	        	re.printStackTrace();
-	            System.exit(1);
-	        }
+
+                i++;
+                tmp = file.readLine();
+
+            }
+            file.close();
+        }
+        catch (IOException io) {
+            io.printStackTrace();
+            System.exit(1);
+        } 
+        catch (RuntimeException re) {
+            re.printStackTrace();
+            System.exit(1);
+        }
     }
 	
    /* 
@@ -4693,73 +4667,56 @@ public class TDSPQuerySuper6 extends HttpServlet {
 		return("\\WEB-INF\\classes\\TDSP Files12345\\AdjList_"+day+".txt");
 	}
     
-    
     //add turn-by-turn
-    
- public static boolean  name_match(String st_name_pre, String st_name_o){
+
+    public static boolean  name_match(String st_name_pre, String st_name_o) {
     	
 		String[] nodes_pre = st_name_pre.split(";");
 		String[] nodes_o   = st_name_o.split(";");
 		
 		for(int i = 0; i< nodes_o.length;i++)
-		   for(int j = 0 ;j < nodes_pre.length; j++){
-			   if(nodes_o[i].equals(nodes_pre[j]))
-				   return true;
-		   }
-		
-		return false;
-	
-		
-	
-}
-    
-    
-    
+            for(int j = 0 ;j < nodes_pre.length; j++){
+                if(nodes_o[i].equals(nodes_pre[j]))
+                    return true;
+            }
 
-    public  void findPathInfo(){
-		try{       
-			String[] nodes = nodesInfo.toString().split(";");
+        return false;
+    }
+    
+    public  void findPathInfo() {
+        try{
+            String[] nodes = nodesInfo.toString().split(";");
 			
 			for(int i = 0;i<nodes.length-2;i++){
 				String query = nodes[i]+","+nodes[i+1];
-				//InputStream is = getServletContext().getResourceAsStream("\\WEB-INF\\classes\\TDSP Files1234\\Edges.csv");
+                //InputStream is = getServletContext().getResourceAsStream("\\WEB-INF\\classes\\TDSP Files1234\\Edges.csv");
 				//DataInputStream in2 = new DataInputStream(is);
 				//BufferedReader br2 = new BufferedReader(new InputStreamReader(in2));
 				
 				//String strLine2;
 				//while ((strLine2 = br2.readLine()) != null){
-					//   String[] nodes2 = strLine2.split(",");
-					 //  String test  =  nodes2[5]+","+nodes2[6]+","+nodes2[7]+","+nodes2[8];
-					   
-				     //  if(query.equals(test)){
-				    	  
-			 	
-				    	   pathInfo.add(streets2.get(query));
-				        
-				    	//   break;
-				      // }
-				
-				
+                //String[] nodes2 = strLine2.split(",");
+                //String test  =  nodes2[5]+","+nodes2[6]+","+nodes2[7]+","+nodes2[8];
+
+                //  if(query.equals(test)){
+
+                pathInfo.add(streets2.get(query));
+
+                //   break;
+                // }
 				//}
-				
-				
 				//br2.close();
 				//in2.close();
 				//is.close();
-				
-		 }
+            }
 		 		   
-		}catch(Exception e){
-			e.printStackTrace();
+		} catch(Exception e) {
+            e.printStackTrace();
 		}
-		
 	}
     
-    
-    
-    public  void findPathInfo(EndingNode startEnd, EndingNode endEnd){
-		try{       
-			
+    public void findPathInfo(EndingNode startEnd, EndingNode endEnd) {
+        try{	
 			//test the variable values inside the findPathInfo
 			//findbuf = new StringBuffer("");
 			//findbuf.append("starthitIn = "+starthitIn+"\n");

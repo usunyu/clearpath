@@ -6,6 +6,10 @@ public class Geometry {
 	static public int SOUTH = 1;
 	static public int WEST = 3;
 	static public int EAST = 2;
+	
+	static public int LEFT = 0;
+	static public int RIGHT = 1;
+	static public int UTURN = 2;
 
 	public static double calculateDistance(LocationInfo start, LocationInfo end) {
 		double lat1 = start.getLatitude();
@@ -47,5 +51,64 @@ public class Geometry {
 			return WEST;// dir = "W";
 
 		return -1; // worng case
+	}
+	
+	public static int getTurn(int dir1, int dir2) {
+		int turn = -1;
+		switch(dir1) {
+			case 0:	// NORTH
+				switch(dir2) {
+				case 1:
+					turn = UTURN;
+					break;
+				case 2:
+					turn = RIGHT;
+					break;
+				case 3:
+					turn = LEFT;
+					break;
+				}
+				break;
+			case 1:	// SOUTH
+				switch(dir2) {
+				case 0:
+					turn = UTURN;
+					break;
+				case 2:
+					turn = LEFT;
+					break;
+				case 3:
+					turn = RIGHT;
+					break;
+				}
+				break;
+			case 2:	// EAST
+				switch(dir2) {
+				case 0:
+					turn = LEFT;
+					break;
+				case 1:
+					turn = RIGHT;
+					break;
+				case 3:
+					turn = UTURN;
+					break;
+				}
+				break;
+			case 3:	// WEST
+				switch(dir2) {
+				case 0:
+					turn = RIGHT;
+					break;
+				case 1:
+					turn = LEFT;
+					break;
+				case 2:
+					turn = UTURN;
+					break;
+				}
+				break;
+		}
+		return turn;
 	}
 }

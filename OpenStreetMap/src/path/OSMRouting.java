@@ -34,7 +34,7 @@ public class OSMRouting {
 	 */
 	static HashMap<Long, NodeInfo> nodeHashMap = new HashMap<Long, NodeInfo>();
 	// help for routing
-	static HashMap<Long, NodeAssistInfo> nodeAssistMap = new HashMap<Long, NodeAssistInfo>();
+	static HashMap<Long, NodeRouteInfo> nodeRouteMap = new HashMap<Long, NodeRouteInfo>();
 	/**
 	 * @param graph
 	 */
@@ -46,7 +46,7 @@ public class OSMRouting {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		buildList();
+		buildAdjList();
 		readNodeFile();
 		tdsp(startNode, endNode, startTime);
 		generatePathKML();
@@ -105,20 +105,20 @@ public class OSMRouting {
 
 	public static void tdsp(long startNode, long endNode, int startTime) {
 		System.out.println("start finding the path...");
-		PriorityQueue<NodeAssistInfo> priorityQ = new PriorityQueue<NodeAssistInfo>(
-				20, new Comparator<NodeAssistInfo>() {
-			public int compare(NodeAssistInfo n1, NodeAssistInfo n2) {
+		PriorityQueue<NodeRouteInfo> priorityQ = new PriorityQueue<NodeRouteInfo>(
+				20, new Comparator<NodeRouteInfo>() {
+			public int compare(NodeRouteInfo n1, NodeRouteInfo n2) {
 				return n1.getCost() - n2.getCost();
 			}
 		});
 		
-		int adjlistSize = adjListHashMap.keySet().size();
+		// int adjlistSize = adjListHashMap.keySet().size();
 		
-		boolean[] visited = new boolean[adjlistSize];
-		for(int i = 0; i < adjlistSize; i++)
-			visited[i] = false;
+		// boolean[] visited = new boolean[adjlistSize];
+		// for(int i = 0; i < adjlistSize; i++)
+		// 	visited[i] = false;
 		
-		NodeAssistInfo current = nodeAssistMap.get(startNode);	// get start node
+		NodeRouteInfo current = nodeRouteMap.get(startNode);	// get start node
 		if(current == null) {
 			System.err.println("cannot find start node, program exit!");
 			System.exit(-1);
@@ -148,9 +148,9 @@ public class OSMRouting {
 			for(ToNodeInfo toNode : adjNodeList) {
 				long toNodeId = toNode.getNodeId();
 				
-				NodeAssistInfo toNodeAssist = nodeAssistMap.get(toNodeId);
+				NodeRouteInfo toNodeRoute = nodeRouteMap.get(toNodeId);
 				
-				if(toNodeAssist.isVisited())	// if the node is visited, we bypass it
+				if(toNodeRoute.isVisited())	// if the node is visited, we bypass it
 					continue;
 				
 				int travelTime;
@@ -162,10 +162,10 @@ public class OSMRouting {
 				// if we find a node with updated distance, just insert it to the priority queue
 				// even we pop out another node with same id later, we know that it was visited and will ignore it
 				int totalTime = arrTime + travelTime;
-				if (totalTime < toNodeAssist.getCost()) {
-					toNodeAssist.setCost(totalTime);
-					toNodeAssist.setParentId(nodeId);
-					priorityQ.offer(toNodeAssist);
+				if (totalTime < toNodeRoute.getCost()) {
+					toNodeRoute.setCost(totalTime);
+					toNodeRoute.setParentId(nodeId);
+					priorityQ.offer(toNodeRoute);
 				}
 			}
 		}
@@ -173,7 +173,7 @@ public class OSMRouting {
 		if (startNode == endNode)
 			System.out.println("start node is the same as end node.");
 		else {
-			current = nodeAssistMap.get(endNode);
+			current = nodeRouteMap.get(endNode);
 			if(current == null) {
 				System.err.println("cannot find end node, program exit!");
 				System.exit(-1);
@@ -181,7 +181,7 @@ public class OSMRouting {
 			pathNodeList.add(endNode);	// add end node
 			
 			while(current.getParentId() != -1 && current.getParentId() != startNode) {
-				current = nodeAssistMap.get(current.getParentId());
+				current = nodeRouteMap.get(current.getParentId());
 				if(current == null) {
 					System.err.println("cannot find intermediate node, program exit!");
 					System.exit(-1);
@@ -203,7 +203,7 @@ public class OSMRouting {
 		System.out.println("find the path successful!");
 	}
 
-	public static void buildList() {
+	public static void buildAdjList() {
 		System.out.println("loading adjlist file: " + adjlistFile);
 
 		int debug = 0;
@@ -284,8 +284,8 @@ public class OSMRouting {
 						longitude);
 				NodeInfo nodeInfo = new NodeInfo(nodeId, locationInfo);
 				nodeHashMap.put(nodeId, nodeInfo);
-				NodeAssistInfo nodeCost = new NodeAssistInfo(nodeId);
-				nodeAssistMap.put(nodeId, nodeCost);
+				NodeRouteInfo nodeCost = new NodeRouteInfo(nodeId);
+				nodeRouteMap.put(nodeId, nodeCost);
 			}
 			br.close();
 			in.close();

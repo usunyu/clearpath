@@ -1,12 +1,12 @@
 package object;
 
-public class NodeAssistInfo {
+public class NodeRouteInfo {
 	long nodeId;
 	int cost;
 	boolean visited;
 	long parentId;
 	
-	public NodeAssistInfo(long nodeId) {
+	public NodeRouteInfo(long nodeId) {
 		this.nodeId = nodeId;
 		this.cost = Integer.MAX_VALUE;
 		this.visited = false;
