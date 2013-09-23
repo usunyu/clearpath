@@ -19,8 +19,10 @@ public class RDFTdspGeneration {
 	/**
 	 * @param args
 	 */
-	static long startNode 		= 49472526;
-	static long endNode 		= 998276726;
+	//static long startNode 		= 49472526;
+	//static long endNode 		= 998276726;
+	static long startNode 		= 49253316;
+	static long endNode 		= 49250620;
 	static int startTime 		= 10;
 	static int timeInterval 	= 15;
 	static int timeRange 		= 60;
@@ -76,19 +78,24 @@ public class RDFTdspGeneration {
 			
 			String curStName = linkInfo.getStreetName();
 			
+			String[] nameNode = curStName.split(";");
+			if(nameNode.length > 1)
+				curStName = nameNode[0] + "(" + nameNode[1] + ")";
+			
 			if(i == 1) {
 				preStName = curStName;
 				preDir = curDir;
 			}
 			
 			// no turn need, cumulative distance
-			if(curDir == preDir) {
+			if(curDir == preDir && preStName.equals(curStName)) {
 				distance += Geometry.calculateDistance(preNode.getLocation(), curNode.getLocation());
 			}
-			else if(preStName.equals(curStName)) {
-				
+			else if(!preStName.equals(curStName) && curDir == preDir) {	// change road
+				System.out.println("Go straight on " + preStName + " for " + df.format(distance) + " miles.");
+				distance = 0;
 			}
-			else {
+			else {	// change direction
 				System.out.println("Go straight on " + preStName + " for " + df.format(distance) + " miles.");
 				int turn = Geometry.getTurn(preDir, curDir);
 				if(turn == Geometry.LEFT)
@@ -141,8 +148,12 @@ public class RDFTdspGeneration {
 				ListIterator<LocationInfo> iterator = pointsList.listIterator();
 				
 				String kmlStr = "<Placemark>";
-				kmlStr += "<description>";				
-				kmlStr += "Street:" + link.getStreetName() + "\r\n";
+				kmlStr += "<description>";
+				String streetName = link.getStreetName();
+				String[] nameNode = streetName.split(";");
+				if(nameNode.length > 1)
+					streetName = nameNode[0] + "(" + nameNode[1] + ")";
+				kmlStr += "Street:" + streetName + "\r\n";
 				kmlStr += "Funclass:" + link.getFunctionalClass() + "\r\n";
 				//kmlStr += "Dir:" + link.getAllDirection() + "\r\n";
 				kmlStr += "Speedcat:" + link.getSpeedCategory() + "\r\n";
