@@ -139,18 +139,18 @@ public class RDFTdspGeneration {
 				
 				String kmlStr = "<Placemark>";
 				kmlStr += "<description>";				
-				kmlStr += "street:" + link.getStreetName() + "\r\n";
-				kmlStr += "funclass:" + link.getFunctionalClass() + "\r\n";
-				kmlStr += "dir:" + link.getAllDirection() + "\r\n";
-				kmlStr += "speedcat:" + link.getSpeedCategory() + "\r\n";
-				kmlStr += "speedcat:" + link.getSpeedCategory() + "\r\n";
-				kmlStr += "travel:" + link.getTravelDirection() + "\r\n";
-				kmlStr += "carpool:" + link.isCarpool() + "\r\n";
-				kmlStr += "ramp:" + link.isRamp() + "\r\n";
-				kmlStr += "tollway:" + link.isTollway() + "\r\n";
+				kmlStr += "Street:" + link.getStreetName() + "\r\n";
+				kmlStr += "Funclass:" + link.getFunctionalClass() + "\r\n";
+				//kmlStr += "Dir:" + link.getAllDirection() + "\r\n";
+				kmlStr += "Speedcat:" + link.getSpeedCategory() + "\r\n";
+				kmlStr += "Speedcat:" + link.getSpeedCategory() + "\r\n";
+				kmlStr += "Travel:" + link.getTravelDirection() + "\r\n";
+				kmlStr += "Carpool:" + link.isCarpool() + "\r\n";
+				kmlStr += "Ramp:" + link.isRamp() + "\r\n";
+				kmlStr += "Tollway:" + link.isTollway() + "\r\n";
 				
-				kmlStr += "start:" + lastNodeId + "\r\n";
-				kmlStr += "end:" + nodeId + "\r\n";
+				kmlStr += "Start:" + lastNodeId + "\r\n";
+				kmlStr += "End:" + nodeId + "\r\n";
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
 				while(iterator.hasNext()) {
