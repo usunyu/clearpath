@@ -60,7 +60,7 @@ public class RDFTdspGeneration {
 		String preStName = "";
 		int preDir = -1;
 		double distance = 0;
-		DecimalFormat df = new DecimalFormat("#.0");
+		DecimalFormat df = new DecimalFormat("#0.0");
 		for(int i = 0; i < pathNodeList.size(); i++) {
 			if(i == 0) {
 				preNodeId = pathNodeList.get(i);
@@ -89,10 +89,10 @@ public class RDFTdspGeneration {
 			
 			// no turn need, cumulative distance
 			if(curDir == preDir && preStName.equals(curStName)) {
-				distance += Geometry.calculateDistance(preNode.getLocation(), curNode.getLocation());
+				distance += Geometry.calculateDistance(linkInfo.getPointsList());
 			}
 			else if(!preStName.equals(curStName) && curDir == preDir) {	// change road
-				System.out.println("Go straight on " + preStName + " for " + df.format(distance) + " miles.");
+				System.out.println("Go ahead on " + preStName + " for " + df.format(distance) + " miles.");
 				distance = 0;
 			}
 			else {	// change direction

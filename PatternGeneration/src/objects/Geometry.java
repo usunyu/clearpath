@@ -1,5 +1,7 @@
 package objects;
 
+import java.util.*;
+
 public class Geometry {
 	static public double Radius = 6371 * 0.621371192;
 	static public int NORTH = 0;
@@ -24,6 +26,22 @@ public class Geometry {
 				* Math.sin(dLon / 2);
 		double c = 2 * Math.asin(Math.sqrt(a));
 		return Radius * c;
+	}
+	
+	public static double calculateDistance(LinkedList<LocationInfo> pointsList) {
+		ListIterator<LocationInfo> iterator = pointsList.listIterator();
+		LocationInfo preLocation = null;
+		double distance = 0;
+		while(iterator.hasNext()) {
+			LocationInfo location = iterator.next();
+			if(preLocation == null) {
+				preLocation = location;
+				continue;
+			}
+			distance += calculateDistance(preLocation, location);
+			preLocation = location;
+		}
+		return distance;
 	}
 	
 	public static int getDirection(LocationInfo start, LocationInfo end) {
