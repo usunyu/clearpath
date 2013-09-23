@@ -106,7 +106,12 @@ public class RDFTdspGeneration {
 				distance = 0;
 			}
 			else {	// change direction
-				System.out.println("Go straight on " + preStName + " for " + df.format(distance) + " miles.");
+				if(!preStName.equals("null"))
+					System.out.println("Go straight on " + preStName + " for " + df.format(distance) + " miles.");
+				else {
+					if(preLinkInfo.isRamp())
+						System.out.println("Take ramp to " + curStName);
+				}
 				int turn = Geometry.getTurn(preDir, curDir);
 				if(turn == Geometry.LEFT)
 					System.out.print("Turn left. ");
