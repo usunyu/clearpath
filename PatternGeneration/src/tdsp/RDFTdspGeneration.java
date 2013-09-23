@@ -60,7 +60,7 @@ public class RDFTdspGeneration {
 		String preStName = "";
 		int preDir = -1;
 		double distance = 0;
-		RDFLinkInfo preLinkInfo == null;
+		RDFLinkInfo preLinkInfo = null;
 		DecimalFormat df = new DecimalFormat("#0.0");
 		for(int i = 0; i < pathNodeList.size(); i++) {
 			if(i == 0) {
