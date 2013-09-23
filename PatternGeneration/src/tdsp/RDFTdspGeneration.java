@@ -80,8 +80,12 @@ public class RDFTdspGeneration {
 			String curStName = linkInfo.getStreetName();
 			
 			String[] namePart = curStName.split(";");
-			if(namePart.length > 1)
-				curStName = namePart[0] + "(" + namePart[1] + ")";
+			if(namePart.length > 1) {
+				if(namePart[1].equals(preStName))
+					curStName = namePart[1];
+				else
+					curStName = namePart[0];
+			}
 			
 			if(i == 1) {
 				preStName = curStName;
