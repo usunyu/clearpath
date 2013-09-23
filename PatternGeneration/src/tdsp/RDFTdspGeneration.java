@@ -143,7 +143,6 @@ public class RDFTdspGeneration {
 				kmlStr += "Funclass:" + link.getFunctionalClass() + "\r\n";
 				//kmlStr += "Dir:" + link.getAllDirection() + "\r\n";
 				kmlStr += "Speedcat:" + link.getSpeedCategory() + "\r\n";
-				kmlStr += "Speedcat:" + link.getSpeedCategory() + "\r\n";
 				kmlStr += "Travel:" + link.getTravelDirection() + "\r\n";
 				kmlStr += "Carpool:" + link.isCarpool() + "\r\n";
 				kmlStr += "Ramp:" + link.isRamp() + "\r\n";
