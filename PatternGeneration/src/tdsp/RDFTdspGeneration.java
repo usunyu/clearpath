@@ -21,7 +21,7 @@ public class RDFTdspGeneration {
 	 */
 	static long startNode 		= 49472526;
 	static long endNode 		= 998276726;
-	//static long startNode 		= 49253316;
+	//static long startNode 	= 49253316;
 	//static long endNode 		= 49250620;
 	static int startTime 		= 10;
 	static int timeInterval 	= 15;

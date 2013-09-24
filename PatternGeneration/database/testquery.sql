@@ -105,3 +105,5 @@ LEFT JOIN rdf_road_link t7
 ON t6.link_id = t7.link_id) t8
 LEFT JOIN rdf_road_name t9
 on t8.road_name_id = t9.road_name_id
+
+/* RDFDB: use sign table */
