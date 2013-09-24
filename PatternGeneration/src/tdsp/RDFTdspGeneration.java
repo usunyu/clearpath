@@ -57,7 +57,8 @@ public class RDFTdspGeneration {
 	public static void turnByTurn() {
 		System.out.println("turn by turn...");
 		long preNodeId = -1;
-		String preStName = "";
+		String preStName1 = "";
+		String preStName2 = "";
 		int preDir = -1;
 		double distance = 0;
 		RDFLinkInfo preLinkInfo = null;
@@ -81,24 +82,25 @@ public class RDFTdspGeneration {
 			
 			String[] namePart = curStName.split(";");
 			if(namePart.length > 1) {
-				if(namePart[1].equals(preStName))
+				if(namePart[1].equals(preStName1) || namePart[1].equals(preStName2))
 					curStName = namePart[1];
 				else
 					curStName = namePart[0];
 			}
 			
 			if(i == 1) {
-				preStName = curStName;
+				preStName1 = curStName;
+				preStName2 = namePart.length > 1 ? namePart[1] : "";
 				preDir = curDir;
 			}
 			
 			// no turn need, cumulative distance
-			if(curDir == preDir && preStName.equals(curStName)) {
+			if(curDir == preDir && (preStName1.equals(curStName) || preStName2.equals(curStName))) {
 				distance += Geometry.calculateDistance(linkInfo.getPointsList());
 			}
-			else if(!preStName.equals(curStName) && curDir == preDir) {	// change road
-				if(!preStName.equals("null"))
-					System.out.println("Go ahead on " + preStName + " for " + df.format(distance) + " miles.");
+			else if(!preStName1.equals(curStName) && !preStName2.equals(curStName) && curDir == preDir) {	// change road
+				if(!preStName1.equals("null"))
+					System.out.println("Go ahead on " + preStName1 + " for " + df.format(distance) + " miles.");
 				else {
 					if(preLinkInfo.isRamp())
 						System.out.println("Take ramp to " + curStName);
@@ -106,8 +108,8 @@ public class RDFTdspGeneration {
 				distance = 0;
 			}
 			else {	// change direction
-				if(!preStName.equals("null"))
-					System.out.println("Go straight on " + preStName + " for " + df.format(distance) + " miles.");
+				if(!preStName1.equals("null"))
+					System.out.println("Go straight on " + preStName1 + " for " + df.format(distance) + " miles.");
 				else {
 					if(preLinkInfo.isRamp())
 						System.out.println("Take ramp to " + curStName);
@@ -129,7 +131,8 @@ public class RDFTdspGeneration {
 			}
 				
 			preNodeId = curNodeId;
-			preStName = curStName;
+			preStName1 = namePart[0];
+			preStName2 = namePart.length > 1 ? namePart[1] : "";
 			preDir = curDir;
 			preLinkInfo = linkInfo;
 		}
