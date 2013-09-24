@@ -107,3 +107,7 @@ LEFT JOIN rdf_road_name t9
 on t8.road_name_id = t9.road_name_id
 
 /* RDFDB: use sign table */
+SELECT * FROM rdf_sign_destination WHERE dest_link_id IN (24029895, 24030145, 734823944, 990230038, 990230038, 126492861)
+SELECT * FROM rdf_sign_destination_trans WHERE sign_id = 35688521
+SELECT * FROM rdf_sign_element WHERE sign_id = 35688521
+SELECT * FROM rdf_sign_destination WHERE dest_link_id = 28424246

@@ -54,12 +54,29 @@ public class RDFTdspGeneration {
 		turnByTurn();
 	}
 	
+	private static String getNSTName(String stName) {
+		String[] namePart = stName.split(";");
+		boolean choice = false;
+		
+		if(namePart.length > 1) {
+			for(int i = 0; i < namePart[1].length(); i++) {
+				if(Character.isDigit(namePart[1].charAt(i))) {
+					choice = true;
+					break;
+				}
+			}
+		}
+		if(!choice)
+			stName = namePart[0];
+		else
+			stName = namePart[1];
+		return stName;
+	}
+	
 	public static void turnByTurn() {
 		System.out.println("turn by turn...");
 		long preNodeId = -1;
 		String preStName = "";
-		String preStName1 = "";
-		String preStName2 = "";
 		int preDir = -1;
 		double distance = 0;
 		RDFLinkInfo preLinkInfo = null;
@@ -81,27 +98,21 @@ public class RDFTdspGeneration {
 			
 			String curStName = linkInfo.getStreetName();
 			
+			curStName = getNSTName(curStName);
+			
 			String[] namePart = curStName.split(";");
-			if(namePart.length > 1) {
-				if(namePart[1].equals(preStName1) || namePart[1].equals(preStName2))
-					curStName = namePart[1];
-				else
-					curStName = namePart[0];
-			}
 			
 			if(i == 1) {
 				preStName = curStName;
-				preStName1 = namePart[0];
-				preStName2 = namePart.length > 1 ? namePart[1] : "";
 				preDir = curDir;
 			}
 			
 			// no turn need, cumulative distance
-			if(curDir == preDir && (preStName1.equals(curStName) || preStName2.equals(curStName))) {
+			if(curDir == preDir && preStName.equals(curStName)) {
 				distance += Geometry.calculateDistance(linkInfo.getPointsList());
 			}
-			else if(!preStName1.equals(curStName) && !preStName2.equals(curStName) && curDir == preDir) {	// change road
-				if(!preStName1.equals("null"))
+			else if(!preStName.equals(curStName) && curDir == preDir) {	// change road
+				if(!preStName.equals("null"))
 					System.out.println("Go ahead on " + preStName + " for " + df.format(distance) + " miles.");
 				else {
 					if(preLinkInfo.isRamp())
@@ -110,7 +121,7 @@ public class RDFTdspGeneration {
 				distance = 0;
 			}
 			else {	// change direction
-				if(!preStName1.equals("null"))
+				if(!preStName.equals("null"))
 					System.out.println("Go straight on " + preStName + " for " + df.format(distance) + " miles.");
 				else {
 					if(preLinkInfo.isRamp())
@@ -133,8 +144,6 @@ public class RDFTdspGeneration {
 			}
 				
 			preNodeId = curNodeId;
-			preStName1 = namePart[0];
-			preStName2 = namePart.length > 1 ? namePart[1] : "";
 			preStName = curStName;
 			preDir = curDir;
 			preLinkInfo = linkInfo;
@@ -169,12 +178,13 @@ public class RDFTdspGeneration {
 				LinkedList<LocationInfo> pointsList = link.getPointsList();
 				ListIterator<LocationInfo> iterator = pointsList.listIterator();
 				
-				String kmlStr = "<Placemark>";
+				String kmlStr = "<Placemark><name>Link:" + link.getLinkId() + "</name>";
 				kmlStr += "<description>";
 				String streetName = link.getStreetName();
-				String[] nameNode = streetName.split(";");
-				if(nameNode.length > 1)
-					streetName = nameNode[0] + "(" + nameNode[1] + ")";
+				streetName = getNSTName(streetName);
+				//String[] nameNode = streetName.split(";");
+				//if(nameNode.length > 1)
+				//	streetName = nameNode[0] + "(" + nameNode[1] + ")";
 				kmlStr += "Street:" + streetName + "\r\n";
 				kmlStr += "Funclass:" + link.getFunctionalClass() + "\r\n";
 				//kmlStr += "Dir:" + link.getAllDirection() + "\r\n";

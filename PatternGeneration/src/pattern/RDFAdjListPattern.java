@@ -121,6 +121,7 @@ public class RDFAdjListPattern {
 			while(linkIterator.hasNext()) {
 				debug++;
 				RDFLinkInfo link = linkIterator.next();
+
 				int[] pattern;
 				// if the link is highway
 				if(link.getFunctionalClass() == 1 || link.getFunctionalClass() == 2)
@@ -143,8 +144,9 @@ public class RDFAdjListPattern {
 		if(link.getFunctionalClass() == 5)
 			fixed = true;
 		if(fixed) {
+			double speed = getSpeed(link);
 			pattern = new int[1];
-			pattern[0] = (int) Math.round(dis / 8 * 60 * 60);
+			pattern[0] = (int) Math.round(dis / speed * 60 * 60);
 		}
 		else {
 			pattern = new int[60];
@@ -200,6 +202,16 @@ public class RDFAdjListPattern {
 		return pattern;
 	}
 	
+	private static double getSpeed(RDFLinkInfo link) {
+		int funcClass = link.getFunctionalClass();
+		int speedCat = link.getSpeedCategory();
+		double penalty = 1.;
+		if(funcClass == 3 || funcClass == 4 || funcClass == 5)
+			penalty *= 0.75;
+		double originalSpeed = speedCategory[speedCat];
+		return penalty * originalSpeed;
+	}
+	
 	private static double getSpeed(RDFLinkInfo link, int index) {
 		int funcClass = link.getFunctionalClass();
 		int speedCat = link.getSpeedCategory();
@@ -209,8 +221,8 @@ public class RDFAdjListPattern {
 		if(funcClass == 3 || funcClass == 4 || funcClass == 5)
 			penalty *= 0.75;
 		double originalSpeed = speedCategory[speedCat];
-		if (funcClass == 5)
-			originalSpeed = 8;
+		//if (funcClass == 5)
+		//	originalSpeed = 8;
 		return penalty * originalSpeed;
 	}
 	
@@ -235,6 +247,7 @@ public class RDFAdjListPattern {
 		ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
 		while(iterator.hasNext()) {
 			RDFLinkInfo link = iterator.next();
+			
 			long refNode = link.getRefNodeId();
 			long nonRefNode = link.getNonRefNodeId();
 			String travelDir = link.getTravelDirection();
