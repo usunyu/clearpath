@@ -31,8 +31,10 @@ public class RDFInputFileGeneration {
 	static double UNIT				= 100000;
 	static double LosAngelesLat1 	= 33.68   * UNIT;
 	static double LosAngelesLat2 	= 34.27   * UNIT;
-	static double LosAngelesLon1 	= -118.92 * UNIT;
-	static double LosAngelesLon2 	= -117.55 * UNIT;
+//	static double LosAngelesLon1 	= -118.92 * UNIT;
+//	static double LosAngelesLon2 	= -117.55 * UNIT;
+	static double LosAngelesLon1 	= -118.42 * UNIT;
+	static double LosAngelesLon2 	= -117.95 * UNIT;
 	/**
 	 * @param node
 	 */
