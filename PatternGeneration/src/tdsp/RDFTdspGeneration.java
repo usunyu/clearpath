@@ -57,6 +57,7 @@ public class RDFTdspGeneration {
 	public static void turnByTurn() {
 		System.out.println("turn by turn...");
 		long preNodeId = -1;
+		String preStName = "";
 		String preStName1 = "";
 		String preStName2 = "";
 		int preDir = -1;
@@ -89,7 +90,8 @@ public class RDFTdspGeneration {
 			}
 			
 			if(i == 1) {
-				preStName1 = curStName;
+				preStName = curStName;
+				preStName1 = namePart[0];
 				preStName2 = namePart.length > 1 ? namePart[1] : "";
 				preDir = curDir;
 			}
@@ -100,7 +102,7 @@ public class RDFTdspGeneration {
 			}
 			else if(!preStName1.equals(curStName) && !preStName2.equals(curStName) && curDir == preDir) {	// change road
 				if(!preStName1.equals("null"))
-					System.out.println("Go ahead on " + preStName1 + " for " + df.format(distance) + " miles.");
+					System.out.println("Go ahead on " + preStName + " for " + df.format(distance) + " miles.");
 				else {
 					if(preLinkInfo.isRamp())
 						System.out.println("Take ramp to " + curStName);
@@ -109,7 +111,7 @@ public class RDFTdspGeneration {
 			}
 			else {	// change direction
 				if(!preStName1.equals("null"))
-					System.out.println("Go straight on " + preStName1 + " for " + df.format(distance) + " miles.");
+					System.out.println("Go straight on " + preStName + " for " + df.format(distance) + " miles.");
 				else {
 					if(preLinkInfo.isRamp())
 						System.out.println("Take ramp to " + curStName);
@@ -133,6 +135,7 @@ public class RDFTdspGeneration {
 			preNodeId = curNodeId;
 			preStName1 = namePart[0];
 			preStName2 = namePart.length > 1 ? namePart[1] : "";
+			preStName = curStName;
 			preDir = curDir;
 			preLinkInfo = linkInfo;
 		}
