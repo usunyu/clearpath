@@ -56,20 +56,25 @@ public class RDFTdspGeneration {
 	
 	private static String getNSTName(String stName) {
 		String[] namePart = stName.split(";");
-		boolean choice = false;
+		int index = 0;
+		boolean find = false;
 		
 		if(namePart.length > 1) {
-			for(int i = 0; i < namePart[1].length(); i++) {
-				if(Character.isDigit(namePart[1].charAt(i))) {
-					choice = true;
-					break;
+			for(; index < namePart.length; index++) {
+				for(int i = 0; i < namePart[index].length(); i++) {
+					if(Character.isDigit(namePart[index].charAt(i))) {
+						find = true;
+						break;
+					}
 				}
+				if(find)
+					break;
 			}
 		}
-		if(!choice)
+		if(index == namePart.length)
 			stName = namePart[0];
 		else
-			stName = namePart[1];
+			stName = namePart[index];
 		return stName;
 	}
 	
@@ -79,7 +84,6 @@ public class RDFTdspGeneration {
 		String preStName = "";
 		int preDirIndex = -1;
 		double distance = 0;
-		RDFLinkInfo preLinkInfo = null;
 		DecimalFormat df = new DecimalFormat("#0.0");
 		boolean onRamp = false;
 		boolean preOnRamp = false;
@@ -177,7 +181,6 @@ public class RDFTdspGeneration {
 			preNodeId = curNodeId;
 			preStName = curStName;
 			preDirIndex = curDirIndex;
-			preLinkInfo = linkInfo;
 			preOnRamp = onRamp;
 		}
 		System.out.println("turn by turn finish!");

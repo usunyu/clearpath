@@ -49,6 +49,9 @@ ON t4.link_id = t5.link_id
 /* RDFDB: fetch name */
 SELECT road_name_id, street_name FROM rdf_road_name
 SELECT link_id, road_name_id FROM rdf_road_link
+
+SELECT link_id, rdf_road_name.road_name_id, street_name FROM rdf_road_name, rdf_road_link WHERE link_id = 782860213 AND rdf_road_name.road_name_id = rdf_road_link.road_name_id
+
 /* Example */
 SELECT t8.link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road
 FROM
@@ -107,7 +110,5 @@ LEFT JOIN rdf_road_name t9
 on t8.road_name_id = t9.road_name_id
 
 /* RDFDB: use sign table */
-SELECT * FROM rdf_sign_destination WHERE dest_link_id IN (24029895, 24030145, 734823944, 990230038, 990230038, 126492861)
-SELECT * FROM rdf_sign_destination_trans WHERE sign_id = 35688521
-SELECT * FROM rdf_sign_element WHERE sign_id = 35688521
-SELECT * FROM rdf_sign_destination WHERE dest_link_id = 28424246
+SELECT * FROM rdf_sign_destination
+SELECT * FROM rdf_sign_destination_trans
