@@ -73,6 +73,25 @@ public class RDFTdspGeneration {
 		return stName;
 	}
 	
+	private static String getDirectionStr(int dir) {
+		String dirStr = "";
+		switch(dir) {
+			case 0:
+				dirStr = "north";
+				break;
+			case 1:
+				dirStr = "south";
+				break;
+			case 2:
+				dirStr = "east";
+				break;
+			case 3:
+				dirStr = "west";
+				break;
+		}
+		return dirStr;
+	}
+	
 	public static void turnByTurn() {
 		System.out.println("turn by turn...");
 		long preNodeId = -1;
@@ -109,33 +128,37 @@ public class RDFTdspGeneration {
 			
 			// no turn need, cumulative distance
 			if(curDir == preDir && preStName.equals(curStName)) {
-				distance += Geometry.calculateDistance(linkInfo.getPointsList());
+				
 			}
 			else if(!preStName.equals(curStName) && curDir == preDir) {	// change road
 				if(!preStName.equals("null"))
-					System.out.println("Go ahead on " + preStName + " for " + df.format(distance) + " miles.");
+					System.out.println("Head " + getDirectionStr(preDir) + " on " + preStName + " for " + df.format(distance) + " miles.");
 				else {
 					if(preLinkInfo.isRamp())
-						System.out.println("Take ramp to " + curStName);
+						System.out.println("Take ramp onto " + curStName + ".");
 				}
 				distance = 0;
 			}
-			else {	// change direction
-				if(!preStName.equals("null"))
-					System.out.println("Go straight on " + preStName + " for " + df.format(distance) + " miles.");
+			else if(preStName.equals(curStName) && !(curDir == preDir)) {	// change direction
+				
+			}
+			else {	// change direction and road
+				if(!preStName.equals("null")) {
+					System.out.println("Head " + getDirectionStr(preDir) + " on " + preStName + " for " + df.format(distance) + " miles.");
+					int turn = Geometry.getTurn(preDir, curDir);
+					if(turn == Geometry.LEFT)
+						System.out.println("Turn left on to " + curStName + ".");
+					if(turn == Geometry.RIGHT)
+						System.out.println("Turn right on to " + curStName + ".");
+				}
 				else {
 					if(preLinkInfo.isRamp())
-						System.out.println("Take ramp to " + curStName);
+						System.out.println("Take ramp onto " + curStName + ".");
 				}
-				int turn = Geometry.getTurn(preDir, curDir);
-				if(turn == Geometry.LEFT)
-					System.out.print("Turn left. ");
-				if(turn == Geometry.RIGHT)
-					System.out.print("Turn right. ");
-				if(turn == Geometry.UTURN)
-					System.out.print("Take a U-turn. ");
+				
 				distance = 0;
 			}
+			distance += Geometry.calculateDistance(linkInfo.getPointsList());
 			
 			// arrive destination
 			if(i == pathNodeList.size() - 1) {
