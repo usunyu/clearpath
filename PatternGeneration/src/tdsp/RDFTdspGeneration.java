@@ -73,33 +73,16 @@ public class RDFTdspGeneration {
 		return stName;
 	}
 	
-	private static String getDirectionStr(int dir) {
-		String dirStr = "";
-		switch(dir) {
-			case 0:
-				dirStr = "north";
-				break;
-			case 1:
-				dirStr = "south";
-				break;
-			case 2:
-				dirStr = "east";
-				break;
-			case 3:
-				dirStr = "west";
-				break;
-		}
-		return dirStr;
-	}
-	
 	public static void turnByTurn() {
 		System.out.println("turn by turn...");
 		long preNodeId = -1;
 		String preStName = "";
-		int preDir = -1;
+		int preDirIndex = -1;
 		double distance = 0;
 		RDFLinkInfo preLinkInfo = null;
 		DecimalFormat df = new DecimalFormat("#0.0");
+		boolean onRamp = false;
+		boolean preOnRamp = false;
 		for(int i = 0; i < pathNodeList.size(); i++) {
 			if(i == 0) {
 				preNodeId = pathNodeList.get(i);
@@ -113,47 +96,72 @@ public class RDFTdspGeneration {
 			RDFNodeInfo preNode = nodeMap.get(preNodeId);
 			RDFNodeInfo curNode = nodeMap.get(curNodeId);
 			
-			int curDir = Geometry.getDirection(preNode.getLocation(), curNode.getLocation());
+			int curDirIndex = Geometry.getDirectionIndex(preNode.getLocation(), curNode.getLocation());
 			
 			String curStName = linkInfo.getStreetName();
 			
 			curStName = getNSTName(curStName);
 			
-			String[] namePart = curStName.split(";");
+			onRamp = linkInfo.isRamp();
 			
 			if(i == 1) {
 				preStName = curStName;
-				preDir = curDir;
+				distance = curDirIndex;
 			}
 			
 			// no turn need, cumulative distance
-			if(curDir == preDir && preStName.equals(curStName)) {
-				
-			}
-			else if(!preStName.equals(curStName) && curDir == preDir) {	// change road
-				if(!preStName.equals("null"))
-					System.out.println("Head " + getDirectionStr(preDir) + " on " + preStName + " for " + df.format(distance) + " miles.");
-				else {
-					if(preLinkInfo.isRamp())
+			if(Geometry.isSameDirection(curDirIndex, preDirIndex) && preStName.equals(curStName)) {
+				if(onRamp != preOnRamp) {
+					if(onRamp) {	// take ramp
+						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
+					}
+					else {	// exit ramp
 						System.out.println("Take ramp onto " + curStName + ".");
+					}
+					distance = 0;
+				}
+			}
+			else if(!preStName.equals(curStName) && Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change road
+				if(onRamp != preOnRamp) {
+					if(onRamp) {	// take ramp
+						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
+					}
+					else {	// exit ramp
+						System.out.println("Take ramp onto " + curStName + ".");
+					}
+				}
+				else {
+					System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
 				}
 				distance = 0;
 			}
-			else if(preStName.equals(curStName) && !(curDir == preDir)) {	// change direction
-				
+			else if(preStName.equals(curStName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
+				if(onRamp != preOnRamp) {
+					if(onRamp) {	// take ramp
+						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
+					}
+					else {	// exit ramp
+						System.out.println("Take ramp onto " + curStName + ".");
+					}
+					distance = 0;
+				}
 			}
 			else {	// change direction and road
-				if(!preStName.equals("null")) {
-					System.out.println("Head " + getDirectionStr(preDir) + " on " + preStName + " for " + df.format(distance) + " miles.");
-					int turn = Geometry.getTurn(preDir, curDir);
+				if(onRamp != preOnRamp) {
+					if(onRamp) {	// take ramp
+						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
+					}
+					else {	// exit ramp
+						System.out.println("Take ramp onto " + curStName + ".");
+					}
+				}
+				else {
+					System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
+					int turn = Geometry.getTurn(preDirIndex, curDirIndex);
 					if(turn == Geometry.LEFT)
 						System.out.println("Turn left on to " + curStName + ".");
 					if(turn == Geometry.RIGHT)
 						System.out.println("Turn right on to " + curStName + ".");
-				}
-				else {
-					if(preLinkInfo.isRamp())
-						System.out.println("Take ramp onto " + curStName + ".");
 				}
 				
 				distance = 0;
@@ -168,8 +176,9 @@ public class RDFTdspGeneration {
 				
 			preNodeId = curNodeId;
 			preStName = curStName;
-			preDir = curDir;
+			preDirIndex = curDirIndex;
 			preLinkInfo = linkInfo;
+			preOnRamp = onRamp;
 		}
 		System.out.println("turn by turn finish!");
 	}
