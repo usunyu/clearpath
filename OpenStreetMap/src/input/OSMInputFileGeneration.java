@@ -49,9 +49,13 @@ public class OSMInputFileGeneration {
 	//static String nodeTxtFile 	= "osm_node.txt";
 	//static String wayTxtFile 	= "osm_way.txt";
 	static String extraNodeFile = "extra.wkts";
-	static String osmFile 		= "los_angeles.osm";
-	static String nodeTxtFile 	= "los_angeles_node.txt";
-	static String wayTxtFile 	= "los_angeles_way.txt";
+	//static String osmFile 		= "los_angeles.osm";
+	//static String nodeTxtFile 	= "los_angeles_node.txt";
+	//static String wayTxtFile 	= "los_angeles_way.txt";
+	
+	static String osmFile 		= "minnesota.osm";
+	static String nodeTxtFile 	= "minnesota_node.txt";
+	static String wayTxtFile 	= "minnesota_way.txt";
 	/**
 	 * @param node
 	 */
