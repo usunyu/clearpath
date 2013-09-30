@@ -1077,10 +1077,10 @@ public class Osm2Wkt {
 		int i = 0;
 		for(Set<Long> partition : partitions){
 			i++;
-			System.out.print("[" + partition.size() + "] ");
+			//System.out.print("[" + partition.size() + "] ");
 			count += partition.size();
-			if(i % 50 == 0)
-				System.out.println();
+			//if(i % 50 == 0)
+			//	System.out.println();
 		}
 		System.out.print("\n");
 
