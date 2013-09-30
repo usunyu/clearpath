@@ -1082,7 +1082,7 @@ public class Osm2Wkt {
 			if(i % 50 == 0)
 				System.out.println();
 		}
-		System.out.print("\n");		
+		System.out.print("\n");
 
 		// search for the largest partition, this one will be used
 		Set<Long> largestpartition = null;
@@ -1103,86 +1103,118 @@ public class Osm2Wkt {
 			System.out.println("not reparing");
 			return true;
 		}
-
-
-		// have we encountered cases in which the graph came out to be unconnected
-		// collect all vertices that are in the other than largest partitions
-		HashSet<Long> verticesRemove = new HashSet<Long>();
-		for(Set<Long> partition : partitions){
-			if(partition.size() == largestpartition.size()) continue;
-			verticesRemove.addAll(partition);
-		}
-
-		System.out.println("analyzed " + verticesRemove.size() + " landmarks to remove");
-
-		// remove vertices and edges from unused partitions
-		int countRemovedLandmarks = 0;
-		int countRemovedStreets = 0;
-
+		
+		/* * * * * * * * * * * * * * ** * ** Yu Sun Add ** * * * * * * * * * * * ** * * * */
 		i = 0;
-		for(Long vertice : verticesRemove){
+		// new way to get the largest partition, faster but more memory
+		// update landmarks with largest partition
+		HashMap<Long,Landmark> tempLandmarks = new HashMap<Long,Landmark>();
+		for(Long id : largestpartition) {
+			Landmark temp = landmarks.get(id);
+			tempLandmarks.put(id, temp);
+		}
+		// clear original landmarks map
+		landmarks = tempLandmarks;
+		
+		// update streets with largest partition
+		Iterator<Map.Entry<Long, Vector<Long>>> iter = streets.entrySet().iterator();
+		while (iter.hasNext()) {
 			i++;
-			// boolean removedL;
-			// do{
-			// 	// remove all landmark 
-			// 	removedL = false;
-			// 	for(Long lid : landmarks.keySet()){
-			// 		if(((long)lid) == ((long)vertice)){
-			// 			landmarks.remove(lid); 
-			// 			removedL = true;
-			// 			countRemovedLandmarks++;
-			// 			break;
-			// 		}
-			// 	}
-			// }while(removedL);
+		    Map.Entry<Long, Vector<Long>> entry = iter.next();
+		    Long streetId = entry.getKey();
+		    Vector<Long> vector = entry.getValue();
+		    boolean in = true;
+		    for (Long id : vector) {
+		    	if(!landmarks.containsKey(id)) {
+		    		in = false;
+		    		break;
+		    	}
+		    }
+		    if(!in)
+		    	iter.remove();
+		    if(i % 1000 == 0)
+		    	System.out.println(i % streets.entrySet().size());
+		}
+		/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 
-			// boolean removedS;
-			// do{
-			// 	// remove all streets that contain this vertice
-			// 	removedS = false;
-			// 	for(Long sid : streets.keySet()){
-			// 		Vector<Long> street = streets.get(sid);
-			// 		if(street.contains(vertice)){
-			// 			streets.remove(sid);
-			// 			removedS = true;
-			// 			countRemovedStreets++;
-			// 			break;
-			// 		}
-			// 	}
-			// }while(removedS);
+		// // have we encountered cases in which the graph came out to be unconnected
+		// // collect all vertices that are in the other than largest partitions
+		// HashSet<Long> verticesRemove = new HashSet<Long>();
+		// for(Set<Long> partition : partitions){
+		// 	if(partition.size() == largestpartition.size()) continue;
+		// 	verticesRemove.addAll(partition);
+		// }
 
-			/* * * * * * * * * * * * * * ** * ** Yu Sun Add ** * * * * * * * * * * * ** * * * */
-			try {
-				if(landmarks.containsKey((long)vertice)) {
-					landmarks.remove(vertice);
-					countRemovedLandmarks++;
-				}
+		// System.out.println("analyzed " + verticesRemove.size() + " landmarks to remove");
 
-				Iterator<Map.Entry<Long, Vector<Long>>> iter = streets.entrySet().iterator();
-				while (iter.hasNext()) {
-				    Map.Entry<Long, Vector<Long>> entry = iter.next();
-				    Long streetId = entry.getKey();
-				    Vector<Long> l = entry.getValue();
-				    if(l.contains(vertice)) {
-				    	iter.remove();
-				    	countRemovedStreets++;
-				    }
-				}
-			}
-			catch(Exception e) {
-				System.err.println("debug code: " + i);
-			}
-			/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
+		// // remove vertices and edges from unused partitions
+		// int countRemovedLandmarks = 0;
+		// int countRemovedStreets = 0;
 
-			if(i % 1000 == 0)
-				System.out.println("clean " + (double)i / verticesRemove.size() * 100 + "%");
-		} //for(Long vertice : verticesRemove)
+		// i = 0;
+		// for(Long vertice : verticesRemove){
+		// 	i++;
+		// 	// boolean removedL;
+		// 	// do{
+		// 	// 	// remove all landmark 
+		// 	// 	removedL = false;
+		// 	// 	for(Long lid : landmarks.keySet()){
+		// 	// 		if(((long)lid) == ((long)vertice)){
+		// 	// 			landmarks.remove(lid); 
+		// 	// 			removedL = true;
+		// 	// 			countRemovedLandmarks++;
+		// 	// 			break;
+		// 	// 		}
+		// 	// 	}
+		// 	// }while(removedL);
 
-		System.out.println("removed " + countRemovedStreets 
-				+ " unconnected streets and " + countRemovedLandmarks 
-				+ " unconnected landmarks. know have "
-				+ streets.size() + " streets in map built upon "
-				+ landmarks.size() + " landmarks");
+		// 	// boolean removedS;
+		// 	// do{
+		// 	// 	// remove all streets that contain this vertice
+		// 	// 	removedS = false;
+		// 	// 	for(Long sid : streets.keySet()){
+		// 	// 		Vector<Long> street = streets.get(sid);
+		// 	// 		if(street.contains(vertice)){
+		// 	// 			streets.remove(sid);
+		// 	// 			removedS = true;
+		// 	// 			countRemovedStreets++;
+		// 	// 			break;
+		// 	// 		}
+		// 	// 	}
+		// 	// }while(removedS);
+
+		// 	/* * * * * * * * * * * * * * ** * ** Yu Sun Add ** * * * * * * * * * * * ** * * * */
+		// 	try {
+		// 		if(landmarks.containsKey((long)vertice)) {
+		// 			landmarks.remove(vertice);
+		// 			countRemovedLandmarks++;
+		// 		}
+
+		// 		Iterator<Map.Entry<Long, Vector<Long>>> iter = streets.entrySet().iterator();
+		// 		while (iter.hasNext()) {
+		// 		    Map.Entry<Long, Vector<Long>> entry = iter.next();
+		// 		    Long streetId = entry.getKey();
+		// 		    Vector<Long> l = entry.getValue();
+		// 		    if(l.contains(vertice)) {
+		// 		    	iter.remove();
+		// 		    	countRemovedStreets++;
+		// 		    }
+		// 		}
+		// 	}
+		// 	catch(Exception e) {
+		// 		System.err.println("debug code: " + i);
+		// 	}
+		// 	/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
+
+		// 	if(i % 1000 == 0)
+		// 		System.out.println("clean " + (double)i / verticesRemove.size() * 100 + "%");
+		// } //for(Long vertice : verticesRemove)
+
+		// System.out.println("removed " + countRemovedStreets 
+		// 		+ " unconnected streets and " + countRemovedLandmarks 
+		// 		+ " unconnected landmarks. know have "
+		// 		+ streets.size() + " streets in map built upon "
+		// 		+ landmarks.size() + " landmarks");
 		return false;
 	}
 
