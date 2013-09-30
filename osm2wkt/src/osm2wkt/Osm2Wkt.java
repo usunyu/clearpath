@@ -1132,8 +1132,8 @@ public class Osm2Wkt {
 		    }
 		    if(!in)
 		    	iter.remove();
-		    if(i % 1000 == 0)
-		    	System.out.println(i / streets.entrySet().size() * 100 + "%");
+		    // if(i % 1000 == 0)
+		    // 	System.out.println(i / streets.entrySet().size() * 100 + "%");
 		}
 		/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 
