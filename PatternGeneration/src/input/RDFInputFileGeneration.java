@@ -102,15 +102,15 @@ public class RDFInputFileGeneration {
 			
 			con = getConnection();
 			
-			sql = 	"SELECT link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, carpools" +
-					"FROM" +
-					"(SELECT t8.link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
+			sql = 	"SELECT link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, carpools " +
 					"FROM " +
-					"(SELECT t6.link_id, road_name_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
+					"(SELECT t8.link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, access_id " +
 					"FROM " +
-					"(SELECT t4.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
+					"(SELECT t6.link_id, road_name_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, access_id " +
 					"FROM " +
-					"(SELECT t1.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category " +
+					"(SELECT t4.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, access_id " +
+					"FROM " +
+					"(SELECT t1.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, access_id " +
 					"FROM rdf_link t1, rdf_node t2, rdf_nav_link t3 " +
 					"WHERE ref_node_id = node_id " +
 					"AND lat >= " + LosAngelesLat1 + " AND lat <= " + LosAngelesLat2 + " " +
