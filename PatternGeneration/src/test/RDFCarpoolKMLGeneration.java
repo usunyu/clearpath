@@ -6,6 +6,10 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
@@ -22,6 +26,13 @@ public class RDFCarpoolKMLGeneration {
 	static String linkFile			= "RDF_Link.txt";
 	static String kmlLinkFile		= "RDF_Link_Carpool.kml";
 	static String carpoolFile		= "RDF_Carpool.txt";
+	/**
+	 * @param database
+	 */
+	static String urlHome			= "jdbc:oracle:thin:@gd2.usc.edu:1521/navteq";
+	static String userName			= "NAVTEQRDF";
+	static String password			= "NAVTEQRDF";
+	static Connection connHome		= null;
 	/**
 	 * @param link
 	 */
@@ -216,4 +227,14 @@ public class RDFCarpoolKMLGeneration {
 		System.out.println("read link file finish!");
 	}
 
+	private static Connection getConnection() {
+		try {
+			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+			connHome = DriverManager.getConnection(urlHome, userName, password);
+			return connHome;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return connHome;
+	}
 }
