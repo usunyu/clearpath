@@ -16,11 +16,17 @@ public class OSMGenerateKMLMap {
 	//static String wayFile 		= "osm_way.txt";
 	//static String kmlFile 		= "osm_map.kml";
 	
-	static String nodeFile	 	= "los_angeles_node.txt";
-	static String wayFile	 	= "los_angeles_way.txt";
-	static String kmlFile 		= "los_angeles_map.kml";
+	//static String nodeFile	 	= "los_angeles_node.txt";
+	//static String wayFile	 	= "los_angeles_way.txt";
+	//static String kmlFile 		= "los_angeles_map.kml";
+	//// check highway type : null way
+	//static String kmlNullFile	= "los_angeles_null_map.kml";
+	
+	static String nodeFile	 	= "minnesota_node.txt";
+	static String wayFile	 	= "minnesota_way.txt";
+	static String kmlFile 		= "minnesota.kml";
 	// check highway type : null way
-	static String kmlNullFile	= "los_angeles_null_map.kml";
+	static String kmlNullFile	= "minnesota_null_map.kml";
 	/**
 	 * @param node
 	 */
