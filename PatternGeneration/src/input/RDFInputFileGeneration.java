@@ -121,7 +121,7 @@ public class RDFInputFileGeneration {
 					"LEFT JOIN rdf_road_link t7 " +
 					"ON t6.link_id = t7.link_id) t8 " +
 					"LEFT JOIN rdf_road_name t9 " +
-					"on t8.road_name_id = t9.road_name_id) t10, rdf_access t11" +
+					"on t8.road_name_id = t9.road_name_id) t10, rdf_access t11 " +
 					"WHERE t10.access_id = t11.access_id";
 			
 			System.out.println("execute query... ");
@@ -165,7 +165,7 @@ public class RDFInputFileGeneration {
 			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.err.println("fetchLinkByPostCode: debug code: " + debug);
+			System.err.println("fetchLinkByArea: debug code: " + debug);
 		}
 		System.out.println("fetch " + linkList.size() + " links by area finish!");
 	}
