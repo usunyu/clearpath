@@ -21,15 +21,76 @@ public class RDFCarpoolKMLGeneration {
 	static String root				= "file";
 	static String linkFile			= "RDF_Link.txt";
 	static String kmlLinkFile		= "RDF_Link_Carpool.kml";
+	static String carpoolFile		= "RDF_Carpool.txt";
 	/**
 	 * @param link
 	 */
 	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
+	/**
+	 * @param carpool
+	 */
+	static LinkedList<Long> carpoolList = new LinkedList<Long>();
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		readLinkFile();
-		generateLinkKML();
+		//readLinkFile();
+		//generateLinkKML();
+		fetchCarpool();
+		writeCarpool();
+	}
+
+	private static void writeCarpool() {
+		System.out.println("write carpool file...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + carpoolFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			ListIterator<Long> iterator = carpoolList.listIterator();
+			while (iterator.hasNext()) {
+				long linkId = iterator.next();
+				String strLine = linkId + "\r\n";
+				out.write(strLine);
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("write carpool file finish!");
+	}
+	
+	private static void fetchCarpool() {
+		System.out.println("fetch carpool...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+
+			con = getConnection();
+
+			sql = "SELECT link_id FROM rdf_nav_link s1, rdf_access s2 WHERE s1.access_id = s2.access_id AND carpools = 'Y'";
+
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+
+			while (res.next()) {
+				debug++;
+
+				long linkId = res.getLong("link_id");
+				
+				carpoolList.add(linkId);
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("fetchCarpool: debug code: " + debug);
+		}
+		System.out.println("fetch carpool finish!");
 	}
 	
 	private static void generateLinkKML() {

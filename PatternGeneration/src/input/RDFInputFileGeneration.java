@@ -84,7 +84,7 @@ public class RDFInputFileGeneration {
 		writeNodeFile();
 		/**
 		 *  Step 3) read the info from RDF_Link.txt
-		 *		fetch geometry points
+		 *			fetch geometry points
 		 */
 		readLinkFile();
 		fetchGeometry();
