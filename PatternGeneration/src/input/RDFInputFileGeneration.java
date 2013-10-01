@@ -102,7 +102,9 @@ public class RDFInputFileGeneration {
 			
 			con = getConnection();
 			
-			sql = 	"SELECT t8.link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
+			sql = 	"SELECT link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, carpools" +
+					"FROM" +
+					"(SELECT t8.link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
 					"FROM " +
 					"(SELECT t6.link_id, road_name_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road " +
 					"FROM " +
@@ -119,7 +121,8 @@ public class RDFInputFileGeneration {
 					"LEFT JOIN rdf_road_link t7 " +
 					"ON t6.link_id = t7.link_id) t8 " +
 					"LEFT JOIN rdf_road_name t9 " +
-					"on t8.road_name_id = t9.road_name_id ";
+					"on t8.road_name_id = t9.road_name_id) t10, rdf_access t11" +
+					"WHERE t10.access_id = t11.access_id";
 			
 			System.out.println("execute query... ");
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -144,9 +147,10 @@ public class RDFInputFileGeneration {
 				boolean ramp = res.getString("ramp").equals("Y") ? true : false;
 				boolean tollway = res.getString("tollway").equals("Y") ? true : false;
 				int speedCategory = res.getInt("speed_category");
-				boolean carpool = res.getString("carpool_road") == null ? false : true;
+				boolean carpoolRoad = res.getString("carpool_road") == null ? false : true;
+				boolean carpools = res.getString("carpools").equals("Y") ? true : false;
 
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpool, speedCategory );
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, carpools);
 
 				linkList.add(RDFLink);
 				linkMap.put(linkId, RDFLink);
@@ -184,7 +188,8 @@ public class RDFInputFileGeneration {
 				boolean ramp = RDFLink.isRamp();
 				boolean tollway = RDFLink.isTollway();
 				int speedCategory = RDFLink.getSpeedCategory();
-				boolean carpool = RDFLink.isCarpool();
+				boolean carpoolRoad = RDFLink.isCarpoolRoad();
+				boolean carpools = RDFLink.isCarpools();
 				LinkedList<LocationInfo> pointsList = RDFLink.getPointsList();
 				
 				String pointsStr = "null";
@@ -200,7 +205,8 @@ public class RDFInputFileGeneration {
 				}
 				
 				String strLine = linkId + "|" + streetName + "|" + refNodeId + "|" + nonRefNodeId + "|" + functionalClass + "|" + travelDirection +"|" +
-						speedCategory + "|" + (ramp ? "T" : "F") + "|" + (tollway ? "T" : "F") + "|" + (carpool ? "T" : "F") + "|" + pointsStr + "\r\n";
+						speedCategory + "|" + (ramp ? "T" : "F") + "|" + (tollway ? "T" : "F") + "|" + (carpoolRoad ? "T" : "F") + "|" + (carpools ? "Y" : "N") + "|" +
+						pointsStr + "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -305,7 +311,8 @@ public class RDFInputFileGeneration {
 				int 	speedCategory 	= Integer.parseInt(nodes[6]);
 				boolean ramp 			= nodes[7].equals("T") ? true : false;
 				boolean tollway 		= nodes[8].equals("T") ? true : false;
-				boolean carpool 		= nodes[9].equals("T") ? true : false;
+				boolean carpoolRoad		= nodes[9].equals("T") ? true : false;
+				boolean carpools 		= nodes[10].equals("Y") ? true : false;
 				
 				// gather node id
 				if(!nodeSet.contains(refNodeId))
@@ -313,7 +320,7 @@ public class RDFInputFileGeneration {
 				if(!nodeSet.contains(nonRefNodeId))
 					nodeSet.add(nonRefNodeId);
 				
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpool, speedCategory );
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, carpools);
 				
 				linkList.add(RDFLink);
 
@@ -348,10 +355,11 @@ public class RDFInputFileGeneration {
 				boolean ramp = RDFLink.isRamp();
 				boolean tollway = RDFLink.isTollway();
 				int speedCategory = RDFLink.getSpeedCategory();
-				boolean carpool = RDFLink.isCarpool();
+				boolean carpoolRoad = RDFLink.isCarpoolRoad();
+				boolean carpools = RDFLink.isCarpools();
 				
 				String strLine = linkId + "|" + streetName + "|" + refNodeId + "|" + nonRefNodeId + "|" + functionalClass + "|" + travelDirection +"|" +
-						speedCategory + "|" + (ramp ? "T" : "F") + "|" + (tollway ? "T" : "F") + "|" + (carpool ? "T" : "F") + "\r\n";
+						speedCategory + "|" + (ramp ? "T" : "F") + "|" + (tollway ? "T" : "F") + "|" + (carpoolRoad ? "T" : "F") + "|" + (carpools ? "Y" : "N") + "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -421,9 +429,10 @@ public class RDFInputFileGeneration {
 					boolean ramp = res.getString("ramp").equals("Y") ? true : false;
 					boolean tollway = res.getString("tollway").equals("Y") ? true : false;
 					int speedCategory = res.getInt("speed_category");
-					boolean carpool = res.getString("carpool_road") == null ? false : true;
+					boolean carpoolRoad = res.getString("carpool_road") == null ? false : true;
+					boolean carpools = res.getString("carpools").equals("Y") ? true : false;
 
-					RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpool, speedCategory );
+					RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, carpools);
 
 					linkList.add(RDFLink);
 					linkMap.put(linkId, RDFLink);

@@ -368,12 +368,13 @@ public class RDFMatchSensorLink {
 				int 	speedCategory 	= Integer.parseInt(nodes[6]);
 				boolean ramp 			= nodes[7].equals("T") ? true : false;
 				boolean tollway 		= nodes[8].equals("T") ? true : false;
-				boolean carpool 		= nodes[9].equals("T") ? true : false;
+				boolean carpoolRoad		= nodes[9].equals("T") ? true : false;
+				boolean carpools		= nodes[10].equals("T") ? true : false;
 				
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, travelDirection, ramp, tollway, carpool, speedCategory );
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, travelDirection, ramp, tollway, carpoolRoad, speedCategory, carpools);
 				
 				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
-				String[] pointsListStr		= nodes[10].split(";");
+				String[] pointsListStr		= nodes[11].split(";");
 				for(int i = 0; i < pointsListStr.length; i++) {
 					String[] locStr = pointsListStr[i].split(",");
 					double lat = Double.parseDouble(locStr[0]);
@@ -459,7 +460,8 @@ public class RDFMatchSensorLink {
 				String travelDirection 	= link.getTravelDirection();
 				boolean ramp		= link.isRamp();
 				boolean tollway		= link.isTollway();
-				boolean carpool 	= link.isCarpool();
+				boolean carpoolRoad 	= link.isCarpoolRoad();
+				boolean carpools 	= link.isCarpools();
 				int speedCategory 	= link.getSpeedCategory();
 				LinkedList<LocationInfo> pointsList = link.getPointsList();
 				
@@ -474,7 +476,8 @@ public class RDFMatchSensorLink {
 				kmlStr += "TraDir:" 		+ travelDirection + "\r\n";
 				kmlStr += "Ramp:" 		+ ramp + "\r\n";
 				kmlStr += "Tollway:" 	+ tollway + "\r\n";
-				kmlStr += "Carpool:" 	+ carpool + "\r\n";
+				kmlStr += "CarpoolRoad:" 	+ carpoolRoad + "\r\n";
+				kmlStr += "Carpools:" 	+ carpools + "\r\n";
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
 				ListIterator<LocationInfo> pIterator = pointsList.listIterator();
