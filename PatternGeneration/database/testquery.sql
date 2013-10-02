@@ -140,6 +140,8 @@ LEFT JOIN rdf_access t11
 ON t10.access_id = t11.access_id
 
 /* fetch express_lane */
+SELECT link_id, express_lane FROM rdf_nav_link_attribute WHERE express_lane IS NOT NULL
+/* Example */
 SELECT link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, express_lane, carpools
 FROM
 (SELECT t8.link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, express_lane, access_id
