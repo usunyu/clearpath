@@ -151,7 +151,7 @@ public class RDFInputFileGeneration {
 				int speedCategory = res.getInt("speed_category");
 				boolean carpoolRoad = res.getString("carpool_road") == null ? false : true;
 				boolean carpools = res.getString("carpools").equals("Y") ? true : false;
-				boolean expressLane = res.getString("express_lane").equals("Y") ? true : false;
+				boolean expressLane = res.getString("express_lane") == null ? false : true;
 
 				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, 
 						functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, 
