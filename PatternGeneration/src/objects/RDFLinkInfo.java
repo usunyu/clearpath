@@ -13,6 +13,7 @@ public class RDFLinkInfo {
 	boolean tollway;
 	boolean carpoolRoad;
 	boolean carpools;
+	boolean expressLane;
 	int speedCategory;
 	LinkedList<LocationInfo> pointsList;
 	
@@ -33,7 +34,8 @@ public class RDFLinkInfo {
 	}
 	
 	public RDFLinkInfo(long linkId, String streetName, long refNodeId, long nonRefNodeId, int functionalClass, 
-			String travelDirection, boolean ramp, boolean tollway, boolean carpoolRoad, int speedCategory, boolean carpools) {
+			String travelDirection, boolean ramp, boolean tollway, boolean carpoolRoad, int speedCategory, 
+			boolean carpools, boolean expressLane) {
 		this.linkId = linkId;
 		this.streetName = streetName;
 		this.refNodeId = refNodeId;
@@ -45,6 +47,7 @@ public class RDFLinkInfo {
 		this.carpoolRoad = carpoolRoad;
 		this.speedCategory = speedCategory;
 		this.carpools = carpools;
+		this.expressLane = expressLane;
 	}
 	
 	public int[] getPattern() {
@@ -139,6 +142,10 @@ public class RDFLinkInfo {
 	
 	public boolean isCarpools() {
 		return carpools;
+	}
+	
+	public boolean isExpressLane() {
+		return expressLane;
 	}
 	
 	public int getSpeedCategory() {

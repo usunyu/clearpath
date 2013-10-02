@@ -54,7 +54,7 @@ public class RDFTdspGeneration {
 		turnByTurn();
 	}
 	
-	private static String getNSTName(String stName) {
+	private static String getUniformSTName(String stName) {
 		String[] namePart = stName.split(";");
 		int index = 0;
 		boolean find = false;
@@ -104,7 +104,7 @@ public class RDFTdspGeneration {
 			
 			String curStName = linkInfo.getStreetName();
 			
-			curStName = getNSTName(curStName);
+			curStName = getUniformSTName(curStName);
 			
 			onRamp = linkInfo.isRamp();
 			
@@ -216,7 +216,7 @@ public class RDFTdspGeneration {
 				String kmlStr = "<Placemark><name>Link:" + link.getLinkId() + "</name>";
 				kmlStr += "<description>";
 				String streetName = link.getStreetName();
-				streetName = getNSTName(streetName);
+				streetName = getUniformSTName(streetName);
 				//String[] nameNode = streetName.split(";");
 				//if(nameNode.length > 1)
 				//	streetName = nameNode[0] + "(" + nameNode[1] + ")";
@@ -428,15 +428,18 @@ public class RDFTdspGeneration {
 				int 	functionalClass = Integer.parseInt(nodes[4]);
 				String 	direction 		= nodes[5];
 				int 	speedCategory 	= Integer.parseInt(nodes[6]);
-				boolean ramp 			= nodes[7].equals("T") ? true : false;
-				boolean tollway 		= nodes[8].equals("T") ? true : false;
-				boolean carpoolRoad 	= nodes[9].equals("T") ? true : false;
+				boolean ramp 			= nodes[7].equals("Y") ? true : false;
+				boolean tollway 		= nodes[8].equals("Y") ? true : false;
+				boolean carpoolRoad 	= nodes[9].equals("Y") ? true : false;
 				boolean carpools 		= nodes[10].equals("Y") ? true : false;
+				boolean expressLane 	= nodes[11].equals("Y") ? true : false;
 				
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, carpools);
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, 
+						functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, 
+						carpools, expressLane);
 				
 				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
-				String[] pointsListStr		= nodes[10].split(";");
+				String[] pointsListStr		= nodes[12].split(";");
 				for(int i = 0; i < pointsListStr.length; i++) {
 					String[] locStr = pointsListStr[i].split(",");
 					double lat = Double.parseDouble(locStr[0]);

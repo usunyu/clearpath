@@ -135,5 +135,30 @@ ON t4.link_id = t5.link_id) t6
 LEFT JOIN rdf_road_link t7
 ON t6.link_id = t7.link_id) t8
 LEFT JOIN rdf_road_name t9
-ON t8.road_name_id = t9.road_name_id) t10, rdf_access t11
-WHERE t10.access_id = t11.access_id
+ON t8.road_name_id = t9.road_name_id) t10
+LEFT JOIN rdf_access t11
+ON t10.access_id = t11.access_id
+
+/* fetch express_lane */
+SELECT link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, express_lane, carpools
+FROM
+(SELECT t8.link_id, street_name, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, express_lane, access_id
+FROM
+(SELECT t6.link_id, road_name_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, express_lane, access_id
+FROM
+(SELECT t4.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, carpool_road, express_lane, access_id
+FROM
+(SELECT t1.link_id, ref_node_id, nonref_node_id, functional_class, travel_direction, ramp, tollway, speed_category, access_id
+FROM rdf_link t1, rdf_node t2, rdf_nav_link t3
+WHERE ref_node_id = node_id
+AND lat >= 3385000 AND lat <= 3417000
+AND lon >= -11847000 AND lon <= -11814000
+AND t1.link_id = t3.link_id) t4
+LEFT JOIN rdf_nav_link_attribute t5
+ON t4.link_id = t5.link_id) t6
+LEFT JOIN rdf_road_link t7
+ON t6.link_id = t7.link_id) t8
+LEFT JOIN rdf_road_name t9
+ON t8.road_name_id = t9.road_name_id) t10
+LEFT JOIN rdf_access t11
+ON t10.access_id = t11.access_id
