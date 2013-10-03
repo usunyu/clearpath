@@ -226,6 +226,7 @@ public class RDFOutputKMLGeneration {
 				long nonRefNodeId 	= link.getNonRefNodeId();
 				int functionalClass = link.getFunctionalClass();
 				String travelDirection 	= link.getTravelDirection();
+				LinkedList<Integer> directionList = link.getDirectionList();
 				boolean ramp		= link.isRamp();
 				boolean tollway		= link.isTollway();
 				boolean carpool 	= link.isCarpool();
@@ -234,19 +235,28 @@ public class RDFOutputKMLGeneration {
 				
 				LinkedList<SensorInfo>	sensorList = link.getSensorList();
 				
+				String dirStr	= null;
+				for(int dir : directionList) {
+					if(dirStr == null)
+						dirStr = String.valueOf(dir);
+					else
+						dirStr += SEPARATION + dir;
+				}
+				
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
 				kmlStr += "<description>";
 				if(baseName.contains("&"))
 					baseName = baseName.replaceAll("&", " and ");				
-				kmlStr += "Name:" 		+ baseName + "\r\n";
+				kmlStr += "Name:" 			+ baseName + "\r\n";
 				kmlStr += "Ref:" 			+ refNodeId + "\r\n";
 				kmlStr += "Nonref:" 		+ nonRefNodeId + "\r\n";
-				kmlStr += "Class:" 		+ functionalClass + "\r\n";
-				kmlStr += "Category:" 	+ speedCategory + "\r\n";
+				kmlStr += "Class:" 			+ functionalClass + "\r\n";
+				kmlStr += "Category:" 		+ speedCategory + "\r\n";
+				kmlStr += "Dir:" 			+ dirStr + "\r\n";
 				kmlStr += "TraDir:" 		+ travelDirection + "\r\n";
-				kmlStr += "Ramp:" 		+ ramp + "\r\n";
-				kmlStr += "Tollway:" 	+ tollway + "\r\n";
-				kmlStr += "Carpool:" 	+ carpool + "\r\n";
+				kmlStr += "Ramp:" 			+ ramp + "\r\n";
+				kmlStr += "Tollway:" 		+ tollway + "\r\n";
+				kmlStr += "Carpool:" 		+ carpool + "\r\n";
 				if(sensorList != null && sensorList.size() != 0) {
 					String sensorStr = "null";
 					ListIterator<SensorInfo> sensorIt = sensorList.listIterator();

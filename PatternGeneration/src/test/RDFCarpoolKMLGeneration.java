@@ -23,9 +23,9 @@ public class RDFCarpoolKMLGeneration {
 	 * @param file
 	 */
 	static String root				= "file";
-	static String linkFile			= "RDF_Link.txt";
+	static String linkFile			= "RDF_Link.csv";
 	static String kmlLinkFile		= "RDF_Link_Carpool.kml";
-	static String carpoolFile		= "RDF_Carpool.txt";
+	static String carpoolFile		= "RDF_Carpool.csv";
 	/**
 	 * @param database
 	 */
