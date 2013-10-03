@@ -17,6 +17,8 @@ public class RDFLinkInfo {
 	int speedCategory;
 	LinkedList<LocationInfo> pointsList;
 	
+	int accessId;
+	
 	String allDirection;
 	
 	LinkedList<SensorInfo> matchSensorList;
@@ -32,7 +34,7 @@ public class RDFLinkInfo {
 		this.refNodeId = refNodeId;
 		this.nonRefNodeId = nonRefNodeId;
 	}
-	
+
 	public RDFLinkInfo(long linkId, String streetName, long refNodeId, long nonRefNodeId, int functionalClass, 
 			String travelDirection, boolean ramp, boolean tollway, boolean carpoolRoad, int speedCategory, 
 			boolean carpools, boolean expressLane) {
@@ -48,6 +50,14 @@ public class RDFLinkInfo {
 		this.speedCategory = speedCategory;
 		this.carpools = carpools;
 		this.expressLane = expressLane;
+	}
+	
+	public int getAccessId() {
+		return accessId;
+	}
+	
+	public void setAccessId(int accessId) {
+		this.accessId = accessId;
 	}
 	
 	public int[] getPattern() {

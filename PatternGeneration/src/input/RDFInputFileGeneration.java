@@ -100,6 +100,73 @@ public class RDFInputFileGeneration {
 		 * Step 2) fetch node lat, lon and zlevel
 		 */
 		fetchNodeInfoById();
+		/**
+		 * Step 3) fetch link info
+		 */
+		fetchLinkInfoById();
+	}
+	
+	private static void fetchLinkInfoById() {
+		System.out.println("fetch node info by id...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			
+			con = getConnection();
+			con.setAutoCommit(false);
+			for(long linkId : linkMap.keySet()) {
+				debug++;
+				RDFLinkInfo link = linkMap.get(linkId);
+				
+				
+				sql = "SELECT access_id, functional_class, travel_direction, ramp, tollway, speed_category " +
+						"FROM rdf_nav_link WHERE link_id=" + link.getLinkId();
+				pstatement = con.prepareStatement(sql, 
+						ResultSet.TYPE_FORWARD_ONLY,
+						ResultSet.CONCUR_READ_ONLY,
+						ResultSet.FETCH_FORWARD);
+				res = pstatement.executeQuery();
+				
+				while (res.next()) {
+					int accessId			= res.getInt("access_id");
+					int functionalClass		= res.getInt("functional_class");
+					String travelDirection	= res.getString("travel_direction");
+					boolean ramp			= res.getString("ramp").equals("Y") ? true : false;
+					boolean tollway			= res.getString("tollway").equals("Y") ? true : false;
+					int speedCategory		= res.getInt("speed_category");
+					
+					link.setAccessId(accessId);
+					link.setFunctionalClass(functionalClass);
+					link.setTravelDirection(travelDirection);
+					link.setRamp(ramp);
+					link.setTollway(tollway);
+					link.setSpeedCategory(speedCategory);
+				}
+				
+				if(debug % 10000 == 0)
+					System.out.println("processed " + debug / linkMap.size() * 100 + "%.");
+				
+				if (debug % 250 == 0) {
+					// reconnect
+					res.close();
+					pstatement.close();
+					con.close();
+					con = getConnection();
+					con.setAutoCommit(false);
+				}
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchLinkInfoById: debug code: " + debug);
+		}
+		System.out.println("fetch node info by id finish!");
 	}
 	
 	private static void fetchNodeInfoById() {
