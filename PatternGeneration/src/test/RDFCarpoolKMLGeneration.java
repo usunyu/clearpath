@@ -126,6 +126,8 @@ public class RDFCarpoolKMLGeneration {
 				
 				if(!carpool)
 					continue;
+				if(functionalClass != 1 && functionalClass != 2)
+					continue;
 				
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
 				kmlStr += "<description>";
