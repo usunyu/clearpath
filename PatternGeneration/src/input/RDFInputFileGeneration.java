@@ -112,14 +112,18 @@ public class RDFInputFileGeneration {
 			ResultSet res = null;
 			
 			con = getConnection();
+			con.setAutoCommit(false);
 			
 			sql = "SELECT node_id, lat, lon, zlevel FROM rdf_node";
 			
 			System.out.println("execute query... ");
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			pstatement.setFetchSize(10000);
 			res = pstatement.executeQuery();
 			
 			while (res.next()) {
+				debug++;
+				
 				long 	nodeId 	= res.getLong("node_id");
 				
 				if(!nodeMap.containsKey(nodeId))
@@ -132,6 +136,9 @@ public class RDFInputFileGeneration {
 				
 				RDFNodeInfo node = nodeMap.get(nodeId);
 				node.setLocation(location);
+				
+				if(debug % 10000 == 0)
+					System.out.println("processed " + debug + " records.");
 			}
 		}
 		catch (Exception e) {
