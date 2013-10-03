@@ -4,11 +4,13 @@ import java.util.*;
 
 public class RDFLinkInfo {
 	long linkId;
+	long refNodeId;
+	long nonRefNodeId;
+	
 	String baseName;
 	LinkedList<String> streetNameList;
 	LinkedList<String> additionalNameList;
-	long refNodeId;
-	long nonRefNodeId;
+	
 	int functionalClass;
 	String travelDirection;
 	boolean ramp;
@@ -17,19 +19,15 @@ public class RDFLinkInfo {
 	boolean carpools;
 	boolean expressLane;
 	int speedCategory;
-	LinkedList<LocationInfo> pointsList;
-	
 	int accessId;
 	
-	LinkedList<Integer> allDirection;
+	double angle;
 	
+	LinkedList<LocationInfo> pointList;
+	LinkedList<RDFLaneInfo> laneList;
 	LinkedList<SensorInfo> matchSensorList;
 	
 	int[] pattern;
-	
-	public RDFLinkInfo(long linkId) {
-		this.linkId = linkId;
-	}
 	
 	public RDFLinkInfo(long linkId, long refNodeId, long nonRefNodeId) {
 		this.linkId = linkId;
@@ -75,22 +73,22 @@ public class RDFLinkInfo {
 		return matchSensorList;
 	}
 	
-	public void setAllDirection(LinkedList<Integer> allDirection) {
-		this.allDirection = allDirection;
+	public void setAngle(double angle) {
+		this.angle = angle;
 	}
 	
-	public LinkedList<Integer> getAllDirection() {
-		return allDirection;
+	public double getAngle() {
+		return angle;
 	}
 	
 	public void addPoint(LocationInfo point) {
-		if(pointsList == null)
-			pointsList = new LinkedList<LocationInfo>();
-		pointsList.add(point);
+		if(pointList == null)
+			pointList = new LinkedList<LocationInfo>();
+		pointList.add(point);
 	}
 	
-	public LinkedList<LocationInfo> getPointsList() {
-		return pointsList;
+	public LinkedList<LocationInfo> getPointList() {
+		return pointList;
 	}
 	
 	public long getLinkId() {
@@ -158,6 +156,16 @@ public class RDFLinkInfo {
 	
 	public void  setTravelDirection(String travelDirection) {
 		this.travelDirection = travelDirection;
+	}
+	
+	public LinkedList<RDFLaneInfo> getLaneList() {
+		return laneList;
+	}
+	
+	public void addLane(RDFLaneInfo lane) {
+		if(laneList == null)
+			laneList = new LinkedList<RDFLaneInfo>();
+		laneList.add(lane);
 	}
 	
 	public boolean isRamp() {

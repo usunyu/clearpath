@@ -173,7 +173,7 @@ public class RDFTdspGeneration {
 				
 				distance = 0;
 			}
-			distance += Geometry.calculateDistance(linkInfo.getPointsList());
+			distance += Geometry.calculateDistance(linkInfo.getPointList());
 			
 			// arrive destination
 			if(i == pathNodeList.size() - 1) {
@@ -213,7 +213,7 @@ public class RDFTdspGeneration {
 				//RDFNodeInfo currentNode = nodeMap.get(nodeId);
 				
 				RDFLinkInfo link = nodeToLink.get(lastNodeId + "," + nodeId);
-				LinkedList<LocationInfo> pointsList = link.getPointsList();
+				LinkedList<LocationInfo> pointsList = link.getPointList();
 				ListIterator<LocationInfo> iterator = pointsList.listIterator();
 				
 				String kmlStr = "<Placemark><name>Link:" + link.getLinkId() + "</name>";

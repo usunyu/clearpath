@@ -123,7 +123,7 @@ public class RDFMatchSensorLink {
 			// just match highway
 			if(link.getFunctionalClass() != 1 && link.getFunctionalClass() != 2)
 				continue;
-			LinkedList<LocationInfo> pointsList = link.getPointsList();
+			LinkedList<LocationInfo> pointsList = link.getPointList();
 			for (double step = searchDistance / devide; step < searchDistance; step += step) {
 				ListIterator<LocationInfo> pointIterator = pointsList.listIterator();
 				while(pointIterator.hasNext()) {
@@ -173,7 +173,7 @@ public class RDFMatchSensorLink {
 			// just match highway
 			if(link.getFunctionalClass() != 1 && link.getFunctionalClass() != 2)
 				continue;
-			LinkedList<LocationInfo> pointsList = link.getPointsList();
+			LinkedList<LocationInfo> pointsList = link.getPointList();
 			for (double step = corssSearchDistance / devide; step < searchDistance; step += step) {
 				ListIterator<LocationInfo> pointIterator = pointsList.listIterator();
 				while(pointIterator.hasNext()) {
@@ -483,7 +483,7 @@ public class RDFMatchSensorLink {
 				boolean carpoolRoad 	= link.isCarpoolRoad();
 				boolean carpools 	= link.isCarpools();
 				int speedCategory 	= link.getSpeedCategory();
-				LinkedList<LocationInfo> pointsList = link.getPointsList();
+				LinkedList<LocationInfo> pointsList = link.getPointList();
 				
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
 				kmlStr += "<description>";

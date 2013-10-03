@@ -167,3 +167,8 @@ ON t10.access_id = t11.access_id
 
 /* fetch geometry */
 SELECT link_id, lat, lon, zlevel FROM rdf_link_geometry ORDER BY link_id, seq_num
+
+/* fetch carpool */
+/* lane_type = 2 */
+SELECT * FROM rdf_lane WHERE link_id = 121235036
+SELECT lane_id, link_id, lane_travel_direction, lane_type FROM rdf_lane ORDER BY lane_number

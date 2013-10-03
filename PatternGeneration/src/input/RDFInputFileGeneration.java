@@ -18,6 +18,7 @@ public class RDFInputFileGeneration {
 	static String linkTempFile		= "RDF_Link_Temp.csv";
 	static String linkIdFile		= "RDF_Link_Id.csv";
 	static String linkNameFile		= "RDF_Link_Name.csv";
+	static String linkLaneFile		= "RDF_Link_Lane.csv";
 	// for write node file
 	static String nodeFile			= "RDF_Node.csv";
 	/**
@@ -137,6 +138,107 @@ public class RDFInputFileGeneration {
 		 * Step 11) write link geometry points
 		 */
 		writeLinkGeometry();
+		/**
+		 * Step 12) fetch lane information
+		 */
+		fetchLaneInfoByLink();
+		/**
+		 * Step 13) write lane information
+		 */
+		writeLinkLaneFile();
+	}
+	
+	private static void writeLinkLaneFile() {
+		System.out.println("write link lane file...");
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + linkLaneFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			for(long linkId : linkMap.keySet()) {
+				debug++;
+				RDFLinkInfo link = linkMap.get(linkId);
+				
+				LinkedList<RDFLaneInfo> laneList = link.getLaneList();
+				
+				if(laneList == null)
+					continue;
+				
+				String laneStr = null;
+				
+				for(RDFLaneInfo lane : laneList) {
+					if(laneStr == null)
+						laneStr = lane.getLaneId() + "," + lane.getTravelDirection() + "," + lane.getLaneType() + "," + lane.getAccessId();
+					else
+						laneStr += "," + lane.getLaneId() + "," + lane.getTravelDirection() + "," + lane.getLaneType() + "," + lane.getAccessId();
+				}
+				
+				String strLine = linkId + "," + laneStr + "\r\n";
+				out.write(strLine);
+			}
+			
+			out.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("writeLinkLaneFile: debug code: " + debug);
+		}
+		System.out.println("write link lane file finish!");
+	}
+	
+	private static void fetchLaneInfoByLink() {
+		System.out.println("fetch lane info by link...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			
+			con = getConnection();
+			con.setAutoCommit(false);
+			
+			sql = "SELECT lane_id, link_id, lane_travel_direction, lane_type, access_id FROM rdf_lane ORDER BY lane_number";
+			
+			System.out.println("execute query... ");
+			pstatement = con.prepareStatement(sql, 
+					ResultSet.TYPE_FORWARD_ONLY,
+					ResultSet.CONCUR_READ_ONLY,
+					ResultSet.FETCH_FORWARD);
+			pstatement.setFetchSize(1000);
+			
+			res = pstatement.executeQuery();
+			while (res.next()) {
+				long linkId 			= res.getLong("link_id");
+				
+				if(!linkMap.containsKey(linkId))
+					continue;
+				
+				debug++;
+				
+				long laneId				= res.getLong("lane_id");
+				int accessId			= res.getInt("access_id");
+				String travelDirection	= res.getString("lane_travel_direction");
+				int laneType			= res.getInt("lane_type");
+				
+				RDFLaneInfo lane = new RDFLaneInfo(laneId, travelDirection, laneType, accessId);
+				
+				RDFLinkInfo link = linkMap.get(linkId);
+				
+				link.addLane(lane);
+				
+				if(debug % 10000 == 0)
+					System.out.println("processed " +  debug + " records.");
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchLaneInfoByLink: debug code: " + debug);
+		}
+		System.out.println("fetch lane info by link finish!");
 	}
 	
 	private static void writeLinkGeometry() {
@@ -150,7 +252,7 @@ public class RDFInputFileGeneration {
 				debug++;
 				RDFLinkInfo link = linkMap.get(linkId);
 				
-				LinkedList<LocationInfo> pointsList = link.getPointsList();
+				LinkedList<LocationInfo> pointsList = link.getPointList();
 				
 				String pointsStr = null;
 				
@@ -663,7 +765,7 @@ public class RDFInputFileGeneration {
 				boolean carpoolRoad = RDFLink.isCarpoolRoad();
 				boolean carpools = RDFLink.isCarpools();
 				boolean expressLane = RDFLink.isExpressLane();
-				LinkedList<LocationInfo> pointsList = RDFLink.getPointsList();
+				LinkedList<LocationInfo> pointsList = RDFLink.getPointList();
 				
 				String pointsStr = "null";
 				ListIterator<LocationInfo> pIterator = pointsList.listIterator();
@@ -1030,7 +1132,7 @@ public class RDFInputFileGeneration {
 							RDFLinkInfo writeRDFLink = iterator.next();
 							
 							long writeLinkId = writeRDFLink.getLinkId();
-							pointsList = writeRDFLink.getPointsList();
+							pointsList = writeRDFLink.getPointList();
 							
 							String pointsStr = "null";
 							ListIterator<LocationInfo> pIterator = pointsList.listIterator();
@@ -1054,14 +1156,14 @@ public class RDFInputFileGeneration {
 						linkList = new LinkedList<RDFLinkInfo>();
 					}
 					
-					RDFLink = new RDFLinkInfo(linkId);
+					//RDFLink = new RDFLinkInfo(linkId);
 					pointsList = new LinkedList<LocationInfo>();
 					pointsList.add(location);
 					//RDFLink.setPointsList(pointsList);
 					lastLinkId = linkId;
 				}
 				else {
-					pointsList = RDFLink.getPointsList();
+					pointsList = RDFLink.getPointList();
 					pointsList.add(location);
 				}				
 			}
@@ -1079,7 +1181,7 @@ public class RDFInputFileGeneration {
 					RDFLinkInfo writeRDFLink = iterator.next();
 					
 					long writeLinkId = writeRDFLink.getLinkId();
-					pointsList = writeRDFLink.getPointsList();
+					pointsList = writeRDFLink.getPointList();
 					
 					String pointsStr = "null";
 					ListIterator<LocationInfo> pIterator = pointsList.listIterator();

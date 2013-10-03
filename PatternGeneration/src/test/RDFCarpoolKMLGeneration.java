@@ -124,7 +124,7 @@ public class RDFCarpoolKMLGeneration {
 				boolean carpoolRoad = link.isCarpoolRoad();
 				boolean carpools	= link.isCarpools();
 				int speedCategory 	= link.getSpeedCategory();
-				LinkedList<LocationInfo> pointsList = link.getPointsList();
+				LinkedList<LocationInfo> pointsList = link.getPointList();
 				
 				LinkedList<SensorInfo>	sensorList = link.getSensorList();
 				

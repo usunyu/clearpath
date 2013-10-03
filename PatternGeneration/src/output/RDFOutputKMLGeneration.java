@@ -228,7 +228,7 @@ public class RDFOutputKMLGeneration {
 				boolean carpools 	= link.isCarpools();
 				boolean expressLane = link.isExpressLane();
 				int speedCategory 	= link.getSpeedCategory();
-				LinkedList<LocationInfo> pointsList = link.getPointsList();
+				LinkedList<LocationInfo> pointsList = link.getPointList();
 				
 				LinkedList<SensorInfo>	sensorList = link.getSensorList();
 				

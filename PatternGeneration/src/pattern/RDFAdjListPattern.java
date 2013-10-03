@@ -139,7 +139,7 @@ public class RDFAdjListPattern {
 	
 	private static int[] getArterialPattern(RDFLinkInfo link) {
 		int[] pattern;
-		double dis = getLength(link.getPointsList());
+		double dis = getLength(link.getPointList());
 		boolean fixed = false;
 		if(link.getFunctionalClass() == 5)
 			fixed = true;
@@ -160,7 +160,7 @@ public class RDFAdjListPattern {
 	
 	private static int[] getHighwayPattern(RDFLinkInfo link) {
 		int[] pattern = new int[60];
-		double dis = getLength(link.getPointsList());
+		double dis = getLength(link.getPointList());
 		LinkedList<SensorInfo> sensorList = link.getSensorList();
 		if(sensorList != null && sensorList.size() != 0) {
 			ListIterator<SensorInfo> sensorIt = sensorList.listIterator();
