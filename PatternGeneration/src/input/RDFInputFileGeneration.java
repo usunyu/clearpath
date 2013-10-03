@@ -158,6 +158,7 @@ public class RDFInputFileGeneration {
 			ResultSet res = null;
 			
 			con = getConnection();
+			con.setAutoCommit(false);
 			
 			sql = 	"SELECT link_id, ref_node_id, nonref_node_id " +
 					"FROM rdf_link, rdf_node " +
@@ -167,6 +168,7 @@ public class RDFInputFileGeneration {
 			
 			System.out.println("execute query... ");
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			pstatement.setFetchSize(10000);
 			res = pstatement.executeQuery();
 			
 			while (res.next()) {
