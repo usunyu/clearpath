@@ -38,6 +38,10 @@ public class RDFInputFileGeneration {
 //	static double LosAngelesLon2 	= -117.55 * UNIT;
 	static double LosAngelesLon1 	= -118.42 * UNIT;
 	static double LosAngelesLon2 	= -117.95 * UNIT;
+	static String SEPARATION		= ",";
+	static String UNKNOWN 			= "Unknown Street";
+	static String YES				= "Y";
+	static String NO				= "N";
 	/**
 	 * @param node
 	 */
@@ -168,12 +172,12 @@ public class RDFInputFileGeneration {
 				
 				for(RDFLaneInfo lane : laneList) {
 					if(laneStr == null)
-						laneStr = lane.getLaneId() + "," + lane.getTravelDirection() + "," + lane.getLaneType() + "," + lane.getAccessId();
+						laneStr = lane.getLaneId() + SEPARATION + lane.getTravelDirection() + SEPARATION + lane.getLaneType() + SEPARATION + lane.getAccessId();
 					else
-						laneStr += "," + lane.getLaneId() + "," + lane.getTravelDirection() + "," + lane.getLaneType() + "," + lane.getAccessId();
+						laneStr += SEPARATION + lane.getLaneId() + SEPARATION + lane.getTravelDirection() + SEPARATION + lane.getLaneType() + SEPARATION + lane.getAccessId();
 				}
 				
-				String strLine = linkId + "," + laneStr + "\r\n";
+				String strLine = linkId + SEPARATION + laneStr + "\r\n";
 				out.write(strLine);
 			}
 			
@@ -258,12 +262,12 @@ public class RDFInputFileGeneration {
 				
 				for(LocationInfo loc : pointsList) {
 					if(pointsStr == null)
-						pointsStr = loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+						pointsStr = loc.getLatitude() + SEPARATION + loc.getLongitude() + SEPARATION + loc.getZLevel();
 					else
-						pointsStr += "," + loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+						pointsStr += SEPARATION + loc.getLatitude() + SEPARATION + loc.getLongitude() + SEPARATION + loc.getZLevel();
 				}
 				
-				String strLine = linkId + "," + pointsStr + "\r\n";
+				String strLine = linkId + SEPARATION + pointsStr + "\r\n";
 				out.write(strLine);
 			}
 			
@@ -292,17 +296,17 @@ public class RDFInputFileGeneration {
 				String streetNameStr = null;
 				
 				if(streetNameList == null)
-					streetNameStr = "Unknown Street";
+					streetNameStr = UNKNOWN;
 				else {
 					for(String street : streetNameList) {
 						if(streetNameStr == null)
 							streetNameStr = street;
 						else
-							streetNameStr += "," + street;
+							streetNameStr += SEPARATION + street;
 					}
 				}
 				
-				String strLine = linkId + "," + streetNameStr + "\r\n";
+				String strLine = linkId + SEPARATION + streetNameStr + "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -402,7 +406,7 @@ public class RDFInputFileGeneration {
 				
 				String baseName				= res.getString("base_name");
 				String streetName			= res.getString("street_name");
-				boolean isNameOnRoadsign	= res.getString("is_name_on_roadsign").equals("Y") ? true : false;
+				boolean isNameOnRoadsign	= res.getString("is_name_on_roadsign").equals(YES) ? true : false;
 				
 				link.setBaseName(baseName);
 				link.addStreetName(streetName, isNameOnRoadsign);
@@ -514,8 +518,8 @@ public class RDFInputFileGeneration {
 				int accessId			= res.getInt("access_id");
 				int functionalClass		= res.getInt("functional_class");
 				String travelDirection	= res.getString("travel_direction");
-				boolean ramp			= res.getString("ramp").equals("Y") ? true : false;
-				boolean tollway			= res.getString("tollway").equals("Y") ? true : false;
+				boolean ramp			= res.getString("ramp").equals(YES) ? true : false;
+				boolean tollway			= res.getString("tollway").equals(YES) ? true : false;
 				int speedCategory		= res.getInt("speed_category");
 				
 				link.setAccessId(accessId);
@@ -712,11 +716,11 @@ public class RDFInputFileGeneration {
 				long nonRefNodeId = res.getLong("nonref_node_id");
 				int functionalClass = res.getInt("functional_class");
 				String direction = res.getString("travel_direction");
-				boolean ramp = res.getString("ramp").equals("Y") ? true : false;
-				boolean tollway = res.getString("tollway").equals("Y") ? true : false;
+				boolean ramp = res.getString("ramp").equals(YES) ? true : false;
+				boolean tollway = res.getString("tollway").equals(YES) ? true : false;
 				int speedCategory = res.getInt("speed_category");
 				boolean carpoolRoad = res.getString("carpool_road") == null ? false : true;
-				boolean carpools = res.getString("carpools").equals("Y") ? true : false;
+				boolean carpools = res.getString("carpools").equals(YES) ? true : false;
 				boolean expressLane = res.getString("express_lane") == null ? false : true;
 
 				//RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, 
@@ -773,15 +777,15 @@ public class RDFInputFileGeneration {
 				while(pIterator.hasNext()) {
 					LocationInfo loc = pIterator.next();
 					if(i++ == 0)
-						pointsStr = loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+						pointsStr = loc.getLatitude() + SEPARATION + loc.getLongitude() + SEPARATION + loc.getZLevel();
 					else
-						pointsStr += ";" + loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+						pointsStr += ";" + loc.getLatitude() + SEPARATION + loc.getLongitude() + SEPARATION + loc.getZLevel();
 				}
 				
 				String strLine = linkId + "|" + baseName + "|" + refNodeId + "|" + nonRefNodeId + "|" + 
-						functionalClass + "|" + travelDirection +"|" + speedCategory + "|" + (ramp ? "Y" : "N") + "|" + 
-						(tollway ? "Y" : "N") + "|" + (carpoolRoad ? "Y" : "N") + "|" + (carpools ? "Y" : "N") + "|" +
-						(expressLane ? "Y" : "N") + "|" + pointsStr + "\r\n";
+						functionalClass + "|" + travelDirection +"|" + speedCategory + "|" + (ramp ? YES : NO) + "|" + 
+						(tollway ? YES : NO) + "|" + (carpoolRoad ? YES : NO) + "|" + (carpools ? YES : NO) + "|" +
+						(expressLane ? YES : NO) + "|" + pointsStr + "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -894,11 +898,11 @@ public class RDFInputFileGeneration {
 				int 	functionalClass = Integer.parseInt(nodes[4]);
 				String 	direction 		= nodes[5];
 				int 	speedCategory 	= Integer.parseInt(nodes[6]);
-				boolean ramp 			= nodes[7].equals("Y") ? true : false;
-				boolean tollway 		= nodes[8].equals("Y") ? true : false;
-				boolean carpoolRoad		= nodes[9].equals("Y") ? true : false;
-				boolean carpools 		= nodes[10].equals("Y") ? true : false;
-				boolean expressLane 	= nodes[11].equals("Y") ? true : false;
+				boolean ramp 			= nodes[7].equals(YES) ? true : false;
+				boolean tollway 		= nodes[8].equals(YES) ? true : false;
+				boolean carpoolRoad		= nodes[9].equals(YES) ? true : false;
+				boolean carpools 		= nodes[10].equals(YES) ? true : false;
+				boolean expressLane 	= nodes[11].equals(YES) ? true : false;
 				
 				// gather node id
 				//if(!nodeIdSet.contains(refNodeId))
@@ -952,9 +956,9 @@ public class RDFInputFileGeneration {
 				
 				String strLine = linkId + "|" + baseName + "|" + refNodeId + "|" + 
 						nonRefNodeId + "|" + functionalClass + "|" + travelDirection +"|" +
-						speedCategory + "|" + (ramp ? "Y" : "N") + "|" + (tollway ? "Y" : "N") + "|" +
-						(carpoolRoad ? "Y" : "N") + "|" + (carpools ? "Y" : "N") + "|" + 
-						(expressLane ? "Y" : "N") + "\r\n";
+						speedCategory + "|" + (ramp ? YES : NO) + "|" + (tollway ? YES : NO) + "|" +
+						(carpoolRoad ? YES : NO) + "|" + (carpools ? YES : NO) + "|" + 
+						(expressLane ? YES : NO) + "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -1021,12 +1025,12 @@ public class RDFInputFileGeneration {
 					long nonRefNodeId = res.getLong("nonref_node_id");
 					int functionalClass = res.getInt("functional_class");
 					String direction = res.getString("travel_direction");
-					boolean ramp = res.getString("ramp").equals("Y") ? true : false;
-					boolean tollway = res.getString("tollway").equals("Y") ? true : false;
+					boolean ramp = res.getString("ramp").equals(YES) ? true : false;
+					boolean tollway = res.getString("tollway").equals(YES) ? true : false;
 					int speedCategory = res.getInt("speed_category");
 					boolean carpoolRoad = res.getString("carpool_road") == null ? false : true;
-					//boolean carpools = res.getString("carpools").equals("Y") ? true : false;
-					//boolean expressLane = res.getString("express_lane").equals("Y") ? true : false;
+					//boolean carpools = res.getString("carpools").equals(YES) ? true : false;
+					//boolean expressLane = res.getString("express_lane").equals(YES) ? true : false;
 
 					//RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, 
 					//		functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, 
@@ -1140,9 +1144,9 @@ public class RDFInputFileGeneration {
 							while(pIterator.hasNext()) {
 								LocationInfo loc = pIterator.next();
 								if(i++ == 0)
-									pointsStr = loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+									pointsStr = loc.getLatitude() + SEPARATION + loc.getLongitude() + SEPARATION + loc.getZLevel();
 								else
-									pointsStr += ";" + loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+									pointsStr += ";" + loc.getLatitude() + SEPARATION + loc.getLongitude() + SEPARATION + loc.getZLevel();
 								
 							}
 							
@@ -1189,9 +1193,9 @@ public class RDFInputFileGeneration {
 					while(pIterator.hasNext()) {
 						LocationInfo loc = pIterator.next();
 						if(i == 0)
-							pointsStr = loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+							pointsStr = loc.getLatitude() + SEPARATION + loc.getLongitude() + SEPARATION + loc.getZLevel();
 						else
-							pointsStr += ";" + loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+							pointsStr += ";" + loc.getLatitude() + SEPARATION + loc.getLongitude() + SEPARATION + loc.getZLevel();
 						
 					}
 					
@@ -1262,9 +1266,9 @@ public class RDFInputFileGeneration {
 					int zLevel = 	res.getInt("zlevel");
 					
 					if(i++ == 0)
-						pointsListStr = lat + "," + lng + "," + zLevel;
+						pointsListStr = lat + SEPARATION + lng + SEPARATION + zLevel;
 					else
-						pointsListStr += ";" + lat + "," + lng + "," + zLevel;
+						pointsListStr += ";" + lat + SEPARATION + lng + SEPARATION + zLevel;
 				}
 				linkBuffer.add(strLine + "|" + pointsListStr + "\r\n");
 				
@@ -1505,7 +1509,7 @@ public class RDFInputFileGeneration {
 				long nonRefNodeId = link.getNonRefNodeId();
 				String baseName = link.getBaseName();
 				if(baseName == null)
-					baseName = "Unknown Street";
+					baseName = UNKNOWN;
 				int accessId = link.getAccessId();
 				int functionalClass = link.getFunctionalClass();
 				String travelDirection = link.getTravelDirection();
@@ -1513,9 +1517,9 @@ public class RDFInputFileGeneration {
 				boolean tollway = link.isTollway();
 				int speedCategory = link.getSpeedCategory();
 				
-				String strLine = linkId + "," + refNodeId + "," + nonRefNodeId + "," + baseName + "," + 
-								accessId + "," + functionalClass + "," + speedCategory + "," + travelDirection + "," + 
-								(ramp ? "Y" : "N") + "," + (tollway ? "Y" : "N") + "\r\n";
+				String strLine = linkId + SEPARATION + refNodeId + SEPARATION + nonRefNodeId + SEPARATION + baseName + SEPARATION + 
+								accessId + SEPARATION + functionalClass + SEPARATION + speedCategory + SEPARATION + travelDirection + SEPARATION + 
+								(ramp ? YES : NO) + SEPARATION + (tollway ? YES : NO) + "\r\n";
 				out.write(strLine);
 			}
 			
@@ -1593,9 +1597,9 @@ public class RDFInputFileGeneration {
 			for(long nodeId : nodeMap.keySet()) {
 				RDFNodeInfo node = nodeMap.get(nodeId);
 				LocationInfo location = node.getLocation();
-				String locationStr = location.getLatitude() + "," + location.getLongitude();
+				String locationStr = location.getLatitude() + SEPARATION + location.getLongitude();
 				int zLevel = location.getZLevel();
-				String strLine = nodeId + "," + locationStr + "," + zLevel + "\r\n";
+				String strLine = nodeId + SEPARATION + locationStr + SEPARATION + zLevel + "\r\n";
 				out.write(strLine);
 			}
 			

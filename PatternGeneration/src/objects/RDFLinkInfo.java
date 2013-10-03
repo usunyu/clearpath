@@ -21,10 +21,9 @@ public class RDFLinkInfo {
 	int speedCategory;
 	int accessId;
 	
-	double angle;
-	
 	LinkedList<LocationInfo> pointList;
 	LinkedList<RDFLaneInfo> laneList;
+	LinkedList<Integer> directionList;
 	LinkedList<SensorInfo> matchSensorList;
 	
 	int[] pattern;
@@ -71,14 +70,6 @@ public class RDFLinkInfo {
 
 	public LinkedList<SensorInfo> getSensorList() {
 		return matchSensorList;
-	}
-	
-	public void setAngle(double angle) {
-		this.angle = angle;
-	}
-	
-	public double getAngle() {
-		return angle;
 	}
 	
 	public void addPoint(LocationInfo point) {
@@ -166,6 +157,16 @@ public class RDFLinkInfo {
 		if(laneList == null)
 			laneList = new LinkedList<RDFLaneInfo>();
 		laneList.add(lane);
+	}
+
+	public void addDirection(Integer direction) {
+		if(directionList == null)
+			directionList = new LinkedList<Integer>();
+		directionList.add(direction);
+	}
+
+	public LinkedList<Integer> getDirectionList() {
+		return directionList;
 	}
 	
 	public boolean isRamp() {

@@ -43,6 +43,24 @@ public class Geometry {
 		}
 		return distance;
 	}
+
+	public static double getAngel(LocationInfo start, LocationInfo end) {
+		double latitude1 = start.getLatitude() * Math.PI / 180.;
+		// coordinate1.Latitude.ToRadian();
+		double latitude2 = end.getLatitude() * Math.PI / 180.;
+		// coordinate2.Latitude.ToRadian();
+		double longitudeDifference = (end.getLongitude() - start.getLongitude()) * Math.PI / 180.;
+		// (coordinate2.Longitude - coordinate1.Longitude).ToRadian();
+		double y = Math.sin(longitudeDifference) * Math.cos(latitude2);
+		double x = Math.cos(latitude1) * Math.sin(latitude2)
+				- Math.sin(latitude1) * Math.cos(latitude2)
+				* Math.cos(longitudeDifference);
+
+		// return Math.atan2(y, x);
+		double direction = (Math.atan2(y, x) * 180. / Math.PI + 360) % 360;
+
+		return direction;
+	}
 	
 	public static int getDirection(LocationInfo start, LocationInfo end) {
 		double latitude1 = start.getLatitude() * Math.PI / 180.;

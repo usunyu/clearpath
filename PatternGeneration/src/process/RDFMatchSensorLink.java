@@ -15,10 +15,11 @@ public class RDFMatchSensorLink {
 	 * @param file
 	 */
 	static String root 				= "file";
-	static String linkFile			= "RDF_Link.txt";
-	static String nodeFile			= "RDF_Node.txt";
+	static String linkFile			= "RDF_Link.csv";
+	static String linkGeometryFile	= "RDF_Link_Geometry.csv";
+	static String nodeFile			= "RDF_Node.csv";
 	static String kmlLinkFile		= "RDF_Link.kml";
-	static String sensorMatchFile	= "RDF_Sensor_Match.txt";
+	static String sensorMatchFile	= "RDF_Sensor_Match.csv";
 	/**
 	 * @param database
 	 */
@@ -34,10 +35,15 @@ public class RDFMatchSensorLink {
 	static double noDirSearchDistance = 0.01;
 	static int devide = 10;
 	static int thirdRoundTime = 3;
+	static String SEPARATION		= ",";
+	static String UNKNOWN 			= "Unknown Street";
+	static String YES				= "Y";
+	static String NO				= "N";
 	/**
 	 * @param link
 	 */
-	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
+	// static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
+	static HashMap<Long, RDFLinkInfo> linkMap = new HashMap<Long, RDFLinkInfo>();
 	/**
 	 * @param node
 	 */
@@ -59,7 +65,8 @@ public class RDFMatchSensorLink {
 	public static void main(String[] args) {
 		readNodeFile();
 		readLinkFile();
-		//generateLinkKML();
+		readLinkGeometry();
+		generateLinkKML();
 		fetchSensor();
 		matchLinkSensor();
 		writeSensorMatch();
@@ -70,10 +77,9 @@ public class RDFMatchSensorLink {
 		try {
 			FileWriter fstream = new FileWriter(root + "/" + sensorMatchFile);
 			BufferedWriter out = new BufferedWriter(fstream);
-			ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
-			while (iterator.hasNext()) {
-				RDFLinkInfo RDFLink = iterator.next();
-				LinkedList<SensorInfo> sensorList = RDFLink.getSensorList();
+			for(long linkId : linkMap.keySet()) {
+				RDFLinkInfo link = linkMap.get(linkId);
+				LinkedList<SensorInfo> sensorList = link.getSensorList();
 				if(sensorList == null || sensorList.size() == 0)
 					continue;
 				ListIterator<SensorInfo> sIt = sensorList.listIterator();
@@ -84,9 +90,8 @@ public class RDFMatchSensorLink {
 					if(i++ == 0)
 						sensorStr = String.valueOf(sensor.getSensorId());
 					else
-						sensorStr += "," + sensor.getSensorId();
+						sensorStr += SEPARATION + sensor.getSensorId();
 				}
-				long linkId = RDFLink.getLinkId();
 				String strLine = linkId + "|" + sensorStr + "\r\n";
 				out.write(strLine);
 			}
@@ -108,18 +113,15 @@ public class RDFMatchSensorLink {
 		// 3) match nearest link
 		for (int i = 0; i < thirdRoundTime; i++)
 			thirdRoundMatch();
-		// 4) match smallest distance
-		// forthRoundMatch();
 		System.out.println("match Sensors finish!");
 	}
 	
 	private static void firstRoundMatch() {
 		System.out.println("first round...");
-		ListIterator<RDFLinkInfo> linkIterator = linkList.listIterator();
 		int debug = 0;
-		while(linkIterator.hasNext()) {
+		for(long linkId : linkMap.keySet()) {
 			debug++;
-			RDFLinkInfo link = linkIterator.next();
+			RDFLinkInfo link = linkMap.get(linkId);
 			// just match highway
 			if(link.getFunctionalClass() != 1 && link.getFunctionalClass() != 2)
 				continue;
@@ -133,14 +135,9 @@ public class RDFMatchSensorLink {
 						SensorInfo sensor = sensorIterator.next();
 						LocationInfo sLoc = sensor.getLocation();
 						// same direction
-						/**
-						 * need fix
-						 */
-						//String allDir = link.getAllDirection();
-						String allDir = "";
-						String[] dirList = allDir.split(",");
-						for (int d = 0; d < dirList.length; d++) {
-							if (sensor.getDirection() == Integer.parseInt(dirList[d])) {
+						LinkedList<Integer> directionList = link.getDirectionList();
+						for(int dir : directionList) {
+							if (sensor.getDirection() == dir) {
 								double distance = Geometry.calculateDistance(nLoc, sLoc);
 								// in the search area
 								if (distance < step) {
@@ -157,19 +154,18 @@ public class RDFMatchSensorLink {
 					}
 				}
 			}
-			if (debug % 1000 == 0 || debug == linkList.size())
-				System.out.println((float) debug / linkList.size() * 100 + "%");
+			if (debug % 1000 == 0 || debug == linkMap.size())
+				System.out.println((float) debug / linkMap.size() * 100 + "%");
 		}
 		System.out.println("first round finish!");
 	}
 	
 	private static void secondRoundMatch() {
 		System.out.println("second round...");
-		ListIterator<RDFLinkInfo> linkIterator = linkList.listIterator();
 		int debug = 0;
-		while(linkIterator.hasNext()) {
+		for(long linkId : linkMap.keySet()) {
 			debug++;
-			RDFLinkInfo link = linkIterator.next();
+			RDFLinkInfo link = linkMap.get(linkId);
 			// just match highway
 			if(link.getFunctionalClass() != 1 && link.getFunctionalClass() != 2)
 				continue;
@@ -183,18 +179,13 @@ public class RDFMatchSensorLink {
 						SensorInfo sensor = sensorIterator.next();
 						LocationInfo sLoc = sensor.getLocation();
 						// same direction
-						/**
-						 * need fix
-						 */
-						//String allDir = link.getAllDirection();
-						String allDir = "";
-						String[] dirList = allDir.split(",");
-						for (int d = 0; d < dirList.length; d++) {
+						LinkedList<Integer> directionList = link.getDirectionList();
+						for(int dir : directionList) {
 							// 0 : 3, 1 : 2
-							if ((sensor.getDirection() == 0 && Integer.parseInt(dirList[d]) == 3)
-									|| (sensor.getDirection() == 3 && Integer.parseInt(dirList[d]) == 0)
-									|| (sensor.getDirection() == 1 && Integer.parseInt(dirList[d]) == 2)
-									|| (sensor.getDirection() == 2 && Integer.parseInt(dirList[d]) == 1)) {
+							if ((sensor.getDirection() == 0 && dir == 3)
+									|| (sensor.getDirection() == 3 && dir == 0)
+									|| (sensor.getDirection() == 1 && dir == 2)
+									|| (sensor.getDirection() == 2 && dir == 1)) {
 								double distance = Geometry.calculateDistance(nLoc, sLoc);
 								// in the search area
 								if (distance < step) {
@@ -211,19 +202,18 @@ public class RDFMatchSensorLink {
 					}
 				}
 			}
-			if (debug % 1000 == 0 || debug == linkList.size())
-				System.out.println((float) debug / linkList.size() * 100 + "%");
+			if (debug % 1000 == 0 || debug == linkMap.size())
+				System.out.println((float) debug / linkMap.size() * 100 + "%");
 		}
 		System.out.println("second round finish!");
 	}
 	
 	private static void thirdRoundMatch() {
 		System.out.println("third round...");
-		ListIterator<RDFLinkInfo> linkIterator = linkList.listIterator();
 		int debug = 0;
-		while(linkIterator.hasNext()) {
+		for(long linkId : linkMap.keySet()) {
 			debug++;
-			RDFLinkInfo link = linkIterator.next();
+			RDFLinkInfo link = linkMap.get(linkId);
 			// just match highway
 			if(link.getFunctionalClass() != 1 && link.getFunctionalClass() != 2)
 				continue;
@@ -235,7 +225,7 @@ public class RDFMatchSensorLink {
 			ListIterator<Long> adjIterator1 = adjList1.listIterator();
 			while(adjIterator1.hasNext()) {
 				long nodeId2 = adjIterator1.next();
-				String nodesStr = nodeId1 + "," + nodeId2;
+				String nodesStr = nodeId1 + SEPARATION + nodeId2;
 				RDFNodeInfo nearNode = nodeMap.get(nodeId2);
 				if (nodeToLink.containsKey(nodesStr)) {
 					RDFLinkInfo nearLink = nodeToLink.get(nodesStr);
@@ -258,10 +248,10 @@ public class RDFMatchSensorLink {
 			
 			long nodeId3 = link.getNonRefNodeId();
 			LinkedList<Long> adjList2 = adjNodeList.get(nodeId3);
-			ListIterator<Long> adjIterator2 = adjList1.listIterator();
+			ListIterator<Long> adjIterator2 = adjList2.listIterator();
 			while(adjIterator2.hasNext()) {
 				long nodeId4 = adjIterator2.next();
-				String nodesStr = nodeId3 + "," + nodeId4;
+				String nodesStr = nodeId3 + SEPARATION + nodeId4;
 				RDFNodeInfo nearNode = nodeMap.get(nodeId4);
 				if (nodeToLink.containsKey(nodesStr)) {
 					RDFLinkInfo nearLink = nodeToLink.get(nodesStr);
@@ -297,13 +287,13 @@ public class RDFMatchSensorLink {
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
 			while (res.next()) {
-				int sensorId = res.getInt(1);
-				String onStreet = res.getString(2);
-				String fromStreet = res.getString(3);
-				STRUCT st = (STRUCT) res.getObject(4);
+				int sensorId = res.getInt("link_id");
+				String onStreet = res.getString("onstreet");
+				String fromStreet = res.getString("fromstreet");
+				STRUCT st = (STRUCT) res.getObject("start_lat_long");
 				JGeometry geom = JGeometry.load(st);
 				LocationInfo location = new LocationInfo(geom.getPoint()[1], geom.getPoint()[0], 0);
-				int direction = res.getInt(5);
+				int direction = res.getInt("direction");
 				if (!sensorDuplicate.contains(sensorId)) {
 					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, location, direction);
 					sensorDuplicate.add(sensorId);
@@ -330,12 +320,14 @@ public class RDFMatchSensorLink {
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split("\\|");
+				String[] nodes = strLine.split(SEPARATION);
 				
 				long 			nodeId 	= Long.parseLong(nodes[0]);
-				String[]		locStr 	= nodes[1].split(",");
-				int 			zLevel	= Integer.parseInt(nodes[2]);
-				LocationInfo 	location= new LocationInfo(Double.parseDouble(locStr[0]), Double.parseDouble(locStr[1]), zLevel);
+				double			lat		= Double.parseDouble(nodes[1]);
+				double			lon		= Double.parseDouble(nodes[2]);
+				int 			zLevel	= Integer.parseInt(nodes[3]);
+				
+				LocationInfo 	location= new LocationInfo(lat, lon, zLevel);
 				
 				RDFNodeInfo RDFNode = new RDFNodeInfo(nodeId, location);
 				
@@ -354,6 +346,39 @@ public class RDFMatchSensorLink {
 		System.out.println("read node file finish!");
 	}
 	
+	private static void readLinkGeometry() {
+		System.out.println("read link geometry...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkGeometryFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(SEPARATION);
+				long linkId 		= Long.parseLong(nodes[0]);
+				RDFLinkInfo	link	= linkMap.get(linkId);
+				for(int i = 1; i < nodes.length; i+=3) {
+					double lat		= Double.parseDouble(nodes[i]);
+					double lon		= Double.parseDouble(nodes[i + 1]);
+					int zLevel	= Integer.parseInt(nodes[i + 2]);
+					LocationInfo loc = new LocationInfo(lat, lon, zLevel);
+					link.addPoint(loc);
+				}
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("readLinkGeometry: debug code: " + debug);
+		}
+		System.out.println("read link geometry finish!");
+	}
+	
 	private static void readLinkFile() {
 		System.out.println("read link file...");
 		int debug = 0;
@@ -365,57 +390,49 @@ public class RDFMatchSensorLink {
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split("\\|");
+				String[] nodes = strLine.split(SEPARATION);
 				
 				long 	linkId 			= Long.parseLong(nodes[0]);
-				String 	streetName 		= nodes[1];
-				long 	refNodeId 		= Long.parseLong(nodes[2]);
-				long 	nonRefNodeId 	= Long.parseLong(nodes[3]);
-				int 	functionalClass = Integer.parseInt(nodes[4]);
-				String 	travelDirection 		= nodes[5];
+				long 	refNodeId 		= Long.parseLong(nodes[1]);
+				long 	nonRefNodeId 	= Long.parseLong(nodes[2]);
+				String 	baseName 		= nodes[3];
+				int		accessId		= Integer.parseInt(nodes[4]);
+				int 	functionalClass = Integer.parseInt(nodes[5]);
 				int 	speedCategory 	= Integer.parseInt(nodes[6]);
-				boolean ramp 			= nodes[7].equals("Y") ? true : false;
-				boolean tollway 		= nodes[8].equals("Y") ? true : false;
-				boolean carpoolRoad		= nodes[9].equals("Y") ? true : false;
-				boolean carpools		= nodes[10].equals("Y") ? true : false;
-				boolean expressLane		= nodes[11].equals("Y") ? true : false;
+				String 	travelDirection = nodes[7];
+				boolean ramp 			= nodes[8].equals(YES) ? true : false;
+				boolean tollway 		= nodes[9].equals(YES) ? true : false;
 				
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
-				/**
-				 * need fix
-				 */
 				
-				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
-				String[] pointsListStr		= nodes[12].split(";");
-				for(int i = 0; i < pointsListStr.length; i++) {
-					String[] locStr = pointsListStr[i].split(",");
-					double lat = Double.parseDouble(locStr[0]);
-					double lon = Double.parseDouble(locStr[1]);
-					int z = Integer.parseInt(locStr[2]);
-					LocationInfo loc = new LocationInfo(lat, lon, z);
-					RDFLink.addPoint(loc);
-					pointsList.add(loc);
-				}
-				//RDFLink.setPointsList(pointsList);
+				RDFLinkInfo link = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+				
+				link.setBaseName(baseName);
+				link.setAccessId(accessId);
+				link.setFunctionalClass(functionalClass);
+				link.setSpeedCategory(speedCategory);
+				link.setTravelDirection(travelDirection);
+				link.setRamp(ramp);
+				link.setTollway(tollway);
 				
 				// add direction
 				RDFNodeInfo refNode = nodeMap.get(refNodeId);
 				RDFNodeInfo nonRefNode = nodeMap.get(nonRefNodeId);
-				String allDir = "";
-				if(travelDirection.equals("T"))
-					allDir = String.valueOf(Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation()));
-				else if(travelDirection.equals("F"))
-					allDir = String.valueOf(Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation()));
-				else if(travelDirection.equals("B")) {
-					allDir = String.valueOf(Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation()));
-					allDir += "," + String.valueOf(Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation()));
+				if(travelDirection.equals("T")) {
+					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
+					link.addDirection(direction);
 				}
-				/**
-				 * need fix
-				 */
-				//RDFLink.setAllDirection(allDir);
+				else if(travelDirection.equals("F")) {
+					int direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
+					link.addDirection(direction);
+				}
+				else if(travelDirection.equals("B")) {
+					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
+					link.addDirection(direction);
+					direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
+					link.addDirection(direction);
+				}
 				
-				linkList.add(RDFLink);
+				linkMap.put(linkId, link);
 				
 				// add connect
 				if (adjNodeList.containsKey(refNodeId)) {
@@ -438,15 +455,13 @@ public class RDFMatchSensorLink {
 					adjNodeList.put(nonRefNodeId, newList);
 				}
 				
-				String nodesStr1 = refNodeId + "," + nonRefNodeId;
-				String nodesStr2 = nonRefNodeId + "," + refNodeId;
+				String nodesStr1 = refNodeId + SEPARATION + nonRefNodeId;
+				String nodesStr2 = nonRefNodeId + SEPARATION + refNodeId;
 				if (!nodeToLink.containsKey(nodesStr1))
-					nodeToLink.put(nodesStr1, RDFLink);
+					nodeToLink.put(nodesStr1, link);
 				if (!nodeToLink.containsKey(nodesStr2))
-					nodeToLink.put(nodesStr2, RDFLink);
+					nodeToLink.put(nodesStr2, link);
 
-				if (debug % 10000 == 0)
-					System.out.println("record " + debug + " finish!");
 			}
 			br.close();
 			in.close();
@@ -464,46 +479,48 @@ public class RDFMatchSensorLink {
 			FileWriter fstream = new FileWriter(root + "/" + kmlLinkFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
-			ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
-			while(iterator.hasNext()) {
-				RDFLinkInfo link 	= iterator.next();
-				long linkId 		= link.getLinkId();
-				String baseName 	= link.getBaseName();
-				long refNodeId 		= link.getRefNodeId();
-				long nonRefNodeId 	= link.getNonRefNodeId();
-				/**
-				 * need fix
-				 */
-				//String allDirection		= link.getAllDirection();
-				String allDirection	= "";
-				int functionalClass = link.getFunctionalClass();
-				String travelDirection 	= link.getTravelDirection();
-				boolean ramp		= link.isRamp();
-				boolean tollway		= link.isTollway();
-				boolean carpoolRoad 	= link.isCarpoolRoad();
-				boolean carpools 	= link.isCarpools();
-				int speedCategory 	= link.getSpeedCategory();
+			
+			for(long linkId : linkMap.keySet()) {
+				RDFLinkInfo link				= linkMap.get(linkId);
+				String baseName 				= link.getBaseName();
+				long refNodeId 					= link.getRefNodeId();
+				long nonRefNodeId 				= link.getNonRefNodeId();
+				int accessId					= link.getAccessId();
+				int functionalClass				= link.getFunctionalClass();
+				String travelDirection			= link.getTravelDirection();
+				LinkedList<Integer> directionList = link.getDirectionList();
+				boolean ramp					= link.isRamp();
+				boolean tollway					= link.isTollway();
+				int speedCategory 				= link.getSpeedCategory();
+				
 				LinkedList<LocationInfo> pointsList = link.getPointList();
+				
+				String dirStr	= null;
+				for(double dir : directionList) {
+					if(dirStr == null)
+						dirStr = String.valueOf(dir);
+					else
+						dirStr += SEPARATION + dir;
+				}
 				
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
 				kmlStr += "<description>";
-				kmlStr += "Name:" 		+ baseName + "\r\n";
+				kmlStr += "Name:" 			+ baseName + "\r\n";
 				kmlStr += "Ref:" 			+ refNodeId + "\r\n";
 				kmlStr += "Nonref:" 		+ nonRefNodeId + "\r\n";
-				kmlStr += "AllDir:" 		+ allDirection + "\r\n";
-				kmlStr += "Class:" 		+ functionalClass + "\r\n";
-				kmlStr += "Category:" 	+ speedCategory + "\r\n";
+				kmlStr += "Dir:" 			+ dirStr + "\r\n";
+				kmlStr += "Class:" 			+ functionalClass + "\r\n";
+				kmlStr += "Category:" 		+ speedCategory + "\r\n";
+				kmlStr += "Access:" 		+ accessId + "\r\n";
 				kmlStr += "TraDir:" 		+ travelDirection + "\r\n";
-				kmlStr += "Ramp:" 		+ ramp + "\r\n";
-				kmlStr += "Tollway:" 	+ tollway + "\r\n";
-				kmlStr += "CarpoolRoad:" 	+ carpoolRoad + "\r\n";
-				kmlStr += "Carpools:" 	+ carpools + "\r\n";
+				kmlStr += "Ramp:" 			+ ramp + "\r\n";
+				kmlStr += "Tollway:" 		+ tollway + "\r\n";
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
 				ListIterator<LocationInfo> pIterator = pointsList.listIterator();
 				while(pIterator.hasNext()) {
 					LocationInfo loc = pIterator.next();
-					kmlStr += loc.getLongitude()+ "," + loc.getLatitude()+ "," + loc.getZLevel() + " ";
+					kmlStr += loc.getLongitude()+ SEPARATION + loc.getLatitude()+ SEPARATION + loc.getZLevel() + " ";
 				}
 				kmlStr += "</coordinates></LineString></Placemark>\n";
 				
