@@ -92,7 +92,7 @@ public class RDFMatchSensorLink {
 					else
 						sensorStr += SEPARATION + sensor.getSensorId();
 				}
-				String strLine = linkId + "|" + sensorStr + "\r\n";
+				String strLine = linkId + SEPARATION + sensorStr + "\r\n";
 				out.write(strLine);
 			}
 			out.close();
@@ -332,9 +332,6 @@ public class RDFMatchSensorLink {
 				RDFNodeInfo RDFNode = new RDFNodeInfo(nodeId, location);
 				
 				nodeMap.put(nodeId, RDFNode);
-
-				if (debug % 10000 == 0)
-					System.out.println("record " + debug + " finish!");
 			}
 			br.close();
 			in.close();

@@ -32,6 +32,13 @@ public class RDFOutputKMLGeneration {
 	static String password = "clearp";
 	static Connection connHome = null;
 	/**
+	 * @param const
+	 */
+	static String SEPARATION		= ",";
+	static String UNKNOWN 			= "Unknown Street";
+	static String YES				= "Y";
+	static String NO				= "N";
+	/**
 	 * @param link
 	 */
 	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
