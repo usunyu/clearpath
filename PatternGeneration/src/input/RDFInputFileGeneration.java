@@ -117,8 +117,11 @@ public class RDFInputFileGeneration {
 			sql = "SELECT node_id, lat, lon, zlevel FROM rdf_node";
 			
 			System.out.println("execute query... ");
-			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			pstatement.setFetchSize(10000);
+			pstatement = con.prepareStatement(sql, 
+					ResultSet.TYPE_FORWARD_ONLY,
+					ResultSet.CONCUR_READ_ONLY,
+					ResultSet.FETCH_FORWARD);
+			pstatement.setFetchSize(1000);
 			res = pstatement.executeQuery();
 			
 			while (res.next()) {
@@ -140,6 +143,9 @@ public class RDFInputFileGeneration {
 				if(debug % 10000 == 0)
 					System.out.println("processed " + debug + " records.");
 			}
+			res.close();
+			pstatement.close();
+			con.close();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -167,8 +173,11 @@ public class RDFInputFileGeneration {
 					"AND lon >= " + LosAngelesLon1 + " AND lon <= " + LosAngelesLon2 + " ";
 			
 			System.out.println("execute query... ");
-			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			pstatement.setFetchSize(10000);
+			pstatement = con.prepareStatement(sql, 
+					ResultSet.TYPE_FORWARD_ONLY,
+					ResultSet.CONCUR_READ_ONLY,
+					ResultSet.FETCH_FORWARD);
+			pstatement.setFetchSize(1000);
 			res = pstatement.executeQuery();
 			
 			while (res.next()) {
@@ -192,6 +201,10 @@ public class RDFInputFileGeneration {
 					System.out.println("processed " + debug + " records.");
 				}
 			}
+			
+			res.close();
+			pstatement.close();
+			con.close();
 			
 		} catch (Exception e) {
 			e.printStackTrace();
