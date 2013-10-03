@@ -93,9 +93,52 @@ public class RDFInputFileGeneration {
 		//writeLinkWithGeometry();
 		
 		/**
-		 * Step 1) 	fetch linkId and nodeId by area(lat, lon)
+		 * Step 1) fetch linkId and nodeId by area(lat, lon)
 		 */
 		fetchLinkNodeIdByArea();
+		/**
+		 * Step 2) fetch node lat, lon and zlevel
+		 */
+		fetchNodeInfoById();
+	}
+	
+	private static void fetchNodeInfoById() {
+		System.out.println("fetch node info by id...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			
+			con = getConnection();
+			
+			sql = "SELECT node_id, lat, lon, zlevel FROM rdf_node";
+			
+			System.out.println("execute query... ");
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			
+			while (res.next()) {
+				long 	nodeId 	= res.getLong("node_id");
+				
+				if(!nodeMap.containsKey(nodeId))
+					continue;
+				
+				double 	lat 	= res.getDouble("lat") / UNIT;
+				double 	lon 	= res.getDouble("lon") / UNIT;
+				int 	zLevel 	= res.getInt("zlevel");
+				LocationInfo location = new LocationInfo(lat, lon, zLevel);
+				
+				RDFNodeInfo node = nodeMap.get(nodeId);
+				node.setLocation(location);
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchNodeInfoById: debug code: " + debug);
+		}
+		System.out.println("fetch node info by id finish!");
 	}
 	
 	private static void fetchLinkNodeIdByArea() {
@@ -137,7 +180,7 @@ public class RDFInputFileGeneration {
 					nodeMap.put(nonRefNodeId, node);
 				}
 				if(debug % 10000 == 0) {
-					System.out.println("fetched " + debug + " records");
+					System.out.println("processed " + debug + " records.");
 				}
 			}
 			
