@@ -66,7 +66,7 @@ public class RDFMatchSensorLink {
 		readNodeFile();
 		readLinkFile();
 		readLinkGeometry();
-		generateLinkKML();
+		//generateLinkKML();
 		fetchSensor();
 		matchLinkSensor();
 		writeSensorMatch();
@@ -493,7 +493,7 @@ public class RDFMatchSensorLink {
 				LinkedList<LocationInfo> pointsList = link.getPointList();
 				
 				String dirStr	= null;
-				for(double dir : directionList) {
+				for(int dir : directionList) {
 					if(dirStr == null)
 						dirStr = String.valueOf(dir);
 					else

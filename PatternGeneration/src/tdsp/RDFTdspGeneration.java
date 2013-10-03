@@ -228,8 +228,8 @@ public class RDFTdspGeneration {
 				//kmlStr += "Dir:" + link.getAllDirection() + "\r\n";
 				kmlStr += "Speedcat:" + link.getSpeedCategory() + "\r\n";
 				kmlStr += "Travel:" + link.getTravelDirection() + "\r\n";
-				kmlStr += "CarpoolRoad:" + link.isCarpoolRoad() + "\r\n";
-				kmlStr += "Carpools:" + link.isCarpools() + "\r\n";
+				//kmlStr += "CarpoolRoad:" + link.isCarpoolRoad() + "\r\n";
+				//kmlStr += "Carpools:" + link.isCarpools() + "\r\n";
 				kmlStr += "Ramp:" + link.isRamp() + "\r\n";
 				kmlStr += "Tollway:" + link.isTollway() + "\r\n";
 				

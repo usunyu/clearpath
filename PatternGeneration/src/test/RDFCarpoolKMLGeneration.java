@@ -121,8 +121,8 @@ public class RDFCarpoolKMLGeneration {
 				String travelDirection 	= link.getTravelDirection();
 				boolean ramp		= link.isRamp();
 				boolean tollway		= link.isTollway();
-				boolean carpoolRoad = link.isCarpoolRoad();
-				boolean carpools	= link.isCarpools();
+				//boolean carpoolRoad = link.isCarpoolRoad();
+				//boolean carpools	= link.isCarpools();
 				int speedCategory 	= link.getSpeedCategory();
 				LinkedList<LocationInfo> pointsList = link.getPointList();
 				
@@ -140,8 +140,8 @@ public class RDFCarpoolKMLGeneration {
 				kmlStr += "TraDir:" 		+ travelDirection + "\r\n";
 				kmlStr += "Ramp:" 		+ ramp + "\r\n";
 				kmlStr += "Tollway:" 	+ tollway + "\r\n";
-				kmlStr += "CarpoolRoad:" 	+ carpoolRoad + "\r\n";
-				kmlStr += "Carpools:" 	+ carpools + "\r\n";
+				//kmlStr += "CarpoolRoad:" 	+ carpoolRoad + "\r\n";
+				//kmlStr += "Carpools:" 	+ carpools + "\r\n";
 				if(sensorList != null && sensorList.size() != 0) {
 					String sensorStr = "null";
 					ListIterator<SensorInfo> sensorIt = sensorList.listIterator();

@@ -766,9 +766,12 @@ public class RDFInputFileGeneration {
 				boolean ramp = RDFLink.isRamp();
 				boolean tollway = RDFLink.isTollway();
 				int speedCategory = RDFLink.getSpeedCategory();
-				boolean carpoolRoad = RDFLink.isCarpoolRoad();
-				boolean carpools = RDFLink.isCarpools();
-				boolean expressLane = RDFLink.isExpressLane();
+				//boolean carpoolRoad = RDFLink.isCarpoolRoad();
+				boolean carpoolRoad = false;
+				//boolean carpools = RDFLink.isCarpools();
+				boolean carpools = false;
+				//boolean expressLane = RDFLink.isExpressLane();
+				boolean expressLane = false;
 				LinkedList<LocationInfo> pointsList = RDFLink.getPointList();
 				
 				String pointsStr = "null";
@@ -950,9 +953,12 @@ public class RDFInputFileGeneration {
 				boolean ramp = RDFLink.isRamp();
 				boolean tollway = RDFLink.isTollway();
 				int speedCategory = RDFLink.getSpeedCategory();
-				boolean carpoolRoad = RDFLink.isCarpoolRoad();
-				boolean carpools = RDFLink.isCarpools();
-				boolean expressLane = RDFLink.isExpressLane();
+				//boolean carpoolRoad = RDFLink.isCarpoolRoad();
+				boolean carpoolRoad = false;
+				//boolean carpools = RDFLink.isCarpools();
+				boolean carpools = false;
+				//boolean expressLane = RDFLink.isExpressLane();
+				boolean expressLane = false;
 				
 				String strLine = linkId + "|" + baseName + "|" + refNodeId + "|" + 
 						nonRefNodeId + "|" + functionalClass + "|" + travelDirection +"|" +

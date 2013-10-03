@@ -15,9 +15,6 @@ public class RDFLinkInfo {
 	String travelDirection;
 	boolean ramp;
 	boolean tollway;
-	boolean carpoolRoad;
-	boolean carpools;
-	boolean expressLane;
 	int speedCategory;
 	int accessId;
 	
@@ -185,35 +182,21 @@ public class RDFLinkInfo {
 		this.tollway = tollway;
 	}
 	
-	public boolean isCarpoolRoad() {
-		return carpoolRoad;
-	}
-	
-	public void setCarpoolRoad(boolean carpoolRoad) {
-		this.carpoolRoad = carpoolRoad;
-	}
-	
-	public boolean isCarpools() {
-		return carpools;
-	}
-	
-	public void setCarpools(boolean carpools) {
-		this.carpools = carpools;
-	}
-	
-	public boolean isExpressLane() {
-		return expressLane;
-	}
-	
-	public void isExpressLane(boolean expressLane) {
-		this.expressLane = expressLane;
-	}
-	
 	public int getSpeedCategory() {
 		return speedCategory;
 	}
 	
 	public void setSpeedCategory(int speedCategory) {
 		this.speedCategory = speedCategory;
+	}
+	
+	public boolean isCarpool() {
+		if(laneList == null)
+			return false;
+		for(RDFLaneInfo lane : laneList) {
+			if(lane.getLaneType() == 2)
+				return true;
+		}
+		return false;
 	}
 }
