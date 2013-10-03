@@ -136,6 +136,9 @@ public class RDFInputFileGeneration {
 					RDFNodeInfo node = new RDFNodeInfo(nonRefNodeId);
 					nodeMap.put(nonRefNodeId, node);
 				}
+				if(debug % 10000 == 0) {
+					System.out.println("fetched " + debug + " records");
+				}
 			}
 			
 		} catch (Exception e) {
