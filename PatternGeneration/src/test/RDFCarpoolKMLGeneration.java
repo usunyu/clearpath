@@ -200,8 +200,7 @@ public class RDFCarpoolKMLGeneration {
 				boolean carpools 		= nodes[10].equals("Y") ? true : false;
 				boolean expressLane 	= nodes[11].equals("Y") ? true : false;
 				
-				//if(!carpools)
-				if(!expressLane)
+				if(expressLane)
 					continue;
 				if(functionalClass!=1 && functionalClass!=2)
 					continue;
