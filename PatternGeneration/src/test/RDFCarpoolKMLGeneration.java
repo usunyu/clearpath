@@ -1,21 +1,9 @@
 package test;
+import java.io.*;
+import java.sql.*;
+import java.util.*;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.LinkedList;
-import java.util.ListIterator;
-
-import objects.LocationInfo;
-import objects.RDFLinkInfo;
-import objects.SensorInfo;
+import objects.*;
 
 public class RDFCarpoolKMLGeneration {
 
@@ -24,6 +12,8 @@ public class RDFCarpoolKMLGeneration {
 	 */
 	static String root				= "file";
 	static String linkFile			= "RDF_Link.csv";
+	static String linkLaneFile		= "RDF_Link_Lane.csv";
+	static String linkGeometryFile	= "RDF_Link_Geometry.csv";
 	static String kmlLinkFile		= "RDF_Link_Carpool.kml";
 	static String carpoolFile		= "RDF_Carpool.csv";
 	/**
@@ -34,9 +24,17 @@ public class RDFCarpoolKMLGeneration {
 	static String password			= "NAVTEQRDF";
 	static Connection connHome		= null;
 	/**
+	 * @param const
+	 */
+	static String SEPARATION		= ",";
+	static String UNKNOWN 			= "Unknown Street";
+	static String YES				= "Y";
+	static String NO				= "N";
+	/**
 	 * @param link
 	 */
 	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
+	static HashMap<Long, RDFLinkInfo> linkMap = new HashMap<Long, RDFLinkInfo>();
 	/**
 	 * @param carpool
 	 */
@@ -45,6 +43,8 @@ public class RDFCarpoolKMLGeneration {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		readLinkFile();
+		readLinkGeometry();
+		readLinkLane();
 		generateLinkKML();
 		//fetchCarpool();
 		//writeCarpool();
@@ -110,10 +110,9 @@ public class RDFCarpoolKMLGeneration {
 			FileWriter fstream = new FileWriter(root + "/" + kmlLinkFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
-			ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
-			while(iterator.hasNext()) {
-				RDFLinkInfo link 	= iterator.next();
-				long linkId 		= link.getLinkId();
+
+			for(long linkId : linkMap.keySet()) {
+				RDFLinkInfo link 	= linkMap.get(linkId);
 				String baseName 	= link.getBaseName();
 				long refNodeId 		= link.getRefNodeId();
 				long nonRefNodeId 	= link.getNonRefNodeId();
@@ -121,46 +120,32 @@ public class RDFCarpoolKMLGeneration {
 				String travelDirection 	= link.getTravelDirection();
 				boolean ramp		= link.isRamp();
 				boolean tollway		= link.isTollway();
-				//boolean carpoolRoad = link.isCarpoolRoad();
-				//boolean carpools	= link.isCarpools();
+				boolean carpool 	= link.isCarpool();
 				int speedCategory 	= link.getSpeedCategory();
 				LinkedList<LocationInfo> pointsList = link.getPointList();
 				
-				LinkedList<SensorInfo>	sensorList = link.getSensorList();
+				if(!carpool)
+					continue;
 				
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
 				kmlStr += "<description>";
 				if(baseName.contains("&"))
 					baseName = baseName.replaceAll("&", " and ");				
-				kmlStr += "Name:" 		+ baseName + "\r\n";
+				kmlStr += "Name:" 			+ baseName + "\r\n";
 				kmlStr += "Ref:" 			+ refNodeId + "\r\n";
 				kmlStr += "Nonref:" 		+ nonRefNodeId + "\r\n";
-				kmlStr += "Class:" 		+ functionalClass + "\r\n";
-				kmlStr += "Category:" 	+ speedCategory + "\r\n";
+				kmlStr += "Class:" 			+ functionalClass + "\r\n";
+				kmlStr += "Category:" 		+ speedCategory + "\r\n";
 				kmlStr += "TraDir:" 		+ travelDirection + "\r\n";
-				kmlStr += "Ramp:" 		+ ramp + "\r\n";
-				kmlStr += "Tollway:" 	+ tollway + "\r\n";
-				//kmlStr += "CarpoolRoad:" 	+ carpoolRoad + "\r\n";
-				//kmlStr += "Carpools:" 	+ carpools + "\r\n";
-				if(sensorList != null && sensorList.size() != 0) {
-					String sensorStr = "null";
-					ListIterator<SensorInfo> sensorIt = sensorList.listIterator();
-					int i = 0;
-					while(sensorIt.hasNext()) {
-						SensorInfo sensor = sensorIt.next();
-						if(i++ == 0)
-							sensorStr = String.valueOf(sensor.getSensorId());
-						else
-							sensorStr += "," + sensor.getSensorId();
-					}
-					kmlStr += "Sensor:" + sensorStr + "\r\n";
-				}
+				kmlStr += "Ramp:" 			+ ramp + "\r\n";
+				kmlStr += "Tollway:" 		+ tollway + "\r\n";
+				kmlStr += "Carpool:" 		+ carpool + "\r\n";
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
 				ListIterator<LocationInfo> pIterator = pointsList.listIterator();
 				while(pIterator.hasNext()) {
 					LocationInfo loc = pIterator.next();
-					kmlStr += loc.getLongitude()+ "," + loc.getLatitude()+ "," + loc.getZLevel() + " ";
+					kmlStr += loc.getLongitude()+ SEPARATION + loc.getLatitude()+ SEPARATION + loc.getZLevel() + " ";
 				}
 				kmlStr += "</coordinates></LineString></Placemark>";
 				
@@ -174,6 +159,74 @@ public class RDFCarpoolKMLGeneration {
 		System.out.println("generate link kml finish!");
 	}
 	
+	private static void readLinkLane() {
+		System.out.println("read link lane...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkLaneFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(SEPARATION);
+				long linkId 		= Long.parseLong(nodes[0]);
+				RDFLinkInfo	link	= linkMap.get(linkId);
+				for(int i = 1; i < nodes.length; i += 4) {
+					long laneId		= Long.parseLong(nodes[i]);
+					String travelDirection = nodes[i + 1];
+					int laneType	= Integer.parseInt(nodes[i + 2]);
+					int accessId 	= Integer.parseInt(nodes[i + 3]);
+					RDFLaneInfo	lane = new RDFLaneInfo(laneId, travelDirection, laneType, accessId);
+
+					link.addLane(lane);
+				}
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("readLinkLane: debug code: " + debug);
+		}
+		System.out.println("read link lane finish!");
+	}
+
+	private static void readLinkGeometry() {
+		System.out.println("read link geometry...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkGeometryFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(SEPARATION);
+				long linkId 		= Long.parseLong(nodes[0]);
+				RDFLinkInfo	link	= linkMap.get(linkId);
+				for(int i = 1; i < nodes.length; i+=3) {
+					double lat		= Double.parseDouble(nodes[i]);
+					double lon		= Double.parseDouble(nodes[i + 1]);
+					int zLevel	= Integer.parseInt(nodes[i + 2]);
+					LocationInfo loc = new LocationInfo(lat, lon, zLevel);
+					link.addPoint(loc);
+				}
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("readLinkGeometry: debug code: " + debug);
+		}
+		System.out.println("read link geometry finish!");
+	}
+	
 	private static void readLinkFile() {
 		System.out.println("read link file...");
 		int debug = 0;
@@ -185,49 +238,32 @@ public class RDFCarpoolKMLGeneration {
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split("\\|");
+				String[] nodes = strLine.split(SEPARATION);
 				
 				long 	linkId 			= Long.parseLong(nodes[0]);
-				String 	streetName 		= nodes[1];
-				long 	refNodeId 		= Long.parseLong(nodes[2]);
-				long 	nonRefNodeId 	= Long.parseLong(nodes[3]);
-				int 	functionalClass = Integer.parseInt(nodes[4]);
-				String 	direction 		= nodes[5];
+				long 	refNodeId 		= Long.parseLong(nodes[1]);
+				long 	nonRefNodeId 	= Long.parseLong(nodes[2]);
+				String 	baseName 		= nodes[3];
+				int		accessId		= Integer.parseInt(nodes[4]);
+				int 	functionalClass = Integer.parseInt(nodes[5]);
 				int 	speedCategory 	= Integer.parseInt(nodes[6]);
-				boolean ramp 			= nodes[7].equals("Y") ? true : false;
-				boolean tollway 		= nodes[8].equals("Y") ? true : false;
-				boolean carpoolRoad 	= nodes[9].equals("Y") ? true : false;
-				boolean carpools 		= nodes[10].equals("Y") ? true : false;
-				boolean expressLane 	= nodes[11].equals("Y") ? true : false;
+				String 	travelDirection = nodes[7];
+				boolean ramp 			= nodes[8].equals(YES) ? true : false;
+				boolean tollway 		= nodes[9].equals(YES) ? true : false;
 				
-				if(expressLane)
-					continue;
-				if(functionalClass!=1 && functionalClass!=2)
-					continue;
 				
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
-				/**
-				 * need fix
-				 */
+				RDFLinkInfo link = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
 				
-				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
-				String[] pointsListStr		= nodes[12].split(";");
-				for(int i = 0; i < pointsListStr.length; i++) {
-					String[] locStr = pointsListStr[i].split(",");
-					double lat = Double.parseDouble(locStr[0]);
-					double lon = Double.parseDouble(locStr[1]);
-					int z = Integer.parseInt(locStr[2]);
-					LocationInfo loc = new LocationInfo(lat, lon, z);
-					RDFLink.addPoint(loc);
-					pointsList.add(loc);
-				}
+				link.setBaseName(baseName);
+				link.setAccessId(accessId);
+				link.setFunctionalClass(functionalClass);
+				link.setSpeedCategory(speedCategory);
+				link.setTravelDirection(travelDirection);
+				link.setRamp(ramp);
+				link.setTollway(tollway);
 				
-				//RDFLink.setPointsList(pointsList);
-				
-				linkList.add(RDFLink);
+				linkMap.put(linkId, link);
 
-				if (debug % 10000 == 0)
-					System.out.println("record " + debug + " finish!");
 			}
 			br.close();
 			in.close();
