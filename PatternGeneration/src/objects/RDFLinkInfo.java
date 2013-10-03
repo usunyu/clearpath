@@ -4,8 +4,9 @@ import java.util.*;
 
 public class RDFLinkInfo {
 	long linkId;
-	String streetName;
-	LinkedList<String> additionalName;
+	String baseName;
+	LinkedList<String> streetNameList;
+	LinkedList<String> additionalNameList;
 	long refNodeId;
 	long nonRefNodeId;
 	int functionalClass;
@@ -34,23 +35,6 @@ public class RDFLinkInfo {
 		this.linkId = linkId;
 		this.refNodeId = refNodeId;
 		this.nonRefNodeId = nonRefNodeId;
-	}
-
-	public RDFLinkInfo(long linkId, String streetName, long refNodeId, long nonRefNodeId, int functionalClass, 
-			String travelDirection, boolean ramp, boolean tollway, boolean carpoolRoad, int speedCategory, 
-			boolean carpools, boolean expressLane) {
-		this.linkId = linkId;
-		this.streetName = streetName;
-		this.refNodeId = refNodeId;
-		this.nonRefNodeId = nonRefNodeId;
-		this.functionalClass = functionalClass;
-		this.travelDirection = travelDirection;
-		this.ramp = ramp;
-		this.tollway = tollway;
-		this.carpoolRoad = carpoolRoad;
-		this.speedCategory = speedCategory;
-		this.carpools = carpools;
-		this.expressLane = expressLane;
 	}
 	
 	public int getAccessId() {
@@ -99,8 +83,10 @@ public class RDFLinkInfo {
 		return allDirection;
 	}
 	
-	public void setPointsList(LinkedList<LocationInfo> pointsList) {
-		this.pointsList = pointsList;
+	public void addPoint(LocationInfo point) {
+		if(pointsList == null)
+			pointsList = new LinkedList<LocationInfo>();
+		pointsList.add(point);
 	}
 	
 	public LinkedList<LocationInfo> getPointsList() {
@@ -111,28 +97,35 @@ public class RDFLinkInfo {
 		return linkId;
 	}
 
+	public void setBaseName(String baseName) {
+		this.baseName = baseName;
+	}
+
+	public String getBaseName() {
+		return baseName;
+	}
+
 	public void addStreetName(String streetName, boolean isNameOnRoadsign) {
 		if(isNameOnRoadsign) {
-			this.streetName = streetName;
+			if(streetNameList == null) {
+				streetNameList = new LinkedList<String>();
+			}
+			streetNameList.add(streetName);
 		}
 		else {
-			if(additionalName == null) {
-				additionalName = new LinkedList<String>();
+			if(additionalNameList == null) {
+				additionalNameList = new LinkedList<String>();
 			}
-			additionalName.add(streetName);
+			additionalNameList.add(streetName);
 		}
 	}
 	
-	// public void setStreetName(String streetName) {
-	// 	this.streetName = streetName;
-	// }
-	
-	public String getStreetName() {
-		return streetName;
+	public LinkedList<String> getStreetNameList() {
+		return streetNameList;
 	}
 	
-	public LinkedList<String> getAdditionalName() {
-		return additionalName;
+	public LinkedList<String> getAdditionalNameList() {
+		return additionalNameList;
 	}
 	
 	public long getRefNodeId() {

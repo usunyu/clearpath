@@ -6,7 +6,7 @@ import java.util.*;
 
 import objects.*;
 
-public class NonNavLink {
+public class RDFNonNavLink {
 
 	/**
 	 * @param file

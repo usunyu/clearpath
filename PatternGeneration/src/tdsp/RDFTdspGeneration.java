@@ -105,7 +105,7 @@ public class RDFTdspGeneration {
 			
 			int curDirIndex = Geometry.getDirectionIndex(preNode.getLocation(), curNode.getLocation());
 			
-			String curStName = linkInfo.getStreetName();
+			String curStName = linkInfo.getBaseName();
 			
 			curStName = getUniformSTName(curStName);
 			
@@ -218,12 +218,12 @@ public class RDFTdspGeneration {
 				
 				String kmlStr = "<Placemark><name>Link:" + link.getLinkId() + "</name>";
 				kmlStr += "<description>";
-				String streetName = link.getStreetName();
-				streetName = getUniformSTName(streetName);
+				String baseName = link.getBaseName();
+				baseName = getUniformSTName(baseName);
 				//String[] nameNode = streetName.split(";");
 				//if(nameNode.length > 1)
 				//	streetName = nameNode[0] + "(" + nameNode[1] + ")";
-				kmlStr += "Street:" + streetName + "\r\n";
+				kmlStr += "Street:" + baseName + "\r\n";
 				kmlStr += "Funclass:" + link.getFunctionalClass() + "\r\n";
 				//kmlStr += "Dir:" + link.getAllDirection() + "\r\n";
 				kmlStr += "Speedcat:" + link.getSpeedCategory() + "\r\n";
@@ -531,9 +531,10 @@ public class RDFTdspGeneration {
 				boolean carpools 		= nodes[10].equals("Y") ? true : false;
 				boolean expressLane 	= nodes[11].equals("Y") ? true : false;
 				
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, 
-						functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, 
-						carpools, expressLane);
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+				/**
+				 * need fix
+				 */
 				
 				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
 				String[] pointsListStr		= nodes[12].split(";");
@@ -543,10 +544,11 @@ public class RDFTdspGeneration {
 					double lon = Double.parseDouble(locStr[1]);
 					int z = Integer.parseInt(locStr[2]);
 					LocationInfo loc = new LocationInfo(lat, lon, z);
+					RDFLink.addPoint(loc);
 					pointsList.add(loc);
 				}
 				
-				RDFLink.setPointsList(pointsList);
+				//RDFLink.setPointsList(pointsList);
 				
 				if(direction.equals("T")) {
 					String nodeStr = nonRefNodeId + "," + refNodeId;

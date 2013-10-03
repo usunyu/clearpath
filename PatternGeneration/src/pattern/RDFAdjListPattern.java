@@ -488,9 +488,10 @@ public class RDFAdjListPattern {
 				boolean carpools 		= nodes[10].equals("Y") ? true : false;
 				boolean expressLane 	= nodes[11].equals("Y") ? true : false;
 				
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, 
-						functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, 
-						carpools, expressLane);
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+				/**
+				 * need fix
+				 */
 				
 				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
 				String[] pointsListStr		= nodes[12].split(";");
@@ -500,10 +501,11 @@ public class RDFAdjListPattern {
 					double lon = Double.parseDouble(locStr[1]);
 					int z = Integer.parseInt(locStr[2]);
 					LocationInfo loc = new LocationInfo(lat, lon, z);
+					RDFLink.addPoint(loc);
 					pointsList.add(loc);
 				}
 				
-				RDFLink.setPointsList(pointsList);
+				//RDFLink.setPointsList(pointsList);
 				
 				linkList.add(RDFLink);
 				linkMap.put(linkId, RDFLink);

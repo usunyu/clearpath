@@ -217,7 +217,7 @@ public class RDFOutputKMLGeneration {
 			while(iterator.hasNext()) {
 				RDFLinkInfo link 	= iterator.next();
 				long linkId 		= link.getLinkId();
-				String streetName 	= link.getStreetName();
+				String baseName 	= link.getBaseName();
 				long refNodeId 		= link.getRefNodeId();
 				long nonRefNodeId 	= link.getNonRefNodeId();
 				int functionalClass = link.getFunctionalClass();
@@ -234,9 +234,9 @@ public class RDFOutputKMLGeneration {
 				
 				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
 				kmlStr += "<description>";
-				if(streetName.contains("&"))
-					streetName = streetName.replaceAll("&", " and ");				
-				kmlStr += "Name:" 		+ streetName + "\r\n";
+				if(baseName.contains("&"))
+					baseName = baseName.replaceAll("&", " and ");				
+				kmlStr += "Name:" 		+ baseName + "\r\n";
 				kmlStr += "Ref:" 			+ refNodeId + "\r\n";
 				kmlStr += "Nonref:" 		+ nonRefNodeId + "\r\n";
 				kmlStr += "Class:" 		+ functionalClass + "\r\n";
@@ -328,7 +328,7 @@ public class RDFOutputKMLGeneration {
 				String[] nodes = strLine.split("\\|");
 				
 				long 	linkId 			= Long.parseLong(nodes[0]);
-				String 	streetName 		= nodes[1];
+				String 	baseName 		= nodes[1];
 				long 	refNodeId 		= Long.parseLong(nodes[2]);
 				long 	nonRefNodeId 	= Long.parseLong(nodes[3]);
 				int 	functionalClass = Integer.parseInt(nodes[4]);
@@ -340,7 +340,12 @@ public class RDFOutputKMLGeneration {
 				boolean carpools 		= nodes[10].equals("Y") ? true : false;
 				boolean expressLane 	= nodes[11].equals("Y") ? true : false;
 				
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, carpools, expressLane);
+				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+				RDFLink.setBaseName(baseName);
+				RDFLink.setFunctionalClass(functionalClass);
+				/**
+				 * need fix
+				 */
 				
 				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
 				String[] pointsListStr		= nodes[12].split(";");
@@ -350,10 +355,11 @@ public class RDFOutputKMLGeneration {
 					double lon = Double.parseDouble(locStr[1]);
 					int z = Integer.parseInt(locStr[2]);
 					LocationInfo loc = new LocationInfo(lat, lon, z);
+					RDFLink.addPoint(loc);
 					pointsList.add(loc);
 				}
 				
-				RDFLink.setPointsList(pointsList);
+				//RDFLink.setPointsList(pointsList);
 				
 				linkList.add(RDFLink);
 				linkMap.put(linkId, RDFLink);

@@ -164,3 +164,6 @@ LEFT JOIN rdf_road_name t9
 ON t8.road_name_id = t9.road_name_id) t10
 LEFT JOIN rdf_access t11
 ON t10.access_id = t11.access_id
+
+/* fetch geometry */
+SELECT link_id, lat, lon, zlevel FROM rdf_link_geometry ORDER BY link_id, seq_num

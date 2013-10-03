@@ -17,6 +17,7 @@ public class RDFInputFileGeneration {
 	static String linkGeometryFile	= "RDF_Link_Geometry.csv";
 	static String linkTempFile		= "RDF_Link_Temp.csv";
 	static String linkIdFile		= "RDF_Link_Id.csv";
+	static String linkNameFile		= "RDF_Link_Name.csv";
 	// for write node file
 	static String nodeFile			= "RDF_Node.csv";
 	/**
@@ -105,15 +106,274 @@ public class RDFInputFileGeneration {
 		 */
 		fetchLinkInfoById();
 		/**
-		 * Step 4) fetch link name
+		 * Step 4) eliminate non-nav link
 		 */
-		
+		eliminateNonNavLink();
+		/**
+		 * Step 5) eliminate unrelated node
+		 */
+		eliminateUnrelatedNode();
+		/**
+		 * Step 6) fetch link name
+		 */
+		fetchLinkNameById();
+		/**
+		 * Step 7) write node to file
+		 */
+		writeNodeFile();
+		/**
+		 * Step 8) write link file
+		 */
+		writeLinkFile();
+		/**
+		 * Step 9) write streets name
+		 */
+		writeStreetName();
+		/**
+		 * Step 10) fetch link geometry points
+		 */
+		fetchLinkGeometryById();
+		/**
+		 * Step 11) write link geometry points
+		 */
+		writeLinkGeometry();
+	}
+	
+	private static void writeLinkGeometry() {
+		System.out.println("write link geometry...");
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + linkGeometryFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			for(long linkId : linkMap.keySet()) {
+				debug++;
+				RDFLinkInfo link = linkMap.get(linkId);
+				
+				LinkedList<LocationInfo> pointsList = link.getPointsList();
+				
+				String pointsStr = null;
+				
+				for(LocationInfo loc : pointsList) {
+					if(pointsStr == null)
+						pointsStr = loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+					else
+						pointsStr += "," + loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
+				}
+				
+				String strLine = linkId + "," + pointsStr + "\r\n";
+				out.write(strLine);
+			}
+			
+			out.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("writeLinkGeometry: debug code:" + debug);
+		}
+		System.out.println("write link geometry finish!");
+	}
+	
+	private static void writeStreetName() {
+		System.out.println("write street name...");
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + linkNameFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			for(long linkId : linkMap.keySet()) {
+				debug++;
+				RDFLinkInfo link = linkMap.get(linkId);
+				
+				LinkedList<String> streetNameList = link.getStreetNameList();
+				
+				String streetNameStr = null;
+				
+				if(streetNameList == null)
+					streetNameStr = "Unknown Street";
+				else {
+					for(String street : streetNameList) {
+						if(streetNameStr == null)
+							streetNameStr = street;
+						else
+							streetNameStr += "," + street;
+					}
+				}
+				
+				String strLine = linkId + "," + streetNameStr + "\r\n";
+				out.write(strLine);
+			}
+			out.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("writeStreetName: debug: " + debug);
+		}
+		System.out.println("write street name finish!");
+	}
+	
+	private static void fetchLinkGeometryById() {
+		System.out.println("fetch link geometry by id...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			
+			con = getConnection();
+			con.setAutoCommit(false);
+			
+			sql = "SELECT link_id, lat, lon, zlevel FROM rdf_link_geometry ORDER BY link_id, seq_num";
+			
+			System.out.println("execute query... ");
+			pstatement = con.prepareStatement(sql, 
+					ResultSet.TYPE_FORWARD_ONLY,
+					ResultSet.CONCUR_READ_ONLY,
+					ResultSet.FETCH_FORWARD);
+			pstatement.setFetchSize(1000);
+			
+			res = pstatement.executeQuery();
+			while (res.next()) {
+				long linkId 	= res.getLong("link_id");
+				
+				if(!linkMap.containsKey(linkId))
+					continue;
+				
+				debug++;
+				
+				RDFLinkInfo link = linkMap.get(linkId);
+				
+				double 	lat 	= res.getDouble("lat") / UNIT;
+				double 	lon 	= res.getDouble("lon") / UNIT;
+				int 	zLevel 	= res.getInt("zlevel");
+				
+				LocationInfo location = new LocationInfo(lat, lon, zLevel);
+				link.addPoint(location);
+				
+				if(debug % 10000 == 0)
+					System.out.println("processed " + (double) debug / linkMap.size() * 100 + "%.");
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchLinkGeometryById: debug code: " + debug);
+		}
+		System.out.println("fetch link geometry by id finish!");
 	}
 	
 	private static void fetchLinkNameById() {
 		System.out.println("fetch link name by id...");
-		
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			
+			con = getConnection();
+			con.setAutoCommit(false);
+			
+			sql = "SELECT link_id, base_name, street_name, is_name_on_roadsign " +
+					"FROM rdf_road_link t1, rdf_road_name t2 WHERE t1.road_name_id = t2.road_name_id";
+
+			System.out.println("execute query... ");
+			pstatement = con.prepareStatement(sql, 
+					ResultSet.TYPE_FORWARD_ONLY,
+					ResultSet.CONCUR_READ_ONLY,
+					ResultSet.FETCH_FORWARD);
+			pstatement.setFetchSize(1000);
+			
+			res = pstatement.executeQuery();
+			while (res.next()) {
+				long linkId 				= res.getLong("link_id");
+				
+				if(!linkMap.containsKey(linkId))
+					continue;
+				
+				debug++;
+				
+				RDFLinkInfo link = linkMap.get(linkId);
+				
+				String baseName				= res.getString("base_name");
+				String streetName			= res.getString("street_name");
+				boolean isNameOnRoadsign	= res.getString("is_name_on_roadsign").equals("Y") ? true : false;
+				
+				link.setBaseName(baseName);
+				link.addStreetName(streetName, isNameOnRoadsign);
+				
+				if(debug % 10000 == 0)
+					System.out.println("processed " + (double) debug / linkMap.size() * 100 + "%.");
+			}
+			
+			res.close();
+			pstatement.close();
+			con.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchLinkNameById: debug code: " + debug);
+		}
 		System.out.println("fetch link name by id finish!");
+	}
+	
+	private static void eliminateUnrelatedNode() {
+		System.out.println("eliminate unrelated node...");
+		int debug = 0;
+		try {
+			HashSet<Long> neededNodeId = new HashSet<Long>();
+			for(long linkId : linkMap.keySet()) {
+				RDFLinkInfo link = linkMap.get(linkId);
+				long refNodeId = link.getRefNodeId();
+				long nonRefNodeId = link.getNonRefNodeId();
+				if(!neededNodeId.contains(refNodeId))
+					neededNodeId.add(refNodeId);
+				if(!neededNodeId.contains(nonRefNodeId))
+					neededNodeId.add(nonRefNodeId);
+			}
+			LinkedList<Long> removeList = new LinkedList<Long>();
+			for(long nodeId : nodeMap.keySet()) {
+				if(!neededNodeId.contains(nodeId))
+					removeList.add(nodeId);
+			}
+			for(long nodeId : removeList) {
+				nodeMap.remove(nodeId);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("eliminateUnrelatedNode: debug code: " + debug);
+		}
+		System.out.println("eliminate unrelated node finish!");
+	}
+	
+	private static void eliminateNonNavLink() {
+		System.out.println("eliminate non nav link...");
+		int debug = 0;
+		try {
+			LinkedList<Long> removeList = new LinkedList<Long>();
+			for(long linkId : linkMap.keySet()) {
+				debug++;
+				RDFLinkInfo link = linkMap.get(linkId);
+				if(link.getAccessId() == 0) {
+					//linkMap.remove(linkId);
+					removeList.add(linkId);
+				}
+			}
+			ListIterator<Long> iterator = removeList.listIterator();
+			while(iterator.hasNext()) {
+				long removeId = iterator.next();
+				linkMap.remove(removeId);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("eliminateNonNavLink: debug code: " + debug);
+		}
+		System.out.println("eliminate non nav link finish!");
 	}
 	
 	private static void fetchLinkInfoById() {
@@ -357,12 +617,12 @@ public class RDFInputFileGeneration {
 				boolean carpools = res.getString("carpools").equals("Y") ? true : false;
 				boolean expressLane = res.getString("express_lane") == null ? false : true;
 
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, 
-						functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, 
-						carpools, expressLane);
+				//RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, 
+				//		functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, 
+				//		carpools, expressLane);
 
-				linkList.add(RDFLink);
-				linkMap.put(linkId, RDFLink);
+				//linkList.add(RDFLink);
+				//linkMap.put(linkId, RDFLink);
 
 				if (debug % 10000 == 0)
 					System.out.println("record " + debug + " finish!");
@@ -379,6 +639,9 @@ public class RDFInputFileGeneration {
 		System.out.println("fetch " + linkList.size() + " links by area finish!");
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	private static void writeLinkWithGeometry() {
 		System.out.println("write link with geometry...");
 		try {
@@ -389,7 +652,7 @@ public class RDFInputFileGeneration {
 			while(iterator.hasNext()) {
 				RDFLinkInfo RDFLink = iterator.next();
 				long linkId = RDFLink.getLinkId();
-				String streetName = RDFLink.getStreetName();
+				String baseName = RDFLink.getBaseName();
 				long refNodeId = RDFLink.getRefNodeId();
 				long nonRefNodeId = RDFLink.getNonRefNodeId();
 				int functionalClass = RDFLink.getFunctionalClass();
@@ -413,7 +676,7 @@ public class RDFInputFileGeneration {
 						pointsStr += ";" + loc.getLatitude() + "," + loc.getLongitude() + "," + loc.getZLevel();
 				}
 				
-				String strLine = linkId + "|" + streetName + "|" + refNodeId + "|" + nonRefNodeId + "|" + 
+				String strLine = linkId + "|" + baseName + "|" + refNodeId + "|" + nonRefNodeId + "|" + 
 						functionalClass + "|" + travelDirection +"|" + speedCategory + "|" + (ramp ? "Y" : "N") + "|" + 
 						(tollway ? "Y" : "N") + "|" + (carpoolRoad ? "Y" : "N") + "|" + (carpools ? "Y" : "N") + "|" +
 						(expressLane ? "Y" : "N") + "|" + pointsStr + "\r\n";
@@ -426,6 +689,10 @@ public class RDFInputFileGeneration {
 		System.out.println("write link with geometry finish!");
 	}
 	
+	/**
+	 * @deprecated
+	 * @param query
+	 */
 	private static void addNodeByQuery(String query) {
 		try {
 			Connection con = null;
@@ -460,6 +727,9 @@ public class RDFInputFileGeneration {
 		}
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	private static void fetchNodeBySet() {
 		System.out.println("fetch node by set...");
 		int debug = 0;
@@ -498,6 +768,9 @@ public class RDFInputFileGeneration {
 		System.out.println("fetch " + nodeIdSet.size() + " nodes by set finish!");
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	private static void readLinkFile() {
 		System.out.println("read link file...");
 		linkList = new LinkedList<RDFLinkInfo>();
@@ -531,11 +804,11 @@ public class RDFInputFileGeneration {
 				//if(!nodeIdSet.contains(nonRefNodeId))
 				//	nodeIdSet.add(nonRefNodeId);
 				
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, 
-						functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, 
-						carpools, expressLane);
+				//RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, 
+				//		functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, 
+				//		carpools, expressLane);
 				
-				linkList.add(RDFLink);
+				//linkList.add(RDFLink);
 
 				if (debug % 10000 == 0)
 					System.out.println("record " + debug + " finish!");
@@ -550,6 +823,9 @@ public class RDFInputFileGeneration {
 		System.out.println("read link file finish!");
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	private static void writeLinkDetail() {
 		System.out.println("write link file...");
 		try {
@@ -560,7 +836,7 @@ public class RDFInputFileGeneration {
 			while(iterator.hasNext()) {
 				RDFLinkInfo RDFLink = iterator.next();
 				long linkId = RDFLink.getLinkId();
-				String streetName = RDFLink.getStreetName();
+				String baseName = RDFLink.getBaseName();			
 				long refNodeId = RDFLink.getRefNodeId();
 				long nonRefNodeId = RDFLink.getNonRefNodeId();
 				int functionalClass = RDFLink.getFunctionalClass();
@@ -572,7 +848,7 @@ public class RDFInputFileGeneration {
 				boolean carpools = RDFLink.isCarpools();
 				boolean expressLane = RDFLink.isExpressLane();
 				
-				String strLine = linkId + "|" + streetName + "|" + refNodeId + "|" + 
+				String strLine = linkId + "|" + baseName + "|" + refNodeId + "|" + 
 						nonRefNodeId + "|" + functionalClass + "|" + travelDirection +"|" +
 						speedCategory + "|" + (ramp ? "Y" : "N") + "|" + (tollway ? "Y" : "N") + "|" +
 						(carpoolRoad ? "Y" : "N") + "|" + (carpools ? "Y" : "N") + "|" + 
@@ -700,6 +976,9 @@ public class RDFInputFileGeneration {
 		postCodeList.add(90007);
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	private static void fetchWriteGeometry() {
 		System.out.println("fetch write geometry...");
 		int debug = 0;
@@ -778,7 +1057,7 @@ public class RDFInputFileGeneration {
 					RDFLink = new RDFLinkInfo(linkId);
 					pointsList = new LinkedList<LocationInfo>();
 					pointsList.add(location);
-					RDFLink.setPointsList(pointsList);
+					//RDFLink.setPointsList(pointsList);
 					lastLinkId = linkId;
 				}
 				else {
@@ -948,6 +1227,9 @@ public class RDFInputFileGeneration {
 		System.out.println("read fetch and write geometry finish!");
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	private static void fetchWriteLink() {
 		System.out.println("fetch and write link...");
 		int debug = 0;
@@ -1043,6 +1325,9 @@ public class RDFInputFileGeneration {
 		System.out.println("fetch and write link finish!");
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	private static void fetchGeometry() {
 		System.out.println("fetch geometry...");
 		int debug = 0;
@@ -1080,9 +1365,10 @@ public class RDFInputFileGeneration {
 					int zLevel = 	res.getInt("zlevel");
 					
 					LocationInfo location = new LocationInfo(lat, lng, zLevel);
+					RDFLink.addPoint(location);
 					pointsList.add(location);
 				}
-				RDFLink.setPointsList(pointsList);
+				//RDFLink.setPointsList(pointsList);
 				
 				if (debug % 250 == 0) {
 					// reconnect
@@ -1104,26 +1390,33 @@ public class RDFInputFileGeneration {
 		System.out.println("fetch geometry finish!");
 	}
 	
-	/**
-	 * @deprecated
-	 */
 	private static void writeLinkFile() {
 		System.out.println("write link file...");
 		try {
 			FileWriter fstream = new FileWriter(root + "/" + linkFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			
-			ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
-			while(iterator.hasNext()) {
-				RDFLinkInfo RDFLink = iterator.next();
-				long linkId = RDFLink.getLinkId();
-				long refNodeId = RDFLink.getRefNodeId();
-				long nonRefNodeId = RDFLink.getNonRefNodeId();
-				//int functionalClass = RDFLink.getFunctionalClass();
+			for(long linkId : linkMap.keySet()) {
+				RDFLinkInfo link = linkMap.get(linkId);
 				
-				String strLine = linkId + "|" + refNodeId + "|" + nonRefNodeId + "\r\n";
+				long refNodeId = link.getRefNodeId();
+				long nonRefNodeId = link.getNonRefNodeId();
+				String baseName = link.getBaseName();
+				if(baseName == null)
+					baseName = "Unknown Street";
+				int accessId = link.getAccessId();
+				int functionalClass = link.getFunctionalClass();
+				String travelDirection = link.getTravelDirection();
+				boolean ramp = link.isRamp();
+				boolean tollway = link.isTollway();
+				int speedCategory = link.getSpeedCategory();
+				
+				String strLine = linkId + "," + refNodeId + "," + nonRefNodeId + "," + baseName + "," + 
+								accessId + "," + functionalClass + "," + speedCategory + "," + travelDirection + "," + 
+								(ramp ? "Y" : "N") + "," + (tollway ? "Y" : "N") + "\r\n";
 				out.write(strLine);
 			}
+			
 			out.close();
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -1195,16 +1488,15 @@ public class RDFInputFileGeneration {
 			FileWriter fstream = new FileWriter(root + "/" + nodeFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			
-			ListIterator<RDFNodeInfo> iterator = nodeList.listIterator();
-			while (iterator.hasNext()) {
-				RDFNodeInfo RDFNode = iterator.next();
-				long nodeId = RDFNode.getNodeId();
-				LocationInfo location = RDFNode.getLocation();
+			for(long nodeId : nodeMap.keySet()) {
+				RDFNodeInfo node = nodeMap.get(nodeId);
+				LocationInfo location = node.getLocation();
 				String locationStr = location.getLatitude() + "," + location.getLongitude();
 				int zLevel = location.getZLevel();
-				String strLine = nodeId + "|" + locationStr + "|" + zLevel + "\r\n";
+				String strLine = nodeId + "," + locationStr + "," + zLevel + "\r\n";
 				out.write(strLine);
 			}
+			
 			out.close();
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -1212,7 +1504,10 @@ public class RDFInputFileGeneration {
 		}
 		System.out.println("write node file finish!");
 	}
-
+	
+	/**
+	 * @deprecated
+	 */
 	private static void fetchNode() {
 		System.out.println("fetch node...");
 		int debug = 0;
