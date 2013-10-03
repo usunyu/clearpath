@@ -5,6 +5,7 @@ import java.util.*;
 public class RDFLinkInfo {
 	long linkId;
 	String streetName;
+	LinkedList<String> additionalName;
 	long refNodeId;
 	long nonRefNodeId;
 	int functionalClass;
@@ -19,7 +20,7 @@ public class RDFLinkInfo {
 	
 	int accessId;
 	
-	String allDirection;
+	LinkedList<Integer> allDirection;
 	
 	LinkedList<SensorInfo> matchSensorList;
 	
@@ -90,11 +91,11 @@ public class RDFLinkInfo {
 		return matchSensorList;
 	}
 	
-	public void setAllDirection(String allDirection) {
+	public void setAllDirection(LinkedList<Integer> allDirection) {
 		this.allDirection = allDirection;
 	}
 	
-	public String getAllDirection() {
+	public LinkedList<Integer> getAllDirection() {
 		return allDirection;
 	}
 	
@@ -110,16 +111,28 @@ public class RDFLinkInfo {
 		return linkId;
 	}
 
-	public void addStreetName(String secondName) {
-		streetName += ";" + secondName;
+	public void addStreetName(String streetName, boolean isNameOnRoadsign) {
+		if(isNameOnRoadsign) {
+			this.streetName = streetName;
+		}
+		else {
+			if(additionalName == null) {
+				additionalName = new LinkedList<String>();
+			}
+			additionalName.add(streetName);
+		}
 	}
 	
-	public void setStreetName(String streetName) {
-		this.streetName = streetName;
-	}
+	// public void setStreetName(String streetName) {
+	// 	this.streetName = streetName;
+	// }
 	
 	public String getStreetName() {
 		return streetName;
+	}
+	
+	public LinkedList<String> getAdditionalName() {
+		return additionalName;
 	}
 	
 	public long getRefNodeId() {

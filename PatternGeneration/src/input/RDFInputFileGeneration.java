@@ -104,6 +104,16 @@ public class RDFInputFileGeneration {
 		 * Step 3) fetch link info
 		 */
 		fetchLinkInfoById();
+		/**
+		 * Step 4) fetch link name
+		 */
+		
+	}
+	
+	private static void fetchLinkNameById() {
+		System.out.println("fetch link name by id...");
+		
+		System.out.println("fetch link name by id finish!");
 	}
 	
 	private static void fetchLinkInfoById() {
@@ -160,6 +170,8 @@ public class RDFInputFileGeneration {
 			res.close();
 			pstatement.close();
 			con.close();
+			
+			
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -252,7 +264,7 @@ public class RDFInputFileGeneration {
 				long refNodeId 	= res.getLong("ref_node_id");
 				long nonRefNodeId 	= res.getLong("nonref_node_id");
 				if(!linkMap.containsKey(linkId)) {
-					RDFLinkInfo link = new RDFLinkInfo(linkId);
+					RDFLinkInfo link = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
 					linkMap.put(linkId, link);
 				}
 				if(!nodeMap.containsKey(refNodeId)) {
@@ -329,7 +341,7 @@ public class RDFInputFileGeneration {
 				if(linkMap.containsKey(linkId)) {
 					String secondName = res.getString("street_name");
 					RDFLinkInfo existLink = linkMap.get(linkId);
-					existLink.addStreetName(secondName);
+					//existLink.addStreetName(secondName);
 					continue;
 				}
 				
@@ -622,7 +634,7 @@ public class RDFInputFileGeneration {
 					if(linkMap.containsKey(linkId)) {
 						String secondName = res.getString("street_name");
 						RDFLinkInfo existLink = linkMap.get(linkId);
-						existLink.addStreetName(secondName);
+						//existLink.addStreetName(secondName);
 						continue;
 					}
 					

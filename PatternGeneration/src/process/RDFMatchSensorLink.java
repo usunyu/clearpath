@@ -14,11 +14,11 @@ public class RDFMatchSensorLink {
 	/**
 	 * @param file
 	 */
-	static String root 			= "file";
+	static String root 				= "file";
 	static String linkFile			= "RDF_Link.txt";
 	static String nodeFile			= "RDF_Node.txt";
 	static String kmlLinkFile		= "RDF_Link.kml";
-	static String sensorMatchFile		= "RDF_Sensor_Match.txt";
+	static String sensorMatchFile	= "RDF_Sensor_Match.txt";
 	/**
 	 * @param database
 	 */
@@ -133,7 +133,11 @@ public class RDFMatchSensorLink {
 						SensorInfo sensor = sensorIterator.next();
 						LocationInfo sLoc = sensor.getLocation();
 						// same direction
-						String allDir = link.getAllDirection();
+						/**
+						 * need fix
+						 */
+						//String allDir = link.getAllDirection();
+						String allDir = "";
 						String[] dirList = allDir.split(",");
 						for (int d = 0; d < dirList.length; d++) {
 							if (sensor.getDirection() == Integer.parseInt(dirList[d])) {
@@ -179,7 +183,11 @@ public class RDFMatchSensorLink {
 						SensorInfo sensor = sensorIterator.next();
 						LocationInfo sLoc = sensor.getLocation();
 						// same direction
-						String allDir = link.getAllDirection();
+						/**
+						 * need fix
+						 */
+						//String allDir = link.getAllDirection();
+						String allDir = "";
 						String[] dirList = allDir.split(",");
 						for (int d = 0; d < dirList.length; d++) {
 							// 0 : 3, 1 : 2
@@ -400,7 +408,10 @@ public class RDFMatchSensorLink {
 					allDir = String.valueOf(Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation()));
 					allDir += "," + String.valueOf(Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation()));
 				}
-				RDFLink.setAllDirection(allDir);
+				/**
+				 * need fix
+				 */
+				//RDFLink.setAllDirection(allDir);
 				
 				linkList.add(RDFLink);
 				
@@ -458,7 +469,11 @@ public class RDFMatchSensorLink {
 				String streetName 	= link.getStreetName();
 				long refNodeId 		= link.getRefNodeId();
 				long nonRefNodeId 	= link.getNonRefNodeId();
-				String allDirection		= link.getAllDirection();
+				/**
+				 * need fix
+				 */
+				//String allDirection		= link.getAllDirection();
+				String allDirection	= "";
 				int functionalClass = link.getFunctionalClass();
 				String travelDirection 	= link.getTravelDirection();
 				boolean ramp		= link.isRamp();
