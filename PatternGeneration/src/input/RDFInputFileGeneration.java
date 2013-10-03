@@ -13,11 +13,12 @@ public class RDFInputFileGeneration {
 	 */
 	static String root				= "file";
 	// for write link file
-	static String linkFile			= "RDF_Link.txt";
-	static String linkGeometryFile	= "RDF_Link_Geometry.txt";
-	static String linkTempFile		= "RDF_Link_Temp.txt";
+	static String linkFile			= "RDF_Link.csv";
+	static String linkGeometryFile	= "RDF_Link_Geometry.csv";
+	static String linkTempFile		= "RDF_Link_Temp.csv";
+	static String linkIdFile		= "RDF_Link_Id.csv";
 	// for write node file
-	static String nodeFile			= "RDF_Node.txt";
+	static String nodeFile			= "RDF_Node.csv";
 	/**
 	 * @param database
 	 */
@@ -38,14 +39,15 @@ public class RDFInputFileGeneration {
 	/**
 	 * @param node
 	 */
-	static LinkedList<RDFNodeInfo> nodeList = new LinkedList<RDFNodeInfo>();
-	static HashSet<Long> nodeSet = new HashSet<Long>();
+	static HashSet<Long> nodeIdSet = new HashSet<Long>();							// not use!
+	static LinkedList<RDFNodeInfo> nodeList = new LinkedList<RDFNodeInfo>();		// not use!
+	static HashMap<Long, RDFNodeInfo> nodeMap = new HashMap<Long, RDFNodeInfo>();
 	/**
 	 * @param link
 	 */
-	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
+	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();		// not use!
 	static HashMap<Long, RDFLinkInfo> linkMap = new HashMap<Long, RDFLinkInfo>();
-	static LinkedList<String> linkBuffer = new LinkedList<String>();
+	static LinkedList<String> linkBuffer = new LinkedList<String>();				// not use!
 	/**
 	 * @param post code
 	 */
@@ -64,7 +66,7 @@ public class RDFInputFileGeneration {
 		
 		//fetchWriteGeometry();
 		
-		/**
+		/** deprecated
 		 *  Step 1) add the post code needed (deprecated not accurate and continue) 
 		 *  		fetch link from post code (deprecated)
 		 *  		fetch link by area (lat, lon)
@@ -72,26 +74,82 @@ public class RDFInputFileGeneration {
 		 */
 		/*initialPostCode();		 	deprecated */
 		/*fetchLinkByPostCode();	 	deprecated */
-		fetchLinkByArea();
-		writeLinkDetail();
+		//fetchLinkByAreaAll();
+		//writeLinkDetail();
 		/**
 		 *  Step 2) read the info from RDF_Link.txt
 		 *  		fetch the node info according the read data
 		 *  		write the node info to RDF_Node.txt
 		 */
-		readLinkFile();
-		fetchNodeBySet();
-		writeNodeFile();
+		//readLinkFile();
+		//fetchNodeBySet();
+		//writeNodeFile();
 		/**
 		 *  Step 3) read the info from RDF_Link.txt
 		 *			fetch geometry points
 		 */
-		readLinkFile();
-		fetchGeometry();
-		writeLinkWithGeometry();
+		//readLinkFile();
+		//fetchGeometry();
+		//writeLinkWithGeometry();
+		
+		/**
+		 * Step 1) 	fetch linkId and nodeId by area(lat, lon)
+		 */
+		fetchLinkNodeIdByArea();
 	}
 	
-	private static void fetchLinkByArea() {
+	private static void fetchLinkNodeIdByArea() {
+		System.out.println("fetch link by area...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			
+			con = getConnection();
+			
+			sql = 	"SELECT link_id, ref_node_id, nonref_node_id " +
+					"FROM rdf_link, rdf_node " +
+					"WHERE ref_node_id = node_id " +
+					"AND lat >= " + LosAngelesLat1 + " AND lat <= " + LosAngelesLat2 + " " +
+					"AND lon >= " + LosAngelesLon1 + " AND lon <= " + LosAngelesLon2 + " ";
+			
+			System.out.println("execute query... ");
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			
+			while (res.next()) {
+				debug++;
+				long linkId 	= res.getLong("link_id");
+				long refNodeId 	= res.getLong("ref_node_id");
+				long nonRefNodeId 	= res.getLong("nonref_node_id");
+				if(!linkMap.containsKey(linkId)) {
+					RDFLinkInfo link = new RDFLinkInfo(linkId);
+					linkMap.put(linkId, link);
+				}
+				if(!nodeMap.containsKey(refNodeId)) {
+					RDFNodeInfo node = new RDFNodeInfo(refNodeId);
+					nodeMap.put(refNodeId, node);
+				}
+				if(!nodeMap.containsKey(nonRefNodeId)) {
+					RDFNodeInfo node = new RDFNodeInfo(nonRefNodeId);
+					nodeMap.put(nonRefNodeId, node);
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchLinkByArea: debug code: " + debug);
+		}
+		System.out.println("fetched " + linkMap.size() + " links and " + nodeMap.size() + " nodes!");
+	}
+	
+	/**
+	 * @deprecated
+	 * all things in one query, not clear
+	 */
+	private static void fetchLinkByAreaAll() {
 		System.out.println("fetch link by area...");
 		int debug = 0;
 		try {
@@ -262,7 +320,7 @@ public class RDFInputFileGeneration {
 		try {
 			// build sql query
 			StringBuffer nodeStringBuffer = new StringBuffer();
-			Iterator<Long> iterator = nodeSet.iterator();
+			Iterator<Long> iterator = nodeIdSet.iterator();
 			int i = 0;
 			while(iterator.hasNext()) {
 				debug++;
@@ -280,7 +338,7 @@ public class RDFInputFileGeneration {
 				}
 				
 				if(debug % 1000 == 0)
-					System.out.println((double)debug / nodeSet.size() * 100 + "% finish!");
+					System.out.println((double)debug / nodeIdSet.size() * 100 + "% finish!");
 			}
 			if(!nodeStringBuffer.toString().equals("")) {	// process rest
 				String nodeQuery = nodeStringBuffer.toString();
@@ -291,7 +349,7 @@ public class RDFInputFileGeneration {
 			e.printStackTrace();
 			System.err.println("fetchNodeBySet: debug code: " + debug);
 		}
-		System.out.println("fetch " + nodeSet.size() + " nodes by set finish!");
+		System.out.println("fetch " + nodeIdSet.size() + " nodes by set finish!");
 	}
 	
 	private static void readLinkFile() {
@@ -322,10 +380,10 @@ public class RDFInputFileGeneration {
 				boolean expressLane 	= nodes[11].equals("Y") ? true : false;
 				
 				// gather node id
-				if(!nodeSet.contains(refNodeId))
-					nodeSet.add(refNodeId);
-				if(!nodeSet.contains(nonRefNodeId))
-					nodeSet.add(nonRefNodeId);
+				//if(!nodeIdSet.contains(refNodeId))
+				//	nodeIdSet.add(refNodeId);
+				//if(!nodeIdSet.contains(nonRefNodeId))
+				//	nodeIdSet.add(nonRefNodeId);
 				
 				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, streetName, refNodeId, nonRefNodeId, 
 						functionalClass, direction, ramp, tollway, carpoolRoad, speedCategory, 

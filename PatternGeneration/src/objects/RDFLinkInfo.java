@@ -104,6 +104,10 @@ public class RDFLinkInfo {
 		streetName += ";" + secondName;
 	}
 	
+	public void setStreetName(String streetName) {
+		this.streetName = streetName;
+	}
+	
 	public String getStreetName() {
 		return streetName;
 	}
@@ -112,8 +116,16 @@ public class RDFLinkInfo {
 		return refNodeId;
 	}
 	
+	public void setRefNodeId(long refNodeId) {
+		this.refNodeId = refNodeId;
+	}
+	
 	public long getNonRefNodeId() {
 		return nonRefNodeId;
+	}
+	
+	public void setNonRefNodeId(long nonRefNodeId) {
+		this.nonRefNodeId = nonRefNodeId;
 	}
 	
 	public void setFunctionalClass(int functionalClass) {
@@ -128,27 +140,55 @@ public class RDFLinkInfo {
 		return travelDirection;
 	}
 	
+	public void  setTravelDirection(String travelDirection) {
+		this.travelDirection = travelDirection;
+	}
+	
 	public boolean isRamp() {
 		return ramp;
+	}
+	
+	public void setRamp(boolean ramp) {
+		this.ramp = ramp;
 	}
 	
 	public boolean isTollway() {
 		return tollway;
 	}
 	
+	public void setTollway(boolean tollway) {
+		this.tollway = tollway;
+	}
+	
 	public boolean isCarpoolRoad() {
 		return carpoolRoad;
+	}
+	
+	public void setCarpoolRoad(boolean carpoolRoad) {
+		this.carpoolRoad = carpoolRoad;
 	}
 	
 	public boolean isCarpools() {
 		return carpools;
 	}
 	
+	public void setCarpools(boolean carpools) {
+		this.carpools = carpools;
+	}
+	
 	public boolean isExpressLane() {
 		return expressLane;
 	}
 	
+	public void isExpressLane(boolean expressLane) {
+		this.expressLane = expressLane;
+	}
+	
 	public int getSpeedCategory() {
 		return speedCategory;
+	}
+	
+	public void setSpeedCategory(int speedCategory) {
+		this.speedCategory = speedCategory;
 	}
 }

@@ -9,6 +9,10 @@ public class RDFNodeInfo {
 	boolean visited;
 	long parentId;
 
+	public RDFNodeInfo(long nodeId) {
+		this.nodeId = nodeId;
+	}
+
 	public RDFNodeInfo(long nodeId, LocationInfo location) {
 		this.nodeId = nodeId;
 		this.location = location;
@@ -20,6 +24,10 @@ public class RDFNodeInfo {
 
 	public LocationInfo getLocation() {
 		return location;
+	}
+
+	public void setLocation(LocationInfo location) {
+		this.location = location;
 	}
 	
 	public void prepareRoute() {
