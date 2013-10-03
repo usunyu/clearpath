@@ -107,7 +107,7 @@ public class RDFInputFileGeneration {
 	}
 	
 	private static void fetchLinkInfoById() {
-		System.out.println("fetch node info by id...");
+		System.out.println("fetch link info by id...");
 		int debug = 0;
 		try {
 			Connection con = null;
@@ -117,47 +117,46 @@ public class RDFInputFileGeneration {
 			
 			con = getConnection();
 			con.setAutoCommit(false);
-			for(long linkId : linkMap.keySet()) {
+			
+			sql = "SELECT link_id, access_id, functional_class, travel_direction, ramp, tollway, speed_category " +
+					"FROM rdf_nav_link";
+			
+			System.out.println("execute query... ");
+			pstatement = con.prepareStatement(sql, 
+					ResultSet.TYPE_FORWARD_ONLY,
+					ResultSet.CONCUR_READ_ONLY,
+					ResultSet.FETCH_FORWARD);
+			pstatement.setFetchSize(1000);
+			res = pstatement.executeQuery();
+			
+			while (res.next()) {
+				long linkId 			= res.getLong("link_id");
+				
+				if(!linkMap.containsKey(linkId))
+					continue;
+				
 				debug++;
+				
 				RDFLinkInfo link = linkMap.get(linkId);
 				
+				int accessId			= res.getInt("access_id");
+				int functionalClass		= res.getInt("functional_class");
+				String travelDirection	= res.getString("travel_direction");
+				boolean ramp			= res.getString("ramp").equals("Y") ? true : false;
+				boolean tollway			= res.getString("tollway").equals("Y") ? true : false;
+				int speedCategory		= res.getInt("speed_category");
 				
-				sql = "SELECT access_id, functional_class, travel_direction, ramp, tollway, speed_category " +
-						"FROM rdf_nav_link WHERE link_id=" + link.getLinkId();
-				pstatement = con.prepareStatement(sql, 
-						ResultSet.TYPE_FORWARD_ONLY,
-						ResultSet.CONCUR_READ_ONLY,
-						ResultSet.FETCH_FORWARD);
-				res = pstatement.executeQuery();
-				
-				while (res.next()) {
-					int accessId			= res.getInt("access_id");
-					int functionalClass		= res.getInt("functional_class");
-					String travelDirection	= res.getString("travel_direction");
-					boolean ramp			= res.getString("ramp").equals("Y") ? true : false;
-					boolean tollway			= res.getString("tollway").equals("Y") ? true : false;
-					int speedCategory		= res.getInt("speed_category");
-					
-					link.setAccessId(accessId);
-					link.setFunctionalClass(functionalClass);
-					link.setTravelDirection(travelDirection);
-					link.setRamp(ramp);
-					link.setTollway(tollway);
-					link.setSpeedCategory(speedCategory);
-				}
+				link.setAccessId(accessId);
+				link.setFunctionalClass(functionalClass);
+				link.setTravelDirection(travelDirection);
+				link.setRamp(ramp);
+				link.setTollway(tollway);
+				link.setSpeedCategory(speedCategory);
 				
 				if(debug % 10000 == 0)
-					System.out.println("processed " + debug / linkMap.size() * 100 + "%.");
-				
-				if (debug % 250 == 0) {
-					// reconnect
-					res.close();
-					pstatement.close();
-					con.close();
-					con = getConnection();
-					con.setAutoCommit(false);
-				}
+					System.out.println("processed " + (double) debug / linkMap.size() * 100 + "%.");
 			}
+			
 			res.close();
 			pstatement.close();
 			con.close();
@@ -166,7 +165,7 @@ public class RDFInputFileGeneration {
 			e.printStackTrace();
 			System.err.println("fetchLinkInfoById: debug code: " + debug);
 		}
-		System.out.println("fetch node info by id finish!");
+		System.out.println("fetch link info by id finish!");
 	}
 	
 	private static void fetchNodeInfoById() {
