@@ -252,7 +252,7 @@ public class RDFInputFileGeneration {
 				link.addPoint(location);
 				
 				if(debug % 10000 == 0)
-					System.out.println("processed " + (double) debug / linkMap.size() * 100 + "%.");
+					System.out.println("processed " + debug + " records.");
 			}
 			res.close();
 			pstatement.close();
