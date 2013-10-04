@@ -53,9 +53,12 @@ public class OSMInputFileGeneration {
 	//static String nodeTxtFile 	= "los_angeles_node.txt";
 	//static String wayTxtFile 	= "los_angeles_way.txt";
 	
-	static String osmFile 		= "minnesota.osm";
-	static String nodeTxtFile 	= "minnesota_node.txt";
-	static String wayTxtFile 	= "minnesota_way.txt";
+	//static String osmFile 		= "minnesota.osm";
+	//static String nodeTxtFile 	= "minnesota_node.txt";
+	//static String wayTxtFile 	= "minnesota_way.txt";
+	static String osmFile;
+	static String nodeTxtFile;
+	static String wayTxtFile;
 	/**
 	 * @param node
 	 */
@@ -80,6 +83,17 @@ public class OSMInputFileGeneration {
 	static final String ONEWAY		= "oneway";
 	static final String YES			= "yes";
 	static final String RELATION	= "relation";
+	
+	private static void inputArgs(String arg) {
+		osmFile 	= arg + ".osm";
+		nodeTxtFile = arg + "_node.txt";
+		wayTxtFile 	= arg + "_way.txt";
+	}
+	
+	public static void run(String[] args) {
+		inputArgs(args[0]);
+		main(args);
+	}
 	
 	public static void main(String[] args) {
 		readOsmFileStax();

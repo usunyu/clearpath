@@ -15,12 +15,25 @@ public class OSMGenerateKMLNode {
 	//static String nodeFile 		= "osm_node.txt";
 	//static String kmlFile 		= "osm_node.kml";
 	
-	static String nodeFile	 	= "los_angeles_node.txt";
-	static String kmlFile 		= "los_angeles_node.kml";
+	// static String nodeFile	 	= "los_angeles_node.txt";
+	// static String kmlFile 		= "los_angeles_node.kml";
+
+	static String nodeFile;
+	static String kmlFile;
 	/**
 	 * @param node
 	 */
 	static ArrayList<NodeInfo> nodeArrayList = new ArrayList<NodeInfo>();
+
+	private static void inputArgs(String arg) {
+		nodeFile 	= arg + "_node.txt";
+		kmlFile		= arg + "_node.kml";
+	}
+	
+	public static void run(String[] args) {
+		inputArgs(args[0]);
+		main(args);
+	}
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

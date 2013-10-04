@@ -1512,6 +1512,12 @@ public class Osm2Wkt {
 				+ "\t \t -t X Y - translate map by x=X and y=Y meters" + "\n"
 		);	
 	}
+	
+	public static void run(String[] args) {
+		String[] newArgs = new String[1];
+		newArgs[0] = args[0] + "." + XML_TAG_OSM;
+		main(newArgs);
+	}
 
 	public static void main(String[] args) {
 		
@@ -1532,7 +1538,7 @@ public class Osm2Wkt {
 		String destfile = "";
 
 		 try{
-		 	file = args[args.length-1];
+		 	file = FOLDER_ROOT + "/" + args[args.length-1];
 
 		 	for(int i=0; i<args.length; i++){
 		 		if(args[i].equals("-a")){
@@ -1619,7 +1625,7 @@ public class Osm2Wkt {
 		System.out.println("written to new file " + destfile);
 		System.out.println("done!");
 
-		copyFileToOSMProj(destfile);
+		//copyFileToOSMProj(destfile);
 	}
 
 	private static void copyFileToOSMProj(String destfile) {

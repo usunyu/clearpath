@@ -22,10 +22,15 @@ public class OSMGenerateAdjList {
 	//static String edgeFile 		= "los_angeles_edge.txt";
 	//static String adjlistFile 	= "los_angeles_adjlist.txt";
 	
-	static String nodeFile	 	= "minnesota_node.txt";
-	static String wayFile	 	= "minnesota_way.txt";
-	static String edgeFile 		= "minnesota_edge.txt";
-	static String adjlistFile 	= "minnesota_adjlist.txt";
+	// static String nodeFile	 	= "minnesota_node.txt";
+	// static String wayFile	 	= "minnesota_way.txt";
+	// static String edgeFile 		= "minnesota_edge.txt";
+	// static String adjlistFile 	= "minnesota_adjlist.txt";
+
+	static String nodeFile;
+	static String wayFile;
+	static String edgeFile;
+	static String adjlistFile;
 	/**
 	 * @param node
 	 */
@@ -44,6 +49,18 @@ public class OSMGenerateAdjList {
 	 */
 	static HashMap<Long, ArrayList<Long>> adjList = new HashMap<Long, ArrayList<Long>>();
 	static HashMap<String, EdgeInfo> nodesToEdge = new HashMap<String, EdgeInfo>();
+	
+	private static void inputArgs(String arg) {
+		nodeFile 	= arg + "_node.txt";
+		wayFile 	= arg + "_way.txt";
+		edgeFile	= arg + "_edge.txt";
+		adjlistFile = arg + "_adjlist.txt";
+	}
+	
+	public static void run(String[] args) {
+		inputArgs(args[0]);
+		main(args);
+	}
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

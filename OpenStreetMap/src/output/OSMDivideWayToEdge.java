@@ -19,9 +19,13 @@ public class OSMDivideWayToEdge {
 	//static String wayFile	 	= "los_angeles_way.txt";
 	//static String edgeFile 		= "los_angeles_edge.txt";
 	
-	static String nodeFile	 	= "minnesota_node.txt";
-	static String wayFile	 	= "minnesota_way.txt";
-	static String edgeFile 		= "minnesota_edge.txt";
+	// static String nodeFile	 	= "minnesota_node.txt";
+	// static String wayFile	 	= "minnesota_way.txt";
+	// static String edgeFile 		= "minnesota_edge.txt";
+
+	static String nodeFile;
+	static String wayFile;
+	static String edgeFile;
 	/**
 	 * @param node
 	 */
@@ -34,6 +38,17 @@ public class OSMDivideWayToEdge {
 	 * @param edge
 	 */
 	static ArrayList<EdgeInfo> edgeArrayList = new ArrayList<EdgeInfo>();
+	
+	private static void inputArgs(String arg) {
+		nodeFile 	= arg + "_node.txt";
+		wayFile 	= arg + "_way.txt";
+		edgeFile	= arg + "_edge.txt";
+	}
+	
+	public static void run(String[] args) {
+		inputArgs(args[0]);
+		main(args);
+	}
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

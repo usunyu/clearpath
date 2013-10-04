@@ -21,10 +21,15 @@ public class OSMOutputFileGeneration {
 	//static String wayInfoFile 	= "los_angeles_way_info.txt";
 	//static String wktsFile 		= "los_angeles.osm.wkts";
 	
-	static String nodeFile	 	= "minnesota_node.txt";
-	static String wayFile	 	= "minnesota_way.txt";
-	static String wayInfoFile 	= "minnesota_way_info.txt";
-	static String wktsFile 		= "minnesota.osm.wkts";
+	//static String nodeFile	 	= "minnesota_node.txt";
+	//static String wayFile	 	= "minnesota_way.txt";
+	//static String wayInfoFile 	= "minnesota_way_info.txt";
+	//static String wktsFile 		= "minnesota.osm.wkts";
+	
+	static String nodeFile;
+	static String wayFile;
+	static String wayInfoFile;
+	static String wktsFile;
 	/**
 	 * @param node
 	 */
@@ -35,6 +40,18 @@ public class OSMOutputFileGeneration {
 	 */
 	static ArrayList<WayInfo> wayArrayList = new ArrayList<WayInfo>();
 	static HashMap<Long, WayInfo> wayHashMap = new HashMap<Long, WayInfo>();
+	
+	private static void inputArgs(String arg) {
+		nodeFile 	= arg + "_node.txt";
+		wayFile 	= arg + "_way.txt";
+		wayInfoFile = arg + "_way_info.txt";
+		wktsFile 	= arg + ".osm.wkts";
+	}
+	
+	public static void run(String[] args) {
+		inputArgs(args[0]);
+		main(args);
+	}
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

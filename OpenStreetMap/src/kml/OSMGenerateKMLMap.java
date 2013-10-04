@@ -22,11 +22,17 @@ public class OSMGenerateKMLMap {
 	//// check highway type : null way
 	//static String kmlNullFile	= "los_angeles_null_map.kml";
 	
-	static String nodeFile	 	= "minnesota_node.txt";
-	static String wayFile	 	= "minnesota_way.txt";
-	static String kmlFile 		= "minnesota.kml";
+	// static String nodeFile	 	= "minnesota_node.txt";
+	// static String wayFile	 	= "minnesota_way.txt";
+	// static String kmlFile 		= "minnesota.kml";
 	// check highway type : null way
-	static String kmlNullFile	= "minnesota_null_map.kml";
+	// static String kmlNullFile	= "minnesota_null_map.kml";
+
+	static String nodeFile;
+	static String wayFile;
+	static String kmlFile;
+	// check highway type : null way
+	static String kmlNullFile;
 	/**
 	 * @param node
 	 */
@@ -35,6 +41,18 @@ public class OSMGenerateKMLMap {
 	 * @param way
 	 */
 	static ArrayList<WayInfo> wayArrayList = new ArrayList<WayInfo>();
+	
+	private static void inputArgs(String arg) {
+		nodeFile 	= arg + "_node.txt";
+		wayFile 	= arg + "_way.txt";
+		kmlFile		= arg + ".kml";
+		kmlNullFile = arg + "_null_map.kml";
+	}
+	
+	public static void run(String[] args) {
+		inputArgs(args[0]);
+		main(args);
+	}
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
