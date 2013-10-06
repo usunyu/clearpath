@@ -408,7 +408,14 @@ public class RDFInputFileGeneration {
 				String streetName			= res.getString("street_name");
 				boolean isNameOnRoadsign	= res.getString("is_name_on_roadsign").equals(YES) ? true : false;
 				
-				link.setBaseName(baseName);
+				if(isNameOnRoadsign) {
+					link.setBaseName(baseName);
+				}
+				else {
+					if(link.getBaseName() == null) {
+						link.setBaseName(baseName);
+					}
+				}
 				link.addStreetName(streetName, isNameOnRoadsign);
 				
 				if(debug % 10000 == 0)
