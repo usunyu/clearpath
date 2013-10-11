@@ -14,15 +14,17 @@ public class RDFTdspGeneration {
 	 * @param file
 	 */
 	static String root 				= "file";
-	static String linkFile 			= "RDF_Link.txt";
-	static String nodeFile 			= "RDF_Node.txt";
-	static String adjListFile		= "RDF_AdjList.txt";
+	static String linkFile 			= "RDF_Link.csv";
+	static String linkGeometryFile	= "RDF_Link_Geometry.csv";
+	static String linkLaneFile		= "RDF_Link_Lane.csv";
+	static String nodeFile 			= "RDF_Node.csv";
+	static String adjListFile		= "RDF_AdjList.csv";
 	static String pathKMLFile 		= "RDF_Path.kml";
 	/**
 	 * @param args
 	 */
-	static long startNode 		= 49472526;
-	static long endNode 		= 998276726;
+	static long startNode 		= 49304020;
+	static long endNode 		= 958285311;
 	//static long startNode 	= 49253316;
 	//static long endNode 		= 49250620;
 	static int startTime 		= 10;
@@ -30,6 +32,17 @@ public class RDFTdspGeneration {
 	static int timeRange 		= 60;
 	static String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 	static String[] months = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+	static String SEPARATION		= ",";
+	static String VERTICAL		= "|";
+	static String COLON			= ":";
+	static String SEMICOLON		= ";";
+	static String UNKNOWN 			= "Unknown Street";
+	static String YES				= "Y";
+	static String NO				= "N";
+	/**
+	 * @param link
+	 */
+	static HashMap<Long, RDFLinkInfo> linkMap = new HashMap<Long, RDFLinkInfo>();
 	/**
 	 * @param node
 	 */
@@ -49,37 +62,41 @@ public class RDFTdspGeneration {
 	
 	public static void main(String[] args) {
 		readNodeFile();
+		
 		readLinkFile();
+		readLinkGeometry();
+		readLinkLane();
+		
 		buildAdjList(0);
-		//tdspGreedy(startNode, endNode, startTime);
-		tdspAStar(startNode, endNode, startTime);
+		tdspGreedy(startNode, endNode, startTime);
+		//tdspAStar(startNode, endNode, startTime);
 		generatePathKML();
 		turnByTurn();
 	}
 	
-	private static String getUniformSTName(String stName) {
-		String[] namePart = stName.split(";");
-		int index = 0;
-		boolean find = false;
+	// private static String getUniformSTName(String stName) {
+	// 	String[] namePart = stName.split(";");
+	// 	int index = 0;
+	// 	boolean find = false;
 		
-		if(namePart.length > 1) {
-			for(; index < namePart.length; index++) {
-				for(int i = 0; i < namePart[index].length(); i++) {
-					if(Character.isDigit(namePart[index].charAt(i))) {
-						find = true;
-						break;
-					}
-				}
-				if(find)
-					break;
-			}
-		}
-		if(index == namePart.length)
-			stName = namePart[0];
-		else
-			stName = namePart[index];
-		return stName;
-	}
+	// 	if(namePart.length > 1) {
+	// 		for(; index < namePart.length; index++) {
+	// 			for(int i = 0; i < namePart[index].length(); i++) {
+	// 				if(Character.isDigit(namePart[index].charAt(i))) {
+	// 					find = true;
+	// 					break;
+	// 				}
+	// 			}
+	// 			if(find)
+	// 				break;
+	// 		}
+	// 	}
+	// 	if(index == namePart.length)
+	// 		stName = namePart[0];
+	// 	else
+	// 		stName = namePart[index];
+	// 	return stName;
+	// }
 	
 	public static void turnByTurn() {
 		System.out.println("turn by turn...");
@@ -107,7 +124,7 @@ public class RDFTdspGeneration {
 			
 			String curStName = linkInfo.getBaseName();
 			
-			curStName = getUniformSTName(curStName);
+			//curStName = getUniformSTName(curStName);
 			
 			onRamp = linkInfo.isRamp();
 			
@@ -212,33 +229,34 @@ public class RDFTdspGeneration {
 				//RDFNodeInfo lastNode = nodeMap.get(lastNodeId);
 				//RDFNodeInfo currentNode = nodeMap.get(nodeId);
 				
-				RDFLinkInfo link = nodeToLink.get(lastNodeId + "," + nodeId);
+				RDFLinkInfo link = nodeToLink.get(lastNodeId + SEPARATION + nodeId);
+				
+				String baseName 	= link.getBaseName();
+				int functionalClass = link.getFunctionalClass();
+				String travelDirection 	= link.getTravelDirection();
+				boolean ramp		= link.isRamp();
+				boolean tollway		= link.isTollway();
+				boolean carpool 	= link.isCarpool();
+				int speedCategory 	= link.getSpeedCategory();
 				LinkedList<LocationInfo> pointsList = link.getPointList();
-				ListIterator<LocationInfo> iterator = pointsList.listIterator();
 				
 				String kmlStr = "<Placemark><name>Link:" + link.getLinkId() + "</name>";
 				kmlStr += "<description>";
-				String baseName = link.getBaseName();
-				baseName = getUniformSTName(baseName);
-				//String[] nameNode = streetName.split(";");
-				//if(nameNode.length > 1)
-				//	streetName = nameNode[0] + "(" + nameNode[1] + ")";
 				kmlStr += "Street:" + baseName + "\r\n";
-				kmlStr += "Funclass:" + link.getFunctionalClass() + "\r\n";
-				//kmlStr += "Dir:" + link.getAllDirection() + "\r\n";
-				kmlStr += "Speedcat:" + link.getSpeedCategory() + "\r\n";
-				kmlStr += "Travel:" + link.getTravelDirection() + "\r\n";
-				//kmlStr += "CarpoolRoad:" + link.isCarpoolRoad() + "\r\n";
-				//kmlStr += "Carpools:" + link.isCarpools() + "\r\n";
-				kmlStr += "Ramp:" + link.isRamp() + "\r\n";
-				kmlStr += "Tollway:" + link.isTollway() + "\r\n";
+
+				kmlStr += "Funclass:" + functionalClass + "\r\n";
+				kmlStr += "Travel:" + travelDirection + "\r\n";
+				kmlStr += "Speedcat:" + speedCategory + "\r\n";
+				
+				kmlStr += "Carpool:" + carpool + "\r\n";
+				kmlStr += "Ramp:" + ramp + "\r\n";
+				kmlStr += "Tollway:" + tollway + "\r\n";
 				
 				kmlStr += "Start:" + lastNodeId + "\r\n";
 				kmlStr += "End:" + nodeId + "\r\n";
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
-				while(iterator.hasNext()) {
-					LocationInfo location = iterator.next();
+				for(LocationInfo location : pointsList) {
 					kmlStr += location.getLongitude() + "," + location.getLatitude() + "," + location.getZLevel() + " ";
 				}
 				kmlStr += "</coordinates></LineString>";
@@ -468,11 +486,11 @@ public class RDFTdspGeneration {
 				if (debug % 100000 == 0)
 					System.out.println("completed " + debug + " lines.");
 
-				String[] splitStr = strLine.split("\\|");
+				String[] splitStr = strLine.split("\\" + VERTICAL);
 				long startNode = Long.parseLong(splitStr[0].substring(1));
 
 				ArrayList<RDFToNodeInfo> toNodeList = new ArrayList<RDFToNodeInfo>();
-				String[] nodeListStr = splitStr[1].split(";");
+				String[] nodeListStr = splitStr[1].split(SEMICOLON);
 				for (int i = 0; i < nodeListStr.length; i++) {
 					String nodeStr = nodeListStr[i];
 					long toNode = Long.parseLong(nodeStr.substring(nodeStr.indexOf('n') + 1, nodeStr.indexOf('(')));
@@ -483,7 +501,7 @@ public class RDFTdspGeneration {
 						toNodeInfo = new RDFToNodeInfo(toNode, travelTime);
 					} else { // variable
 						String timeListStr = nodeStr.substring(nodeStr.indexOf(':') + 1);
-						String[] timeValueStr = timeListStr.split(",");
+						String[] timeValueStr = timeListStr.split(SEPARATION);
 						int[] travelTimeArray = new int[timeValueStr.length];
 						for (int j = 0; j < timeValueStr.length; j++)
 							travelTimeArray[j] = Integer.parseInt(timeValueStr[j]);
@@ -505,6 +523,74 @@ public class RDFTdspGeneration {
 		System.out.println("building list finish!");
 	}
 	
+	private static void readLinkLane() {
+		System.out.println("read link lane...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkLaneFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(SEPARATION);
+				long linkId 		= Long.parseLong(nodes[0]);
+				RDFLinkInfo	link	= linkMap.get(linkId);
+				for(int i = 1; i < nodes.length; i += 4) {
+					long laneId		= Long.parseLong(nodes[i]);
+					String travelDirection = nodes[i + 1];
+					int laneType	= Integer.parseInt(nodes[i + 2]);
+					int accessId 	= Integer.parseInt(nodes[i + 3]);
+					RDFLaneInfo	lane = new RDFLaneInfo(laneId, travelDirection, laneType, accessId);
+
+					link.addLane(lane);
+				}
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("readLinkLane: debug code: " + debug);
+		}
+		System.out.println("read link lane finish!");
+	}
+	
+	private static void readLinkGeometry() {
+		System.out.println("read link geometry...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkGeometryFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(SEPARATION);
+				long linkId 		= Long.parseLong(nodes[0]);
+				RDFLinkInfo	link	= linkMap.get(linkId);
+				for(int i = 1; i < nodes.length; i+=3) {
+					double lat		= Double.parseDouble(nodes[i]);
+					double lon		= Double.parseDouble(nodes[i + 1]);
+					int zLevel	= Integer.parseInt(nodes[i + 2]);
+					LocationInfo loc = new LocationInfo(lat, lon, zLevel);
+					link.addPoint(loc);
+				}
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("readLinkGeometry: debug code: " + debug);
+		}
+		System.out.println("read link geometry finish!");
+	}
+	
 	private static void readLinkFile() {
 		System.out.println("read link file...");
 		int debug = 0;
@@ -516,60 +602,54 @@ public class RDFTdspGeneration {
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split("\\|");
+				String[] nodes = strLine.split(SEPARATION);
 				
 				long 	linkId 			= Long.parseLong(nodes[0]);
-				String 	streetName 		= nodes[1];
-				long 	refNodeId 		= Long.parseLong(nodes[2]);
-				long 	nonRefNodeId 	= Long.parseLong(nodes[3]);
-				int 	functionalClass = Integer.parseInt(nodes[4]);
-				String 	direction 		= nodes[5];
+				long 	refNodeId 		= Long.parseLong(nodes[1]);
+				long 	nonRefNodeId 	= Long.parseLong(nodes[2]);
+				String 	baseName 		= nodes[3];
+				int		accessId		= Integer.parseInt(nodes[4]);
+				int 	functionalClass = Integer.parseInt(nodes[5]);
 				int 	speedCategory 	= Integer.parseInt(nodes[6]);
-				boolean ramp 			= nodes[7].equals("Y") ? true : false;
-				boolean tollway 		= nodes[8].equals("Y") ? true : false;
-				boolean carpoolRoad 	= nodes[9].equals("Y") ? true : false;
-				boolean carpools 		= nodes[10].equals("Y") ? true : false;
-				boolean expressLane 	= nodes[11].equals("Y") ? true : false;
+				String 	travelDirection = nodes[7];
+				boolean ramp 			= nodes[8].equals(YES) ? true : false;
+				boolean tollway 		= nodes[9].equals(YES) ? true : false;
 				
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
-				/**
-				 * need fix
-				 */
 				
-				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
-				String[] pointsListStr		= nodes[12].split(";");
-				for(int i = 0; i < pointsListStr.length; i++) {
-					String[] locStr = pointsListStr[i].split(",");
-					double lat = Double.parseDouble(locStr[0]);
-					double lon = Double.parseDouble(locStr[1]);
-					int z = Integer.parseInt(locStr[2]);
-					LocationInfo loc = new LocationInfo(lat, lon, z);
-					RDFLink.addPoint(loc);
-					pointsList.add(loc);
+				RDFLinkInfo link = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+				
+				link.setBaseName(baseName);
+				link.setAccessId(accessId);
+				link.setFunctionalClass(functionalClass);
+				link.setSpeedCategory(speedCategory);
+				link.setTravelDirection(travelDirection);
+				link.setRamp(ramp);
+				link.setTollway(tollway);
+				
+				// add direction
+				RDFNodeInfo refNode = nodeMap.get(refNodeId);
+				RDFNodeInfo nonRefNode = nodeMap.get(nonRefNodeId);
+				if(travelDirection.equals("T")) {
+					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
+					link.addDirection(direction);
+					nodeToLink.put(nonRefNodeId + SEPARATION + refNodeId, link);
+				}
+				else if(travelDirection.equals("F")) {
+					int direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
+					link.addDirection(direction);
+					nodeToLink.put(refNodeId + SEPARATION + nonRefNodeId, link);
+				}
+				else if(travelDirection.equals("B")) {
+					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
+					link.addDirection(direction);
+					direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
+					link.addDirection(direction);
+					nodeToLink.put(nonRefNodeId + SEPARATION + refNodeId, link);
+					nodeToLink.put(refNodeId + SEPARATION + nonRefNodeId, link);
 				}
 				
-				//RDFLink.setPointsList(pointsList);
-				
-				if(direction.equals("T")) {
-					String nodeStr = nonRefNodeId + "," + refNodeId;
-					nodeToLink.put(nodeStr, RDFLink);
-				}
-				else if(direction.equals("F")) {
-					String nodeStr = refNodeId + "," + nonRefNodeId;
-					nodeToLink.put(nodeStr, RDFLink);
-				}
-				else if(direction.equals("B")) {
-					String nodeStr = nonRefNodeId + "," + refNodeId;
-					nodeToLink.put(nodeStr, RDFLink);
-					nodeStr = refNodeId + "," + nonRefNodeId;
-					nodeToLink.put(nodeStr, RDFLink);
-				}
-				else {
-					System.err.println("direction undefined");
-				}
+				linkMap.put(linkId, link);
 
-				if (debug % 10000 == 0)
-					System.out.println("record " + debug + " finish!");
 			}
 			br.close();
 			in.close();
@@ -592,19 +672,18 @@ public class RDFTdspGeneration {
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split("\\|");
+				String[] nodes = strLine.split(SEPARATION);
 				
 				long 			nodeId 	= Long.parseLong(nodes[0]);
-				String[]		locStr 	= nodes[1].split(",");
-				int 			zLevel	= Integer.parseInt(nodes[2]);
-				LocationInfo 	location= new LocationInfo(Double.parseDouble(locStr[0]), Double.parseDouble(locStr[1]), zLevel);
+				double			lat		= Double.parseDouble(nodes[1]);
+				double			lon		= Double.parseDouble(nodes[2]);
+				int 			zLevel	= Integer.parseInt(nodes[3]);
 				
-				RDFNodeInfo RDFNode = new RDFNodeInfo(nodeId, location);
-				RDFNode.prepareRoute();
-				nodeMap.put(nodeId, RDFNode);
-
-				if (debug % 10000 == 0)
-					System.out.println("record " + debug + " finish!");
+				LocationInfo 	location= new LocationInfo(lat, lon, zLevel);
+				
+				RDFNodeInfo node = new RDFNodeInfo(nodeId, location);
+				node.prepareRoute();
+				nodeMap.put(nodeId, node);
 			}
 			br.close();
 			in.close();
