@@ -15,10 +15,12 @@ public class RDFAdjListPattern {
 	 * @param file
 	 */
 	static String root 				= "file";
-	static String linkFile 			= "RDF_Link.txt";
-	static String nodeFile 			= "RDF_Node.txt";
-	static String matchSensorFile	= "RDF_Sensor_Match.txt";
-	static String adjListFile		= "RDF_AdjList.txt";
+	static String linkFile 			= "RDF_Link.csv";
+	static String linkGeometryFile	= "RDF_Link_Geometry.csv";
+	static String linkLaneFile		= "RDF_Link_Lane.csv";
+	static String nodeFile 			= "RDF_Node.csv";
+	static String matchSensorFile	= "RDF_Sensor_Match.csv";
+	static String adjListFile		= "RDF_AdjList.csv";
 	/**
 	 * @param database
 	 */
@@ -32,20 +34,25 @@ public class RDFAdjListPattern {
 	static String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 	static String[] months = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
 	static double[] speedCategory = {-1, 80, 65, 55, 41, 31, 21, 15, 6};
+	static String SEPARATION		= ",";
+	static String VERTICAL		= "|";
+	static String COLON			= ":";
+	static String SEMICOLON		= ";";
+	static String UNKNOWN 			= "Unknown Street";
+	static String YES				= "Y";
+	static String NO				= "N";
 	/**
 	 * @param link
 	 */
-	static LinkedList<RDFLinkInfo> linkList = new LinkedList<RDFLinkInfo>();
 	static HashMap<Long, RDFLinkInfo> linkMap = new HashMap<Long, RDFLinkInfo>();
 	/**
 	 * @param node
 	 */
-	static LinkedList<RDFNodeInfo> nodeList = new LinkedList<RDFNodeInfo>();
 	static HashMap<Long, RDFNodeInfo> nodeMap = new HashMap<Long, RDFNodeInfo>();
 	/**
 	 * @param sensor
 	 */
-	static LinkedList<SensorInfo> matchSensorList = new LinkedList<SensorInfo>();
+	static HashMap<Integer, SensorInfo> matchSensorMap = new HashMap<Integer, SensorInfo>();
 	static HashMap<Integer, SensorInfo> sensorMap = new HashMap<Integer, SensorInfo>();
 	/**
 	 * @param pattern
@@ -55,11 +62,17 @@ public class RDFAdjListPattern {
 	
 	public static void main(String[] args) {
 		readNodeFile();
+		
 		readLinkFile();
+		readLinkGeometry();
+		//readLinkLane();
+		
 		fetchSensor();
 		readMatchSensor();
 		fetchSensorPattern(8, 0);
+		
 		buildAdjList();
+		
 		createPattern();
 		createAdjList(0);
 	}
@@ -71,11 +84,10 @@ public class RDFAdjListPattern {
 			adjListFile = file[0] + "_" + days[day] + "." + file[1];
 			FileWriter fstream = new FileWriter(root + "/" + adjListFile);
 			BufferedWriter out = new BufferedWriter(fstream);
-			ListIterator<RDFNodeInfo> nodeIterator = nodeList.listIterator();
-			while(nodeIterator.hasNext()) {
-				RDFNodeInfo nodeInfo = nodeIterator.next();
+
+			for(RDFNodeInfo nodeInfo : nodeMap.values()) {
 				long nodeId = nodeInfo.getNodeId();
-				String strLine = "n" + nodeId + "|";
+				String strLine = "n" + nodeId + VERTICAL;
 				
 				ArrayList<Long> toList = adjList.get(nodeId);
 				if(toList == null || toList.isEmpty()) {
@@ -85,7 +97,7 @@ public class RDFAdjListPattern {
 				
 				for(int j = 0; j < toList.size(); j++) {
 					long toNodeId = toList.get(j);
-					String nodesStr = nodeId + "," + toNodeId;
+					String nodesStr = nodeId + SEPARATION + toNodeId;
 					RDFLinkInfo link = nodeToLink.get(nodesStr);
 					if(link == null) {
 						System.err.println(nodesStr + " no associated link found");
@@ -93,14 +105,14 @@ public class RDFAdjListPattern {
 					}
 					int[] pattern = link.getPattern();
 					if(link.getFunctionalClass() == 5) {
-						strLine += "n" + toNodeId + "(F):" + pattern[0] + ";";
+						strLine += "n" + toNodeId + "(F)" + COLON + pattern[0] + SEMICOLON;
 					}
 					else {
-						strLine += "n" + toNodeId + "(V):";
+						strLine += "n" + toNodeId + "(V)" + COLON;
 						for(int i = 0; i < 60; i++) {
-							strLine += pattern[i] + ",";
+							strLine += pattern[i] + SEPARATION;
 						}
-						strLine += ";";
+						strLine += SEMICOLON;
 					}
 				}
 				strLine += "\r\n";
@@ -116,11 +128,9 @@ public class RDFAdjListPattern {
 	private static void createPattern() {
 		System.out.println("create pattern...");
 		int debug = 0;
-		ListIterator<RDFLinkInfo> linkIterator = linkList.listIterator();
 		try {
-			while(linkIterator.hasNext()) {
+			for(RDFLinkInfo link : linkMap.values()) {
 				debug++;
-				RDFLinkInfo link = linkIterator.next();
 
 				int[] pattern;
 				// if the link is highway
@@ -244,10 +254,7 @@ public class RDFAdjListPattern {
 	
 	private static void buildAdjList() {
 		System.out.println("build adj list...");
-		ListIterator<RDFLinkInfo> iterator = linkList.listIterator();
-		while(iterator.hasNext()) {
-			RDFLinkInfo link = iterator.next();
-			
+		for(RDFLinkInfo link : linkMap.values()) {
 			long refNode = link.getRefNodeId();
 			long nonRefNode = link.getNonRefNodeId();
 			String travelDir = link.getTravelDirection();
@@ -327,10 +334,10 @@ public class RDFAdjListPattern {
 			res = pstatement.executeQuery();
 			while (res.next()) {
 				int sensorId = res.getInt("link_id");
-				if(!sensorMap.containsKey(sensorId))
+				if(!matchSensorMap.containsKey(sensorId))
 					System.out.println("did not find sensor in the hashmap");
 				
-				SensorInfo sensor = sensorMap.get(sensorId);
+				SensorInfo sensor = matchSensorMap.get(sensorId);
 				double speed = res.getDouble("speed");
 				String time = res.getString("time");
 				int index = UtilClass.getIndex(time);
@@ -349,20 +356,13 @@ public class RDFAdjListPattern {
 		System.out.println("fetch sensor pattern...");
 		// make sensorMap just contain matchedSenor
 		sensorMap = new HashMap<Integer, SensorInfo>();	// free old memory
-		ListIterator<SensorInfo> msIt = matchSensorList.listIterator();
-		while(msIt.hasNext()) {
-			SensorInfo sensor = msIt.next();
-			sensorMap.put(sensor.getSensorId(), sensor);
-		}
 		int debug = 0;
 		try {
-			msIt = matchSensorList.listIterator();
 			// build sql query
 			StringBuffer sensorStringBuffer = new StringBuffer();
 			int i = 0;
-			while(msIt.hasNext()) {
+			for(SensorInfo sensor : matchSensorMap.values()) {
 				debug++;
-				SensorInfo sensor = msIt.next();
 				if(i++ == 0)
 					sensorStringBuffer.append(sensor.getSensorId());
 				else
@@ -376,7 +376,7 @@ public class RDFAdjListPattern {
 				}
 				
 				if(debug % 1000 == 0)
-					System.out.println((double)debug / matchSensorList.size() * 100 + "% finish!");
+					System.out.println((double)debug / matchSensorMap.size() * 100 + "% finish!");
 			}
 			if(!sensorStringBuffer.toString().equals("")) {	// process rest
 				String nodeQuery = sensorStringBuffer.toString();
@@ -400,22 +400,21 @@ public class RDFAdjListPattern {
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split("\\|");
+				String[] nodes = strLine.split(SEPARATION);
 				
 				long 	linkId 		= Long.parseLong(nodes[0]);
-				String[] sensorStr	= nodes[1].split(",");
+				RDFLinkInfo link 	= linkMap.get(linkId);
 				
-				RDFLinkInfo RDFLink = linkMap.get(linkId);
-				for(int i = 0; i < sensorStr.length; i++) {
-					int sensorId = Integer.parseInt(sensorStr[i]);
+				for(int i = 1; i < nodes.length; i++) {
+					int sensorId = Integer.parseInt(nodes[i]);
 					SensorInfo sensor 	= sensorMap.get(sensorId);
-					RDFLink.addSensor(sensor);
+					link.addSensor(sensor);
 					
-					if(!matchSensorList.contains(sensor))
-						matchSensorList.add(sensor);
+					if(!matchSensorMap.containsKey(sensorId))
+						matchSensorMap.put(sensorId, sensor);
 				}
 
-				if (debug % 10000 == 0)
+				if (debug % 1000 == 0)
 					System.out.println("record " + debug + " finish!");
 			}
 			br.close();
@@ -440,13 +439,13 @@ public class RDFAdjListPattern {
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
 			while (res.next()) {
-				int sensorId = res.getInt(1);
-				String onStreet = res.getString(2);
-				String fromStreet = res.getString(3);
-				STRUCT st = (STRUCT) res.getObject(4);
+				int sensorId = res.getInt("link_id");
+				String onStreet = res.getString("onstreet");
+				String fromStreet = res.getString("fromstreet");
+				STRUCT st = (STRUCT) res.getObject("start_lat_long");
 				JGeometry geom = JGeometry.load(st);
 				LocationInfo location = new LocationInfo(geom.getPoint()[1], geom.getPoint()[0], 0);
-				int direction = res.getInt(5);
+				int direction = res.getInt("direction");
 				
 				if(!sensorMap.containsKey(sensorId)) {
 					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, location, direction);
@@ -462,6 +461,74 @@ public class RDFAdjListPattern {
 		System.out.println("fetch sensor finish!");
 	}
 	
+	private static void readLinkLane() {
+		System.out.println("read link lane...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkLaneFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(SEPARATION);
+				long linkId 		= Long.parseLong(nodes[0]);
+				RDFLinkInfo	link	= linkMap.get(linkId);
+				for(int i = 1; i < nodes.length; i += 4) {
+					long laneId		= Long.parseLong(nodes[i]);
+					String travelDirection = nodes[i + 1];
+					int laneType	= Integer.parseInt(nodes[i + 2]);
+					int accessId 	= Integer.parseInt(nodes[i + 3]);
+					RDFLaneInfo	lane = new RDFLaneInfo(laneId, travelDirection, laneType, accessId);
+
+					link.addLane(lane);
+				}
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("readLinkLane: debug code: " + debug);
+		}
+		System.out.println("read link lane finish!");
+	}
+	
+	private static void readLinkGeometry() {
+		System.out.println("read link geometry...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkGeometryFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(SEPARATION);
+				long linkId 		= Long.parseLong(nodes[0]);
+				RDFLinkInfo	link	= linkMap.get(linkId);
+				for(int i = 1; i < nodes.length; i+=3) {
+					double lat		= Double.parseDouble(nodes[i]);
+					double lon		= Double.parseDouble(nodes[i + 1]);
+					int zLevel	= Integer.parseInt(nodes[i + 2]);
+					LocationInfo loc = new LocationInfo(lat, lon, zLevel);
+					link.addPoint(loc);
+				}
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("readLinkGeometry: debug code: " + debug);
+		}
+		System.out.println("read link geometry finish!");
+	}
+	
 	private static void readLinkFile() {
 		System.out.println("read link file...");
 		int debug = 0;
@@ -473,63 +540,54 @@ public class RDFAdjListPattern {
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split("\\|");
+				String[] nodes = strLine.split(SEPARATION);
 				
 				long 	linkId 			= Long.parseLong(nodes[0]);
-				String 	streetName 		= nodes[1];
-				long 	refNodeId 		= Long.parseLong(nodes[2]);
-				long 	nonRefNodeId 	= Long.parseLong(nodes[3]);
-				int 	functionalClass = Integer.parseInt(nodes[4]);
-				String 	direction 		= nodes[5];
+				long 	refNodeId 		= Long.parseLong(nodes[1]);
+				long 	nonRefNodeId 	= Long.parseLong(nodes[2]);
+				String 	baseName 		= nodes[3];
+				int		accessId		= Integer.parseInt(nodes[4]);
+				int 	functionalClass = Integer.parseInt(nodes[5]);
 				int 	speedCategory 	= Integer.parseInt(nodes[6]);
-				boolean ramp 			= nodes[7].equals("Y") ? true : false;
-				boolean tollway 		= nodes[8].equals("Y") ? true : false;
-				boolean carpoolRoad 	= nodes[9].equals("Y") ? true : false;
-				boolean carpools 		= nodes[10].equals("Y") ? true : false;
-				boolean expressLane 	= nodes[11].equals("Y") ? true : false;
+				String 	travelDirection = nodes[7];
+				boolean ramp 			= nodes[8].equals(YES) ? true : false;
+				boolean tollway 		= nodes[9].equals(YES) ? true : false;
 				
-				RDFLinkInfo RDFLink = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
-				/**
-				 * need fix
-				 */
 				
-				LinkedList<LocationInfo> pointsList = new LinkedList<LocationInfo>();
-				String[] pointsListStr		= nodes[12].split(";");
-				for(int i = 0; i < pointsListStr.length; i++) {
-					String[] locStr = pointsListStr[i].split(",");
-					double lat = Double.parseDouble(locStr[0]);
-					double lon = Double.parseDouble(locStr[1]);
-					int z = Integer.parseInt(locStr[2]);
-					LocationInfo loc = new LocationInfo(lat, lon, z);
-					RDFLink.addPoint(loc);
-					pointsList.add(loc);
+				RDFLinkInfo link = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+				
+				link.setBaseName(baseName);
+				link.setAccessId(accessId);
+				link.setFunctionalClass(functionalClass);
+				link.setSpeedCategory(speedCategory);
+				link.setTravelDirection(travelDirection);
+				link.setRamp(ramp);
+				link.setTollway(tollway);
+				
+				// add direction
+				RDFNodeInfo refNode = nodeMap.get(refNodeId);
+				RDFNodeInfo nonRefNode = nodeMap.get(nonRefNodeId);
+				if(travelDirection.equals("T")) {
+					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
+					link.addDirection(direction);
+					nodeToLink.put(nonRefNodeId + SEPARATION + refNodeId, link);
+				}
+				else if(travelDirection.equals("F")) {
+					int direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
+					link.addDirection(direction);
+					nodeToLink.put(refNodeId + SEPARATION + nonRefNodeId, link);
+				}
+				else if(travelDirection.equals("B")) {
+					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
+					link.addDirection(direction);
+					direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
+					link.addDirection(direction);
+					nodeToLink.put(nonRefNodeId + SEPARATION + refNodeId, link);
+					nodeToLink.put(refNodeId + SEPARATION + nonRefNodeId, link);
 				}
 				
-				//RDFLink.setPointsList(pointsList);
-				
-				linkList.add(RDFLink);
-				linkMap.put(linkId, RDFLink);
-				
-				if(direction.equals("T")) {
-					String nodeStr = nonRefNodeId + "," + refNodeId;
-					nodeToLink.put(nodeStr, RDFLink);
-				}
-				else if(direction.equals("F")) {
-					String nodeStr = refNodeId + "," + nonRefNodeId;
-					nodeToLink.put(nodeStr, RDFLink);
-				}
-				else if(direction.equals("B")) {
-					String nodeStr = nonRefNodeId + "," + refNodeId;
-					nodeToLink.put(nodeStr, RDFLink);
-					nodeStr = refNodeId + "," + nonRefNodeId;
-					nodeToLink.put(nodeStr, RDFLink);
-				}
-				else {
-					System.err.println("direction undefined");
-				}
+				linkMap.put(linkId, link);
 
-				if (debug % 10000 == 0)
-					System.out.println("record " + debug + " finish!");
 			}
 			br.close();
 			in.close();
@@ -552,20 +610,18 @@ public class RDFAdjListPattern {
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split("\\|");
+				String[] nodes = strLine.split(SEPARATION);
 				
 				long 			nodeId 	= Long.parseLong(nodes[0]);
-				String[]		locStr 	= nodes[1].split(",");
-				int 			zLevel	= Integer.parseInt(nodes[2]);
-				LocationInfo 	location= new LocationInfo(Double.parseDouble(locStr[0]), Double.parseDouble(locStr[1]), zLevel);
+				double			lat		= Double.parseDouble(nodes[1]);
+				double			lon		= Double.parseDouble(nodes[2]);
+				int 			zLevel	= Integer.parseInt(nodes[3]);
 				
-				RDFNodeInfo RDFNode = new RDFNodeInfo(nodeId, location);
+				LocationInfo 	location= new LocationInfo(lat, lon, zLevel);
 				
-				nodeList.add(RDFNode);
-				nodeMap.put(nodeId, RDFNode);
-
-				if (debug % 10000 == 0)
-					System.out.println("record " + debug + " finish!");
+				RDFNodeInfo node = new RDFNodeInfo(nodeId, location);
+				
+				nodeMap.put(nodeId, node);
 			}
 			br.close();
 			in.close();
