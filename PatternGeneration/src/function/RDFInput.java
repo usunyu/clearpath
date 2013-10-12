@@ -51,7 +51,7 @@ public class RDFInput {
 			String sql = null;
 			PreparedStatement pstatement = null;
 			ResultSet res = null;
-			con = RDFDatabase.getConnection();
+			con = Database.getConnection();
 			sql = "SELECT link_id, onstreet, fromstreet, start_lat_long, direction FROM highway_congestion_config ";
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
