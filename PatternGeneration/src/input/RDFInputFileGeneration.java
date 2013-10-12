@@ -383,7 +383,7 @@ public class RDFInputFileGeneration {
 			con = getConnection();
 			con.setAutoCommit(false);
 			
-			sql = "SELECT link_id, base_name, street_name, is_name_on_roadsign " +
+			sql = "SELECT link_id, base_name, street_name, is_name_on_roadsign, is_exit_name " +
 					"FROM rdf_road_link t1, rdf_road_name t2 WHERE t1.road_name_id = t2.road_name_id";
 
 			System.out.println("execute query... ");
@@ -408,6 +408,8 @@ public class RDFInputFileGeneration {
 				String streetName			= res.getString("street_name");
 				boolean isNameOnRoadsign	= res.getString("is_name_on_roadsign").equals(YES) ? true : false;
 				
+				boolean isExitName			= res.getString("is_exit_name").equals(YES) ? true : false;
+				
 				if(isNameOnRoadsign) {
 					link.setBaseName(baseName);
 				}
@@ -417,6 +419,7 @@ public class RDFInputFileGeneration {
 					}
 				}
 				link.addStreetName(streetName, isNameOnRoadsign);
+				link.setExitName(isExitName);
 				
 				if(debug % 10000 == 0)
 					System.out.println("processed " + (double) debug / linkMap.size() * 100 + "%.");
@@ -1528,11 +1531,12 @@ public class RDFInputFileGeneration {
 				String travelDirection = link.getTravelDirection();
 				boolean ramp = link.isRamp();
 				boolean tollway = link.isTollway();
+				boolean exitName = link.isExitName();
 				int speedCategory = link.getSpeedCategory();
 				
 				String strLine = linkId + SEPARATION + refNodeId + SEPARATION + nonRefNodeId + SEPARATION + baseName + SEPARATION + 
 								accessId + SEPARATION + functionalClass + SEPARATION + speedCategory + SEPARATION + travelDirection + SEPARATION + 
-								(ramp ? YES : NO) + SEPARATION + (tollway ? YES : NO) + "\r\n";
+								(ramp ? YES : NO) + SEPARATION + (tollway ? YES : NO) + SEPARATION + (exitName ? YES : NO) + "\r\n";
 				out.write(strLine);
 			}
 			

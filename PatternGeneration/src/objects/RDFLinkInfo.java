@@ -15,6 +15,7 @@ public class RDFLinkInfo {
 	String travelDirection;
 	boolean ramp;
 	boolean tollway;
+	boolean exitName;
 	int speedCategory;
 	int accessId;
 	
@@ -188,6 +189,16 @@ public class RDFLinkInfo {
 	
 	public void setSpeedCategory(int speedCategory) {
 		this.speedCategory = speedCategory;
+	}
+
+	public boolean isExitName() {
+		return exitName;
+	}
+
+	public void setExitName(boolean exitName) {
+		if(exitName == true) {
+			this.exitName = exitName;
+		}
 	}
 	
 	public boolean isCarpool() {
