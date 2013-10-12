@@ -230,6 +230,7 @@ public class RDFOutputKMLGeneration {
 				boolean ramp		= link.isRamp();
 				boolean tollway		= link.isTollway();
 				boolean carpool 	= link.isCarpool();
+				boolean exitName	= link.isExitName();
 				int speedCategory 	= link.getSpeedCategory();
 				LinkedList<LocationInfo> pointsList = link.getPointList();
 				
@@ -257,6 +258,7 @@ public class RDFOutputKMLGeneration {
 				kmlStr += "Ramp:" 			+ ramp + "\r\n";
 				kmlStr += "Tollway:" 		+ tollway + "\r\n";
 				kmlStr += "Carpool:" 		+ carpool + "\r\n";
+				kmlStr += "Exit:" 			+ exitName + "\r\n";
 				if(sensorList != null && sensorList.size() != 0) {
 					String sensorStr = "null";
 					ListIterator<SensorInfo> sensorIt = sensorList.listIterator();
@@ -414,7 +416,7 @@ public class RDFOutputKMLGeneration {
 				String 	travelDirection = nodes[7];
 				boolean ramp 			= nodes[8].equals(YES) ? true : false;
 				boolean tollway 		= nodes[9].equals(YES) ? true : false;
-				
+				boolean exitName		= nodes[10].equals(YES) ? true : false;
 				
 				RDFLinkInfo link = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
 				
@@ -425,6 +427,7 @@ public class RDFOutputKMLGeneration {
 				link.setTravelDirection(travelDirection);
 				link.setRamp(ramp);
 				link.setTollway(tollway);
+				link.setExitName(exitName);
 				
 				// add direction
 				RDFNodeInfo refNode = nodeMap.get(refNodeId);

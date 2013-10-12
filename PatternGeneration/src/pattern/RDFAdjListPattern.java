@@ -552,6 +552,7 @@ public class RDFAdjListPattern {
 				String 	travelDirection = nodes[7];
 				boolean ramp 			= nodes[8].equals(YES) ? true : false;
 				boolean tollway 		= nodes[9].equals(YES) ? true : false;
+				boolean exitName		= nodes[10].equals(YES) ? true : false;
 				
 				
 				RDFLinkInfo link = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
@@ -563,6 +564,7 @@ public class RDFAdjListPattern {
 				link.setTravelDirection(travelDirection);
 				link.setRamp(ramp);
 				link.setTollway(tollway);
+				link.setExitName(exitName);
 				
 				// add direction
 				RDFNodeInfo refNode = nodeMap.get(refNodeId);
