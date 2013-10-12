@@ -13,11 +13,14 @@ public class RDFOutput {
 	// for write link file
 	static String linkFile			= "RDF_Link.csv";
 	static String linkGeometryFile	= "RDF_Link_Geometry.csv";
-	static String linkIdFile		= "RDF_Link_Id.csv";
 	static String linkNameFile		= "RDF_Link_Name.csv";
 	static String linkLaneFile		= "RDF_Link_Lane.csv";
 	// for write node file
 	static String nodeFile			= "RDF_Node.csv";
+	// for write sensor file
+	static String sensorMatchFile	= "RDF_Sensor_Match.csv";
+	// for write kml file
+	static String kmlLinkFile		= "RDF_Link.kml";
 	/**
 	 * @param const
 	 */
@@ -25,6 +28,41 @@ public class RDFOutput {
 	static String UNKNOWN 			= "Unknown Street";
 	static String YES				= "Y";
 	static String NO				= "N";
+	
+	/**
+	 * write matched sensor
+	 * @param linkMap
+	 */
+	public static void writeSensorMatch(HashMap<Long, RDFLinkInfo> linkMap) {
+		System.out.println("write sensor match...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + sensorMatchFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			for(long linkId : linkMap.keySet()) {
+				RDFLinkInfo link = linkMap.get(linkId);
+				LinkedList<SensorInfo> sensorList = link.getSensorList();
+				if(sensorList == null || sensorList.size() == 0)
+					continue;
+				ListIterator<SensorInfo> sIt = sensorList.listIterator();
+				String sensorStr = "null";
+				int i = 0;
+				while(sIt.hasNext()) {
+					SensorInfo sensor = sIt.next();
+					if(i++ == 0)
+						sensorStr = String.valueOf(sensor.getSensorId());
+					else
+						sensorStr += SEPARATION + sensor.getSensorId();
+				}
+				String strLine = linkId + SEPARATION + sensorStr + "\r\n";
+				out.write(strLine);
+			}
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+		System.out.println("write sensor match finish!");
+	}
 	
 	/**
 	 * write node to file

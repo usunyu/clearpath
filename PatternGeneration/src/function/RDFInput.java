@@ -1,11 +1,29 @@
 package function;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.sql.*;
 import java.util.*;
+
+import oracle.spatial.geometry.JGeometry;
+import oracle.sql.STRUCT;
 
 import objects.*;
 
 public class RDFInput {
+	/**
+	 * @param file
+	 */
+	static String root 				= "file";
+	// for read link file
+	static String linkFile			= "RDF_Link.csv";
+	static String linkGeometryFile	= "RDF_Link_Geometry.csv";
+	// for read node file
+	static String nodeFile			= "RDF_Node.csv";
+	// for read sensor file
+	static String sensorMatchFile	= "RDF_Sensor_Match.csv";
 	/**
 	 * @param args
 	 */
@@ -23,6 +41,220 @@ public class RDFInput {
 	static String UNKNOWN 			= "Unknown Street";
 	static String YES				= "Y";
 	static String NO				= "N";
+	
+	
+	public static void fetchSensor(LinkedList<SensorInfo> sensorList) {
+		System.out.println("fetch sensor...");
+		try {
+			HashSet<Integer> sensorDuplicate = new HashSet<Integer>();
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+			con = RDFDatabase.getConnection();
+			sql = "SELECT link_id, onstreet, fromstreet, start_lat_long, direction FROM highway_congestion_config ";
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+			while (res.next()) {
+				int sensorId = res.getInt("link_id");
+				String onStreet = res.getString("onstreet");
+				String fromStreet = res.getString("fromstreet");
+				STRUCT st = (STRUCT) res.getObject("start_lat_long");
+				JGeometry geom = JGeometry.load(st);
+				LocationInfo location = new LocationInfo(geom.getPoint()[1], geom.getPoint()[0], 0);
+				int direction = res.getInt("direction");
+				if (!sensorDuplicate.contains(sensorId)) {
+					SensorInfo sensorInfo = new SensorInfo(sensorId, onStreet, fromStreet, location, direction);
+					sensorDuplicate.add(sensorId);
+					sensorList.add(sensorInfo);
+				}
+			}
+			res.close();
+			pstatement.close();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("fetch sensor finish!");
+	}
+	
+	/**
+	 * read link geometry points
+	 * @param linkMap
+	 */
+	public static void readLinkGeometry(HashMap<Long, RDFLinkInfo> linkMap) {
+		System.out.println("read link geometry...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkGeometryFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(SEPARATION);
+				long linkId 		= Long.parseLong(nodes[0]);
+				RDFLinkInfo	link	= linkMap.get(linkId);
+				for(int i = 1; i < nodes.length; i+=3) {
+					double lat		= Double.parseDouble(nodes[i]);
+					double lon		= Double.parseDouble(nodes[i + 1]);
+					int zLevel	= Integer.parseInt(nodes[i + 2]);
+					LocationInfo loc = new LocationInfo(lat, lon, zLevel);
+					link.addPoint(loc);
+				}
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("readLinkGeometry: debug code: " + debug);
+		}
+		System.out.println("read link geometry finish!");
+	}
+	
+	/**
+	 * read link file
+	 * @param linkMap
+	 * @param nodeMap
+	 * @param adjNodeList from one node, find the near nodes
+	 * @param nodeToLink from two connected node, find the link
+	 */
+	public static void readLinkFile(HashMap<Long, RDFLinkInfo> linkMap, HashMap<Long, RDFNodeInfo> nodeMap, HashMap<Long, LinkedList<Long>> adjNodeList, HashMap<String, RDFLinkInfo> nodeToLink) {
+		System.out.println("read link file...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(SEPARATION);
+				
+				long 	linkId 			= Long.parseLong(nodes[0]);
+				long 	refNodeId 		= Long.parseLong(nodes[1]);
+				long 	nonRefNodeId 	= Long.parseLong(nodes[2]);
+				String 	baseName 		= nodes[3];
+				int		accessId		= Integer.parseInt(nodes[4]);
+				int 	functionalClass = Integer.parseInt(nodes[5]);
+				int 	speedCategory 	= Integer.parseInt(nodes[6]);
+				String 	travelDirection = nodes[7];
+				boolean ramp 			= nodes[8].equals(YES) ? true : false;
+				boolean tollway 		= nodes[9].equals(YES) ? true : false;
+				boolean exitName		= nodes[10].equals(YES) ? true : false;
+				
+				
+				RDFLinkInfo link = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+				
+				link.setBaseName(baseName);
+				link.setAccessId(accessId);
+				link.setFunctionalClass(functionalClass);
+				link.setSpeedCategory(speedCategory);
+				link.setTravelDirection(travelDirection);
+				link.setRamp(ramp);
+				link.setTollway(tollway);
+				link.setExitName(exitName);
+				
+				// add direction
+				RDFNodeInfo refNode = nodeMap.get(refNodeId);
+				RDFNodeInfo nonRefNode = nodeMap.get(nonRefNodeId);
+				if(travelDirection.equals("T")) {
+					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
+					link.addDirection(direction);
+				}
+				else if(travelDirection.equals("F")) {
+					int direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
+					link.addDirection(direction);
+				}
+				else if(travelDirection.equals("B")) {
+					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
+					link.addDirection(direction);
+					direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
+					link.addDirection(direction);
+				}
+				
+				linkMap.put(linkId, link);
+				
+				// add connect
+				if (adjNodeList.containsKey(refNodeId)) {
+					LinkedList<Long> tempList = adjNodeList.get(refNodeId);
+					if (!tempList.contains(nonRefNodeId))
+						tempList.add(nonRefNodeId);
+				} else {
+					LinkedList<Long> newList = new LinkedList<Long>();
+					newList.add(nonRefNodeId);
+					adjNodeList.put(refNodeId, newList);
+				}
+
+				if (adjNodeList.containsKey(nonRefNodeId)) {
+					LinkedList<Long> tempList = adjNodeList.get(nonRefNodeId);
+					if (!tempList.contains(refNodeId))
+						tempList.add(refNodeId);
+				} else {
+					LinkedList<Long> newList = new LinkedList<Long>();
+					newList.add(refNodeId);
+					adjNodeList.put(nonRefNodeId, newList);
+				}
+				
+				String nodesStr1 = refNodeId + SEPARATION + nonRefNodeId;
+				String nodesStr2 = nonRefNodeId + SEPARATION + refNodeId;
+				if (!nodeToLink.containsKey(nodesStr1))
+					nodeToLink.put(nodesStr1, link);
+				if (!nodeToLink.containsKey(nodesStr2))
+					nodeToLink.put(nodesStr2, link);
+
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("readLinkFile: debug code: " + debug);
+		}
+		System.out.println("read link file finish!");
+	}
+	
+	/**
+	 * read node file
+	 * @param nodeMap
+	 */
+	public static void readNodeFile(HashMap<Long, RDFNodeInfo> nodeMap) {
+		System.out.println("read node file...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + nodeFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(SEPARATION);
+				
+				long 			nodeId 	= Long.parseLong(nodes[0]);
+				double			lat		= Double.parseDouble(nodes[1]);
+				double			lon		= Double.parseDouble(nodes[2]);
+				int 			zLevel	= Integer.parseInt(nodes[3]);
+				
+				LocationInfo 	location= new LocationInfo(lat, lon, zLevel);
+				
+				RDFNodeInfo RDFNode = new RDFNodeInfo(nodeId, location);
+				
+				nodeMap.put(nodeId, RDFNode);
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("readNodeFile: debug code: " + debug);
+		}
+		System.out.println("read node file finish!");
+	}
 	
 	/**
 	 * fetch linkId and nodeId by area(lat, lon)
