@@ -172,3 +172,6 @@ SELECT link_id, lat, lon, zlevel FROM rdf_link_geometry ORDER BY link_id, seq_nu
 /* lane_type = 2 */
 SELECT * FROM rdf_lane WHERE link_id = 121235036
 SELECT lane_id, link_id, lane_travel_direction, lane_type FROM rdf_lane ORDER BY lane_number
+
+/* fetch sign info */
+SELECT * FROM rdf_sign_element
