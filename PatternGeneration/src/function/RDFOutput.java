@@ -32,6 +32,11 @@ public class RDFOutput {
 	static String YES				= "Y";
 	static String NO				= "N";
 	
+	/**
+	 * generate path kml
+	 * @param pathNodeList
+	 * @param nodeToLink
+	 */
 	public static void generatePathKML(ArrayList<Long> pathNodeList, HashMap<String, RDFLinkInfo> nodeToLink) {
 		System.out.println("generate path kml...");
 		
