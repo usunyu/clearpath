@@ -21,6 +21,8 @@ public class RDFOutput {
 	static String sensorMatchFile	= "RDF_Sensor_Match.csv";
 	// for write kml file
 	static String kmlLinkFile		= "RDF_Link.kml";
+	static String kmlNodeFile		= "RDF_Node.kml";
+	static String sensorMatchKML	= "RDF_Sensor_Match.kml";
 	/**
 	 * @param const
 	 */
@@ -28,6 +30,167 @@ public class RDFOutput {
 	static String UNKNOWN 			= "Unknown Street";
 	static String YES				= "Y";
 	static String NO				= "N";
+	
+	/**
+	 * generate link kml
+	 * @param linkMap
+	 */
+	public static void generateLinkKML(HashMap<Long, RDFLinkInfo> linkMap) {
+		System.out.println("generate link kml...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + kmlLinkFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+
+			for(long linkId : linkMap.keySet()) {
+				RDFLinkInfo link 	= linkMap.get(linkId);
+				String baseName 	= link.getBaseName();
+				long refNodeId 		= link.getRefNodeId();
+				long nonRefNodeId 	= link.getNonRefNodeId();
+				int functionalClass = link.getFunctionalClass();
+				String travelDirection 	= link.getTravelDirection();
+				LinkedList<Integer> directionList = link.getDirectionList();
+				boolean ramp		= link.isRamp();
+				boolean tollway		= link.isTollway();
+				boolean carpool 	= link.isCarpool();
+				boolean exitName	= link.isExitName();
+				int speedCategory 	= link.getSpeedCategory();
+				LinkedList<LocationInfo> pointsList = link.getPointList();
+				
+				LinkedList<SensorInfo>	sensorList = link.getSensorList();
+				
+				String dirStr	= null;
+				for(int dir : directionList) {
+					if(dirStr == null)
+						dirStr = String.valueOf(dir);
+					else
+						dirStr += SEPARATION + dir;
+				}
+				
+				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
+				kmlStr += "<description>";
+				if(baseName.contains("&"))
+					baseName = baseName.replaceAll("&", " and ");				
+				kmlStr += "Name:" 			+ baseName + "\r\n";
+				kmlStr += "Ref:" 			+ refNodeId + "\r\n";
+				kmlStr += "Nonref:" 		+ nonRefNodeId + "\r\n";
+				kmlStr += "Class:" 			+ functionalClass + "\r\n";
+				kmlStr += "Category:" 		+ speedCategory + "\r\n";
+				kmlStr += "Dir:" 			+ dirStr + "\r\n";
+				kmlStr += "TraDir:" 		+ travelDirection + "\r\n";
+				kmlStr += "Ramp:" 			+ ramp + "\r\n";
+				kmlStr += "Tollway:" 		+ tollway + "\r\n";
+				kmlStr += "Carpool:" 		+ carpool + "\r\n";
+				kmlStr += "Exit:" 			+ exitName + "\r\n";
+				if(sensorList != null && sensorList.size() != 0) {
+					String sensorStr = "null";
+					ListIterator<SensorInfo> sensorIt = sensorList.listIterator();
+					int i = 0;
+					while(sensorIt.hasNext()) {
+						SensorInfo sensor = sensorIt.next();
+						if(i++ == 0)
+							sensorStr = String.valueOf(sensor.getSensorId());
+						else
+							sensorStr += SEPARATION + sensor.getSensorId();
+					}
+					kmlStr += "Sensor:" + sensorStr + "\r\n";
+				}
+				kmlStr += "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				ListIterator<LocationInfo> pIterator = pointsList.listIterator();
+				while(pIterator.hasNext()) {
+					LocationInfo loc = pIterator.next();
+					kmlStr += loc.getLongitude()+ SEPARATION + loc.getLatitude()+ SEPARATION + loc.getZLevel() + " ";
+				}
+				kmlStr += "</coordinates></LineString></Placemark>";
+				
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate link kml finish!");
+	}
+	
+	/**
+	 * generate match sensor kml
+	 * @param matchSensorMap
+	 */
+	public static void generateSensorKML(HashMap<Integer, SensorInfo> matchSensorMap) {
+		System.out.println("generate sensor kml...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + sensorMatchFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			
+			for(int sensorId : matchSensorMap.keySet()) {
+				SensorInfo sensor = matchSensorMap.get(sensorId);
+				String onStreet = sensor.getOnStreet();
+				String fromStreet = sensor.getFromStreet();
+				int direction = sensor.getDirection();
+				
+				LocationInfo location = sensor.getLocation();
+				double lati = location.getLatitude();
+				double longi = location.getLongitude();
+				int zLevel = location.getZLevel();
+				
+				String kmlStr = "<Placemark><name>" + sensorId + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "On: " + onStreet + "\r\n";
+				kmlStr += "From: " + fromStreet + "\r\n";
+				kmlStr += "Dir: " + direction + "\r\n";
+				kmlStr += "</description>";
+				kmlStr += "<Point><coordinates>";
+				kmlStr +=  longi + SEPARATION + lati +  SEPARATION + zLevel;
+				kmlStr += "</coordinates></Point></Placemark>";
+				
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate sensor kml finish!");
+	}
+	
+	/**
+	 * generate node kml
+	 * @param nodeMap
+	 */
+	public static void generateNodeKML(HashMap<Long, RDFNodeInfo> nodeMap) {
+		System.out.println("generate node kml...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + kmlNodeFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			
+			for(long nodeId : nodeMap.keySet()) {
+				RDFNodeInfo node = nodeMap.get(nodeId);
+				LocationInfo location = node.getLocation();
+				double lati = location.getLatitude();
+				double longi = location.getLongitude();
+				int zLevel = location.getZLevel();
+				
+				String kmlStr = "<Placemark><name>" + nodeId + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "ZLevel: " + zLevel;
+				kmlStr += "</description>";
+				kmlStr += "<Point><coordinates>";
+				kmlStr +=  longi + SEPARATION + lati +  SEPARATION + zLevel;
+				kmlStr += "</coordinates></Point></Placemark>";
+				
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate node kml finish!");
+	}
 	
 	/**
 	 * write matched sensor
