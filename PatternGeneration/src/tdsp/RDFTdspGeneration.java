@@ -57,6 +57,7 @@ public class RDFTdspGeneration {
 	
 	public static void main(String[] args) {
 		RDFInput.readNodeFile(nodeMap);
+		prepareRoute();
 		
 		RDFInput.readLinkFile(linkMap, nodeMap, nodeToLink);
 		RDFInput.readLinkGeometry(linkMap);
@@ -67,6 +68,13 @@ public class RDFTdspGeneration {
 		//tdspAStar(startNode, endNode, startTime);
 		RDFOutput.generatePathKML(pathNodeList, nodeToLink);
 		turnByTurn();
+	}
+	
+	public static void prepareRoute() {
+		System.out.println("preparing route...");
+		for(RDFNodeInfo node : nodeMap.values()) {
+			node.prepareRoute();
+		}
 	}
 	
 	/**
