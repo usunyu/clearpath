@@ -2,10 +2,11 @@ package objects;
 
 public class RDFSignInfo {
 	long signId;
-	long origLinkId;
+	long originLinkId;
 	long destLinkId;
 	String exitNumber;
 	boolean straightOnSign;
+	String textType;
 	String text;
 	String directionCode;
 	
@@ -17,12 +18,12 @@ public class RDFSignInfo {
 		return signId;
 	}
 	
-	public void setOrigLinkId(long linkId) {
-		origLinkId = linkId;
+	public void setOriginLinkId(long linkId) {
+		originLinkId = linkId;
 	}
 	
-	public long getOrigLinkId() {
-		return origLinkId;
+	public long getOriginLinkId() {
+		return originLinkId;
 	}
 	
 	public void setDestLinkid(long linkId) {
@@ -48,7 +49,15 @@ public class RDFSignInfo {
 	public boolean isStraightOnSign() {
 		return straightOnSign;
 	}
+
+	public void setTextType(String textType) {
+		this.textType = textType;
+	}
 	
+	public String getTextType() {
+		return textType;
+	}
+
 	public void setText(String text) {
 		this.text = text;
 	}

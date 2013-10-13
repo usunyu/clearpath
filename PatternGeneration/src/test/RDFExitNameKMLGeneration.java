@@ -11,7 +11,7 @@ public class RDFExitNameKMLGeneration {
 	/**
 	 * @param file
 	 */
-	static String root				= "file";
+	static String root			= "file";
 	static String linkExitKML		= "RDF_Link_Exit.kml";
 	/**
 	 * @param const
