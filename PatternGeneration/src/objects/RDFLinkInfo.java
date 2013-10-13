@@ -23,6 +23,8 @@ public class RDFLinkInfo {
 	LinkedList<RDFLaneInfo> laneList;
 	LinkedList<Integer> directionList;
 	LinkedList<SensorInfo> matchSensorList;
+
+	LinkedList<RDFSignInfo> signList;
 	
 	int[] pattern;
 	
@@ -155,6 +157,17 @@ public class RDFLinkInfo {
 		if(laneList == null)
 			laneList = new LinkedList<RDFLaneInfo>();
 		laneList.add(lane);
+	}
+
+	public void addSign(RDFSignInfo sign) {
+		if(signList == null)
+			signList = new LinkedList<RDFSignInfo>();
+		if(!signList.contains(sign))
+			signList.add(sign);
+	}
+
+	public LinkedList<RDFSignInfo> getSignList() {
+		return signList;
 	}
 
 	public void addDirection(Integer direction) {
