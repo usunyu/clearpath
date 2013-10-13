@@ -23,6 +23,7 @@ public class RDFOutput {
 	static String kmlLinkFile		= "RDF_Link.kml";
 	static String kmlNodeFile		= "RDF_Node.kml";
 	static String sensorMatchKML	= "RDF_Sensor_Match.kml";
+	static String pathKMLFile 		= "RDF_Path.kml";
 	/**
 	 * @param const
 	 */
@@ -30,6 +31,81 @@ public class RDFOutput {
 	static String UNKNOWN 			= "Unknown Street";
 	static String YES				= "Y";
 	static String NO				= "N";
+	
+	public static void generatePathKML(ArrayList<Long> pathNodeList, HashMap<String, RDFLinkInfo> nodeToLink) {
+		System.out.println("generate path kml...");
+		
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + pathKMLFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+
+			long lastNodeId = 0;
+			for (int i = 0; i < pathNodeList.size(); i++) {
+				debug++;
+				
+				if(i == 0) {
+					lastNodeId = pathNodeList.get(i);
+					continue;
+				}
+				
+				long nodeId = pathNodeList.get(i);
+				
+				//RDFNodeInfo lastNode = nodeMap.get(lastNodeId);
+				//RDFNodeInfo currentNode = nodeMap.get(nodeId);
+				
+				RDFLinkInfo link = nodeToLink.get(lastNodeId + SEPARATION + nodeId);
+				
+				String baseName 	= link.getBaseName();
+				int functionalClass = link.getFunctionalClass();
+				String travelDirection 	= link.getTravelDirection();
+				boolean ramp		= link.isRamp();
+				boolean tollway		= link.isTollway();
+				boolean carpool 	= link.isCarpool();
+				boolean exitName	= link.isExitName();
+				int speedCategory 	= link.getSpeedCategory();
+				LinkedList<LocationInfo> pointsList = link.getPointList();
+				
+				String kmlStr = "<Placemark><name>Link:" + link.getLinkId() + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "Street:" + baseName + "\r\n";
+
+				kmlStr += "Funclass:" + functionalClass + "\r\n";
+				kmlStr += "Travel:" + travelDirection + "\r\n";
+				kmlStr += "Speedcat:" + speedCategory + "\r\n";
+				
+				kmlStr += "Carpool:" + carpool + "\r\n";
+				kmlStr += "Ramp:" + ramp + "\r\n";
+				kmlStr += "Tollway:" + tollway + "\r\n";
+				kmlStr += "Exit:" + exitName + "\r\n";
+				
+				kmlStr += "Start:" + lastNodeId + "\r\n";
+				kmlStr += "End:" + nodeId + "\r\n";
+				kmlStr += "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				for(LocationInfo location : pointsList) {
+					kmlStr += location.getLongitude() + "," + location.getLatitude() + "," + location.getZLevel() + " ";
+				}
+				kmlStr += "</coordinates></LineString>";
+				kmlStr += "<Style><LineStyle>";
+				kmlStr += "<color>#FF00FF14</color>";
+				kmlStr += "<width>3</width>";
+				kmlStr += "</LineStyle></Style></Placemark>\n";
+				out.write(kmlStr);
+				
+				lastNodeId = nodeId;
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("generatePathKML: debug code: " + debug);
+		}
+		
+		System.out.println("generate path kml finish!");
+	}
 	
 	/**
 	 * generate link kml
