@@ -100,10 +100,10 @@ public class RDFInput {
 			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			res = pstatement.executeQuery();
 			while (res.next()) {
-				int sensorId = res.getInt(1);
-				String onStreet = res.getString(2);
-				String fromStreet = res.getString(3);
-				STRUCT st = (STRUCT) res.getObject(4);
+				int sensorId = res.getInt("link_id");
+				String onStreet = res.getString("onstreet");
+				String fromStreet = res.getString("fromstreet");
+				STRUCT st = (STRUCT) res.getObject("start_lat_long");
 				JGeometry geom = JGeometry.load(st);
 				LocationInfo location = new LocationInfo(geom.getPoint()[1], geom.getPoint()[0], 0);
 				int direction = res.getInt(5);
@@ -237,6 +237,53 @@ public class RDFInput {
 		System.out.println("read link geometry finish!");
 	}
 	
+	private static RDFLinkInfo getLinkFromLine(String strLine, HashMap<Long, RDFNodeInfo> nodeMap) {
+		String[] nodes = strLine.split(SEPARATION);
+		
+		long 	linkId 			= Long.parseLong(nodes[0]);
+		long 	refNodeId 		= Long.parseLong(nodes[1]);
+		long 	nonRefNodeId 	= Long.parseLong(nodes[2]);
+		String 	baseName 		= nodes[3];
+		int		accessId		= Integer.parseInt(nodes[4]);
+		int 	functionalClass = Integer.parseInt(nodes[5]);
+		int 	speedCategory 	= Integer.parseInt(nodes[6]);
+		String 	travelDirection = nodes[7];
+		boolean ramp 			= nodes[8].equals(YES) ? true : false;
+		boolean tollway 		= nodes[9].equals(YES) ? true : false;
+		boolean exitName		= nodes[10].equals(YES) ? true : false;
+		
+		RDFLinkInfo link = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+		
+		link.setBaseName(baseName);
+		link.setAccessId(accessId);
+		link.setFunctionalClass(functionalClass);
+		link.setSpeedCategory(speedCategory);
+		link.setTravelDirection(travelDirection);
+		link.setRamp(ramp);
+		link.setTollway(tollway);
+		link.setExitName(exitName);
+		
+		// add direction
+		RDFNodeInfo refNode = nodeMap.get(refNodeId);
+		RDFNodeInfo nonRefNode = nodeMap.get(nonRefNodeId);
+		if(travelDirection.equals("T")) {
+			int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
+			link.addDirection(direction);
+		}
+		else if(travelDirection.equals("F")) {
+			int direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
+			link.addDirection(direction);
+		}
+		else if(travelDirection.equals("B")) {
+			int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
+			link.addDirection(direction);
+			direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
+			link.addDirection(direction);
+		}
+		
+		return link;
+	}
+	
 	/**
 	 * read link file
 	 * @param linkMap
@@ -253,47 +300,58 @@ public class RDFInput {
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split(SEPARATION);
 				
-				long 	linkId 			= Long.parseLong(nodes[0]);
-				long 	refNodeId 		= Long.parseLong(nodes[1]);
-				long 	nonRefNodeId 	= Long.parseLong(nodes[2]);
-				String 	baseName 		= nodes[3];
-				int		accessId		= Integer.parseInt(nodes[4]);
-				int 	functionalClass = Integer.parseInt(nodes[5]);
-				int 	speedCategory 	= Integer.parseInt(nodes[6]);
-				String 	travelDirection = nodes[7];
-				boolean ramp 			= nodes[8].equals(YES) ? true : false;
-				boolean tollway 		= nodes[9].equals(YES) ? true : false;
-				boolean exitName		= nodes[10].equals(YES) ? true : false;
+				RDFLinkInfo link 		= getLinkFromLine(strLine, nodeMap);
+				long	linkId			= link.getLinkId();
 				
-				RDFLinkInfo link = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
+				linkMap.put(linkId, link);
+
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("readLinkFile: debug code: " + debug);
+		}
+		System.out.println("read link file finish!");
+	}
+	
+	/**
+	 * read link file
+	 * @param linkMap
+	 * @param nodeMap
+	 * @param nodeToLink
+	 */
+	public static void readLinkFile(HashMap<Long, RDFLinkInfo> linkMap, HashMap<Long, RDFNodeInfo> nodeMap, HashMap<String, RDFLinkInfo> nodeToLink) {
+		System.out.println("read link file...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
 				
-				link.setBaseName(baseName);
-				link.setAccessId(accessId);
-				link.setFunctionalClass(functionalClass);
-				link.setSpeedCategory(speedCategory);
-				link.setTravelDirection(travelDirection);
-				link.setRamp(ramp);
-				link.setTollway(tollway);
-				link.setExitName(exitName);
+				RDFLinkInfo link 		= getLinkFromLine(strLine, nodeMap);
 				
-				// add direction
-				RDFNodeInfo refNode = nodeMap.get(refNodeId);
-				RDFNodeInfo nonRefNode = nodeMap.get(nonRefNodeId);
+				long	linkId			= link.getLinkId();
+				long 	refNodeId 		= link.getRefNodeId();
+				long 	nonRefNodeId 	= link.getNonRefNodeId();
+				String	travelDirection = link.getTravelDirection();
+				
+				// add nodeToLink
 				if(travelDirection.equals("T")) {
-					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
-					link.addDirection(direction);
+					nodeToLink.put(nonRefNodeId + SEPARATION + refNodeId, link);
 				}
 				else if(travelDirection.equals("F")) {
-					int direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
-					link.addDirection(direction);
+					nodeToLink.put(refNodeId + SEPARATION + nonRefNodeId, link);
 				}
 				else if(travelDirection.equals("B")) {
-					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
-					link.addDirection(direction);
-					direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
-					link.addDirection(direction);
+					nodeToLink.put(nonRefNodeId + SEPARATION + refNodeId, link);
+					nodeToLink.put(refNodeId + SEPARATION + nonRefNodeId, link);
 				}
 				
 				linkMap.put(linkId, link);
@@ -327,53 +385,27 @@ public class RDFInput {
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split(SEPARATION);
-				
-				long 	linkId 			= Long.parseLong(nodes[0]);
-				long 	refNodeId 		= Long.parseLong(nodes[1]);
-				long 	nonRefNodeId 	= Long.parseLong(nodes[2]);
-				String 	baseName 		= nodes[3];
-				int		accessId		= Integer.parseInt(nodes[4]);
-				int 	functionalClass = Integer.parseInt(nodes[5]);
-				int 	speedCategory 	= Integer.parseInt(nodes[6]);
-				String 	travelDirection = nodes[7];
-				boolean ramp 			= nodes[8].equals(YES) ? true : false;
-				boolean tollway 		= nodes[9].equals(YES) ? true : false;
-				boolean exitName		= nodes[10].equals(YES) ? true : false;
-				
-				
-				RDFLinkInfo link = new RDFLinkInfo(linkId, refNodeId, nonRefNodeId);
-				
-				link.setBaseName(baseName);
-				link.setAccessId(accessId);
-				link.setFunctionalClass(functionalClass);
-				link.setSpeedCategory(speedCategory);
-				link.setTravelDirection(travelDirection);
-				link.setRamp(ramp);
-				link.setTollway(tollway);
-				link.setExitName(exitName);
-				
-				// add direction
-				RDFNodeInfo refNode = nodeMap.get(refNodeId);
-				RDFNodeInfo nonRefNode = nodeMap.get(nonRefNodeId);
-				if(travelDirection.equals("T")) {
-					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
-					link.addDirection(direction);
-				}
-				else if(travelDirection.equals("F")) {
-					int direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
-					link.addDirection(direction);
-				}
-				else if(travelDirection.equals("B")) {
-					int direction = Geometry.getDirection(nonRefNode.getLocation(), refNode.getLocation());
-					link.addDirection(direction);
-					direction = Geometry.getDirection(refNode.getLocation(), nonRefNode.getLocation());
-					link.addDirection(direction);
-				}
+				RDFLinkInfo link 		= getLinkFromLine(strLine, nodeMap);
+				long	linkId			= link.getLinkId();
+				long 	refNodeId 		= link.getRefNodeId();
+				long 	nonRefNodeId 	= link.getNonRefNodeId();
+				String	travelDirection = link.getTravelDirection();
 				
 				linkMap.put(linkId, link);
 				
-				// add connect
+				// add nodeToLink
+				if(travelDirection.equals("T")) {
+					nodeToLink.put(nonRefNodeId + SEPARATION + refNodeId, link);
+				}
+				else if(travelDirection.equals("F")) {
+					nodeToLink.put(refNodeId + SEPARATION + nonRefNodeId, link);
+				}
+				else if(travelDirection.equals("B")) {
+					nodeToLink.put(nonRefNodeId + SEPARATION + refNodeId, link);
+					nodeToLink.put(refNodeId + SEPARATION + nonRefNodeId, link);
+				}
+				
+				// add adjNodeList
 				if (adjNodeList.containsKey(refNodeId)) {
 					LinkedList<Long> tempList = adjNodeList.get(refNodeId);
 					if (!tempList.contains(nonRefNodeId))
@@ -393,14 +425,6 @@ public class RDFInput {
 					newList.add(refNodeId);
 					adjNodeList.put(nonRefNodeId, newList);
 				}
-				
-				String nodesStr1 = refNodeId + SEPARATION + nonRefNodeId;
-				String nodesStr2 = nonRefNodeId + SEPARATION + refNodeId;
-				if (!nodeToLink.containsKey(nodesStr1))
-					nodeToLink.put(nodesStr1, link);
-				if (!nodeToLink.containsKey(nodesStr2))
-					nodeToLink.put(nodesStr2, link);
-
 			}
 			br.close();
 			in.close();
