@@ -121,7 +121,7 @@ public class RDFOutput {
 	public static void generateSensorKML(HashMap<Integer, SensorInfo> matchSensorMap) {
 		System.out.println("generate sensor kml...");
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + sensorMatchFile);
+			FileWriter fstream = new FileWriter(root + "/" + sensorMatchKML);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			
