@@ -9,6 +9,10 @@ public class RDFSignDestInfo {
 	boolean straightOnSign;
 	ArrayList<RDFSignElemInfo> signElemList;
 	
+	public ArrayList<RDFSignElemInfo> getSignElemList() {
+		return signElemList;
+	}
+	
 	public void addSignElem(RDFSignElemInfo signElem) {
 		if(signElemList == null) {
 			signElemList = new ArrayList<RDFSignElemInfo>();

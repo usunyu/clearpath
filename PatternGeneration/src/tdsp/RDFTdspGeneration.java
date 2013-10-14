@@ -54,15 +54,25 @@ public class RDFTdspGeneration {
 	 * @param path
 	 */
 	static ArrayList<Long> pathNodeList = new ArrayList<Long>();
+	/**
+	 * @param sign
+	 * <signId, signObject>
+	 */
+	static HashMap<Long, RDFSignInfo> signMap = new HashMap<Long, RDFSignInfo>();
 	
 	public static void main(String[] args) {
+		// read node
 		RDFInput.readNodeFile(nodeMap);
 		prepareRoute();
-		
+		// read link
 		RDFInput.readLinkFile(linkMap, nodeMap, nodeToLink);
 		RDFInput.readLinkName(linkMap);
 		RDFInput.readLinkGeometry(linkMap);
 		RDFInput.readLinkLane(linkMap);
+		// read sign
+		RDFInput.fetchSignOrigin(linkMap, signMap);
+		RDFInput.fetchSignDest(linkMap, signMap);
+		RDFInput.fetchSignElement(signMap);
 		
 		buildAdjList(0);
 		tdspGreedy(startNode, endNode, startTime);
@@ -107,6 +117,48 @@ public class RDFTdspGeneration {
 	 	return stName;
 	 }
 	
+	public static RDFSignInfo getCorrectSign(long linkId, LinkedList<RDFSignInfo> signList) {
+		RDFSignInfo correctSign = null;
+		for(RDFSignInfo sign : signList) {
+			if(sign.containDestLinkId(linkId)) {
+				correctSign = sign;
+				break;
+			}
+		}
+		return correctSign;
+	}
+	
+	public static String getSignText(long linkId, LinkedList<RDFSignInfo> signList) {
+		RDFSignInfo sign = getCorrectSign(linkId, signList);
+		String signInfoStr = null;
+		// contain the correct sign
+		if(sign != null) {
+			RDFSignDestInfo signDest = sign.getSignDest(linkId);
+			ArrayList<RDFSignElemInfo> signElemList = signDest.getSignElemList();
+			RDFSignElemInfo signElemR = null;
+			RDFSignElemInfo signElemT = null;
+			for(RDFSignElemInfo signElem : signElemList) {
+				if(signElem.getTextType().equals("R")) {
+					signElemR = signElem;
+				}
+				if(signElem.getTextType().equals("T")) {
+					signElemT = signElem;
+				}
+				/* problem */
+				if(signElemR != null && signElemT != null) {
+					break;
+				}
+			}
+			if(signElemR != null) {
+				signInfoStr += "Take the exit " + signDest.getExitNumber() + " onto " + signElemR.getText();
+			}
+			if(signElemT != null) {
+				signInfoStr += " toward " + signElemT.getText();
+			}
+		}
+		return signInfoStr;
+	}
+	
 	public static void turnByTurn() {
 		System.out.println("turn by turn...");
 		long preNodeId = -1;
@@ -125,6 +177,7 @@ public class RDFTdspGeneration {
 			String nodeStr = preNodeId + "," + curNodeId;
 			RDFLinkInfo link = nodeToLink.get(nodeStr);
 			
+			long linkId = link.getLinkId();
 			int functionalClass = link.getFunctionalClass();
 			
 			RDFNodeInfo preNode = nodeMap.get(preNodeId);
@@ -148,7 +201,10 @@ public class RDFTdspGeneration {
 			if(Geometry.isSameDirection(curDirIndex, preDirIndex) && preBaseName.equals(curBaseName)) {
 				// using sign table
 				if(signList != null) {
-					
+					String signText = getSignText(linkId, signList);
+					if(signText != null) {
+						System.out.println(signText);
+					}
 				}
 			}
 			else if(!preBaseName.equals(curBaseName) && Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change road
@@ -168,7 +224,10 @@ public class RDFTdspGeneration {
 				else {
 					// using sign table
 					if(signList != null) {
-						
+						String signText = getSignText(linkId, signList);
+						if(signText != null) {
+							System.out.println(signText);
+						}
 					}
 				}
 				distance = 0;
@@ -186,7 +245,10 @@ public class RDFTdspGeneration {
 				else {
 					// using sign table
 					if(signList != null) {
-						
+						String signText = getSignText(linkId, signList);
+						if(signText != null) {
+							System.out.println(signText);
+						}
 					}
 				}
 				distance = 0;

@@ -6,10 +6,24 @@ public class RDFSignInfo {
 	long signId;
 	long originLinkId;
 	ArrayList<RDFSignDestInfo> signDestList;
+	HashMap<Long, RDFSignDestInfo> signDestMap;
 	
 	public RDFSignInfo(long signId, long originLinkId) {
 		this.signId = signId;
 		this.originLinkId = originLinkId;
+	}
+	
+	public RDFSignDestInfo getSignDest(long linkId) {
+		return signDestMap.get(linkId);
+	}
+	
+	public boolean containDestLinkId(long linkId) {
+		if(signDestMap.containsKey(linkId)) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 	
 	public void addSignElem(RDFSignElemInfo signElem) {
@@ -23,7 +37,7 @@ public class RDFSignInfo {
 			signDestList = new ArrayList<RDFSignDestInfo>();
 		}
 		boolean add = false;
-		// insert sort
+		// add to arraylist for dest number, insert sort
 		for(int i = 0; i < signDestList.size(); i++) {
 			RDFSignDestInfo curSignDest = signDestList.get(i);
 			if(signDest.getDestNumber() < curSignDest.getDestNumber()) {
@@ -35,6 +49,11 @@ public class RDFSignInfo {
 		if(!add) {
 			signDestList.add(signDest);
 		}
+		// add to hashmap for linkId
+		if(signDestMap == null) {
+			signDestMap = new HashMap<Long, RDFSignDestInfo>();
+		}
+		signDestMap.put(signDest.getDestLinkId(), signDest);
 	}
 	
 	public ArrayList<RDFSignDestInfo> getSignDestList() {

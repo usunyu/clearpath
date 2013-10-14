@@ -42,6 +42,167 @@ public class RDFInput {
 	static String NO				= "N";
 	
 	/**
+	 * fetch sign element info
+	 * @param signMap
+	 */
+	public static void fetchSignElement(HashMap<Long, RDFSignInfo> signMap) {
+		System.out.println("fetch sign element...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+
+			con = RDFDatabase.getConnection();
+
+			sql = "SELECT * FROM rdf_sign_element";
+			
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+
+			while (res.next()) {
+				debug++;
+				
+				long signId				= res.getLong("sign_id");
+				
+				if(!signMap.containsKey(signId)) {
+					continue;
+				}
+
+				int destNumber			= res.getInt("destination_number");
+				int entryNumber			= res.getInt("entry_number");
+				String entryType			= res.getString("entry_type");
+				int textNumber			= res.getInt("text_number");
+				String textType			= res.getString("text_type");
+				String text				= res.getString("text");
+				String directionCode		= res.getString("direction_code");
+				
+				RDFSignElemInfo signElem = new RDFSignElemInfo(destNumber, entryNumber, entryType, textNumber, textType, text, directionCode);
+				
+				RDFSignInfo sign = signMap.get(signId);
+				sign.addSignElem(signElem);
+
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchSignElement: debug code: " + debug);
+		}
+		System.out.println("fetch sign element...");
+	}
+	
+	/**
+	 * fetch sign dest info
+	 * @param linkMap
+	 * @param signMap
+	 */
+	public static void fetchSignDest(HashMap<Long, RDFLinkInfo> linkMap, HashMap<Long, RDFSignInfo> signMap) {
+		System.out.println("fetch sign dest...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+
+			con = RDFDatabase.getConnection();
+
+			sql = "SELECT * FROM rdf_sign_destination";
+			
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+
+			while (res.next()) {
+				debug++;
+				
+				long signId = 			res.getLong("sign_id");
+				long destLinkId = 		res.getLong("dest_link_id");
+				
+				if(!signMap.containsKey(signId) && !linkMap.containsKey(destLinkId)) {
+					continue;
+				}
+				
+				int destNumber =		res.getInt("destination_number");
+				String exitNumber =		res.getString("exit_number");
+				boolean straightOnSign =	res.getString("straight_on_sign").equals(YES) ? true : false;
+				
+				RDFSignInfo sign;
+				if(signMap.containsKey(signId)) {
+					sign = signMap.get(signId);
+				}
+				else {
+					sign = new RDFSignInfo(signId);
+					signMap.put(signId, sign);
+				}
+				
+				RDFSignDestInfo signDest = new RDFSignDestInfo(destLinkId, destNumber, exitNumber, straightOnSign);
+				
+				sign.addSignDest(signDest);
+				
+				// add to link
+				RDFLinkInfo link = linkMap.get(destLinkId);
+				if(link != null)
+					link.addSign(sign);
+				
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchSignDest: debug code: " + debug);
+		}
+		System.out.println("fetch sign dest finish!");
+	}
+	
+	/**
+	 * fetch sign origin info
+	 * @param linkMap
+	 * @param signMap
+	 */
+	public static void fetchSignOrigin(HashMap<Long, RDFLinkInfo> linkMap, HashMap<Long, RDFSignInfo> signMap) {
+		System.out.println("fetch sign origin...");
+		int debug = 0;
+		try {
+			Connection con = null;
+			String sql = null;
+			PreparedStatement pstatement = null;
+			ResultSet res = null;
+
+			con = RDFDatabase.getConnection();
+
+			sql = "SELECT * FROM rdf_sign_origin";
+
+			pstatement = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+			res = pstatement.executeQuery();
+
+			while (res.next()) {
+				debug++;
+
+				long signId = 		res.getLong("sign_id");
+				long originLinkId =	res.getLong("originating_link_id");
+				
+				if(!linkMap.containsKey(originLinkId)) {
+					continue;
+				}
+				
+				RDFSignInfo sign = new RDFSignInfo(signId);
+				sign.setOriginLinkId(originLinkId);
+				
+				signMap.put(signId, sign);
+				
+				// add to link
+				RDFLinkInfo link = linkMap.get(originLinkId);
+				link.addSign(sign);
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("fetchSignOrigin: debug code: " + debug);
+		}
+		System.out.println("fetch sign origin finish!");
+	}
+	
+	/**
 	 * read match sensor
 	 * @param linkMap
 	 * @param sensorMap
