@@ -149,7 +149,7 @@ public class Geometry {
 		int indexDif = dirIndex2 - dirIndex1;
 		// right round
 		if(indexDif > 0) {
-			if(indexDif == 3)
+			if(indexDif >= 2 && indexDif <= 3)
 				turn = SLIGHTRIGHT;
 			else if(indexDif >= 4 && indexDif <= 5)
 				turn = RIGHT;
@@ -161,12 +161,12 @@ public class Geometry {
 				turn = SHARPLEFT;
 			else if(indexDif >= 11 && indexDif <= 12)
 				turn = LEFT;
-			else if(indexDif == 13)
+			else if(indexDif >= 13 && indexDif <= 14)
 				turn = SLIGHTLEFT;
 		}
 		// left round
 		if(indexDif < 0) {
-			if(indexDif == -3)
+			if(indexDif <= -2 && indexDif >= -3)
 				turn = SLIGHTLEFT;
 			else if(indexDif <= -4 && indexDif >= -5)
 				turn = LEFT;
@@ -178,7 +178,7 @@ public class Geometry {
 				turn = SHARPRIGHT;
 			else if(indexDif <= -11 && indexDif >= -12)
 				turn = RIGHT;
-			else if(indexDif == -13)
+			else if(indexDif <= -13 && indexDif >= -14)
 				turn = SLIGHTRIGHT;
 		}
 		return turn;
@@ -186,7 +186,7 @@ public class Geometry {
 	
 	public static boolean isSameDirection(int dir1, int dir2) {
 		int dirDif = Math.abs(dir1 - dir2);
-		if(dirDif <= 2 || dirDif >= 14)
+		if(dirDif <= 1 || dirDif >= 15)
 			return true;
 		return false;
 	}
