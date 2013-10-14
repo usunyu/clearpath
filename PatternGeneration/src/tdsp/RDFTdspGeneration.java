@@ -172,6 +172,7 @@ public class RDFTdspGeneration {
 		boolean preExitName = false;
 		int preDirIndex = -1;
 		double distance = 0;
+		boolean firstRoute = true;
 		DecimalFormat df = new DecimalFormat("#0.0");
 		for(int i = 0; i < pathNodeList.size(); i++) {
 			if(i == 0) {
@@ -210,6 +211,10 @@ public class RDFTdspGeneration {
 				if(signList != null) {
 					String signText = getSignText(linkId, signList);
 					if(signText != null) {
+						if(firstRoute) {
+							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+							firstRoute = false;
+						}
 						System.out.println( df.format(distance) + " miles");
 						System.out.println(signText);
 						distance = 0;
@@ -219,8 +224,12 @@ public class RDFTdspGeneration {
 			else if(!preBaseName.equals(curBaseName) && Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change road
 				if(functionalClass > 2) {
 					if(!preStreetName.equals(UNKNOWN) && !preExitName) {
-						System.out.println("Go " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName);
+						if(firstRoute) {
+							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+							firstRoute = false;
+						}
 						System.out.println( df.format(distance) + " miles");
+						System.out.println("Merge on to " + curStreetName);
 						distance = 0;
 					}
 				}
@@ -228,6 +237,10 @@ public class RDFTdspGeneration {
 					if(signList != null) {
 						String signText = getSignText(linkId, signList);
 						if(signText != null) {
+							if(firstRoute) {
+								System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+								firstRoute = false;
+							}
 							System.out.println( df.format(distance) + " miles");
 							System.out.println(signText);
 							distance = 0;
@@ -238,6 +251,10 @@ public class RDFTdspGeneration {
 			else if(preBaseName.equals(curBaseName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
 				if(functionalClass > 2) {
 					if(!preStreetName.equals(UNKNOWN) && !preExitName) {
+						if(firstRoute) {
+							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+							firstRoute = false;
+						}
 						System.out.println( df.format(distance) + " miles");
 						int turn = Geometry.getTurn(preDirIndex, curDirIndex);
 						if(turn == Geometry.LEFT && !exitName)
@@ -253,6 +270,10 @@ public class RDFTdspGeneration {
 					if(signList != null) {
 						String signText = getSignText(linkId, signList);
 						if(signText != null) {
+							if(firstRoute) {
+								System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+								firstRoute = false;
+							}
 							System.out.println( df.format(distance) + " miles");
 							System.out.println(signText);
 							distance = 0;
@@ -263,7 +284,10 @@ public class RDFTdspGeneration {
 			else {	// change direction and road
 				if(functionalClass > 2) {
 					if(!preStreetName.equals(UNKNOWN) && !preExitName) {
-						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+						if(firstRoute) {
+							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+							firstRoute = false;
+						}
 						System.out.println( df.format(distance) + " miles");
 						int turn = Geometry.getTurn(preDirIndex, curDirIndex);
 						if(turn == Geometry.LEFT && !exitName)
@@ -278,6 +302,10 @@ public class RDFTdspGeneration {
 					if(signList != null) {
 						String signText = getSignText(linkId, signList);
 						if(signText != null) {
+							if(firstRoute) {
+								System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+								firstRoute = false;
+							}
 							System.out.println( df.format(distance) + " miles");
 							System.out.println(signText);
 							distance = 0;
