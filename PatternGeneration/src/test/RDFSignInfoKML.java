@@ -131,7 +131,11 @@ public class RDFSignInfoKML {
 					LocationInfo loc = pIterator.next();
 					kmlStr += loc.getLongitude()+ SEPARATION + loc.getLatitude()+ SEPARATION + loc.getZLevel() + " ";
 				}
-				kmlStr += "</coordinates></LineString></Placemark>";
+				kmlStr += "</coordinates></LineString>";
+				kmlStr += "<Style><LineStyle>";
+				kmlStr += "<color>64000000</color>";
+				kmlStr += "<width>2</width>";
+				kmlStr += "</LineStyle></Style></Placemark>\n";
 				
 				out.write(kmlStr);
 			}
