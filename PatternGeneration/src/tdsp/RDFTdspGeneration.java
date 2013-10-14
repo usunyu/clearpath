@@ -203,55 +203,68 @@ public class RDFTdspGeneration {
 				if(signList != null) {
 					String signText = getSignText(linkId, signList);
 					if(signText != null) {
+						System.out.println( df.format(distance) + " miles");
 						System.out.println(signText);
+						distance = 0;
 					}
 				}
 			}
 			else if(!preBaseName.equals(curBaseName) && Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change road
-				System.out.println("Go " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName);
-				System.out.println( df.format(distance) + " miles");
-				distance = 0;
+				if(!preStreetName.equals(UNKNOWN)) {
+					System.out.println("Go " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName);
+					System.out.println( df.format(distance) + " miles");
+					distance = 0;
+				}
 			}
 			else if(preBaseName.equals(curBaseName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
 				if(functionalClass > 2) {
-					System.out.println( df.format(distance) + " miles");
-					int turn = Geometry.getTurn(preDirIndex, curDirIndex);
-					if(turn == Geometry.LEFT)
-						System.out.println("Turn left to stay on " + curStreetName);
-					if(turn == Geometry.RIGHT)
-						System.out.println("Turn right to stay on " + curStreetName);
+					if(!preStreetName.equals(UNKNOWN)) {
+						System.out.println( df.format(distance) + " miles");
+						int turn = Geometry.getTurn(preDirIndex, curDirIndex);
+						if(turn == Geometry.LEFT)
+							System.out.println("Turn left to stay on " + curStreetName);
+						if(turn == Geometry.RIGHT)
+							System.out.println("Turn right to stay on " + curStreetName);
+						
+						distance = 0;
+					}
 				}
 				else {
 					// using sign table
 					if(signList != null) {
 						String signText = getSignText(linkId, signList);
 						if(signText != null) {
+							System.out.println( df.format(distance) + " miles");
 							System.out.println(signText);
+							distance = 0;
 						}
 					}
 				}
-				distance = 0;
 			}
 			else {	// change direction and road
 				if(functionalClass > 2) {
-					System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
-					System.out.println( df.format(distance) + " miles");
-					int turn = Geometry.getTurn(preDirIndex, curDirIndex);
-					if(turn == Geometry.LEFT)
-						System.out.println("Turn left on to " + curStreetName);
-					if(turn == Geometry.RIGHT)
-						System.out.println("Turn right on to " + curStreetName);
+					if(!preStreetName.equals(UNKNOWN)) {
+						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+						System.out.println( df.format(distance) + " miles");
+						int turn = Geometry.getTurn(preDirIndex, curDirIndex);
+						if(turn == Geometry.LEFT)
+							System.out.println("Turn left on to " + curStreetName);
+						if(turn == Geometry.RIGHT)
+							System.out.println("Turn right on to " + curStreetName);
+						distance = 0;
+					}
 				}
 				else {
 					// using sign table
 					if(signList != null) {
 						String signText = getSignText(linkId, signList);
 						if(signText != null) {
+							System.out.println( df.format(distance) + " miles");
 							System.out.println(signText);
+							distance = 0;
 						}
 					}
 				}
-				distance = 0;
 			}
 			distance += Geometry.calculateDistance(link.getPointList());
 			
