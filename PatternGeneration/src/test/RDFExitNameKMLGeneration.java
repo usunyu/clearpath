@@ -111,7 +111,7 @@ public class RDFExitNameKMLGeneration {
 				}
 				kmlStr += "</coordinates></LineString>";
 				kmlStr += "<Style><LineStyle>";
-				kmlStr += "<color>#FF00FF14</color>";
+				kmlStr += "<color>#FF1400FF</color>";
 				kmlStr += "<width>3</width>";
 				kmlStr += "</LineStyle></Style></Placemark>";
 				

@@ -18,6 +18,7 @@ public class RDFInput {
 	static String linkFile			= "RDF_Link.csv";
 	static String linkGeometryFile	= "RDF_Link_Geometry.csv";
 	static String linkLaneFile		= "RDF_Link_Lane.csv";
+	static String linkNameFile		= "RDF_Link_Name.csv";
 	// for read node file
 	static String nodeFile			= "RDF_Node.csv";
 	// for read sensor file
@@ -159,6 +160,40 @@ public class RDFInput {
 			e.printStackTrace();
 		}
 		System.out.println("fetch sensor finish!");
+	}
+	
+	/**
+	 * read link street name
+	 * @param linkMap
+	 */
+	public static void readLinkName(HashMap<Long, RDFLinkInfo> linkMap) {
+		System.out.println("read link name...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + linkNameFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(SEPARATION);
+				long linkId 		= Long.parseLong(nodes[0]);
+				RDFLinkInfo	link	= linkMap.get(linkId);
+				for(int i = 1; i < nodes.length; i ++) {
+					String streetName = nodes[i];
+					link.addStreetName(streetName, true);
+				}
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("readLinkName: debug code: " + debug);
+		}
+		System.out.println("read link name finish!");
 	}
 	
 	/**

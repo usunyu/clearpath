@@ -85,11 +85,21 @@ public class RDFSignInfoKML {
 					else
 						dirStr += SEPARATION + dir;
 				}
-				
-				String kmlStr = "<Placemark><name>Link:" + linkId + "</name>";
+				String signStr = "null";
+				if(signList != null && signList.size() != 0) {
+					int i = 0;
+					for(RDFSignInfo sign : signList) {
+						if(i++ == 0)
+							signStr = String.valueOf(sign.getSignId());
+						else
+							signStr += SEPARATION + sign.getSignId();
+					}
+				}
+				String kmlStr = "<Placemark><name>Sign:" + signStr + "</name>";
 				kmlStr += "<description>";
 				if(baseName.contains("&"))
-					baseName = baseName.replaceAll("&", " and ");				
+					baseName = baseName.replaceAll("&", " and ");
+				kmlStr += "Link:"			+ linkId + "\r\n";
 				kmlStr += "Name:" 			+ baseName + "\r\n";
 				kmlStr += "Ref:" 			+ refNodeId + "\r\n";
 				kmlStr += "Nonref:" 		+ nonRefNodeId + "\r\n";
@@ -101,17 +111,6 @@ public class RDFSignInfoKML {
 				kmlStr += "Tollway:" 		+ tollway + "\r\n";
 				kmlStr += "Carpool:" 		+ carpool + "\r\n";
 				kmlStr += "Exit:" 			+ exitName + "\r\n";
-				if(signList != null && signList.size() != 0) {
-					String signStr = "null";
-					int i = 0;
-					for(RDFSignInfo sign : signList) {
-						if(i++ == 0)
-							signStr = String.valueOf(sign.getSignId());
-						else
-							signStr += SEPARATION + sign.getSignId();
-					}
-					kmlStr += "Sign:" + signStr + "\r\n";
-				}
 				if(sensorList != null && sensorList.size() != 0) {
 					String sensorStr = "null";
 					ListIterator<SensorInfo> sensorIt = sensorList.listIterator();
@@ -163,20 +162,25 @@ public class RDFSignInfoKML {
 			while (res.next()) {
 				debug++;
 				
-				long signId = 			res.getLong("sign_id");
+				long signId				= res.getLong("sign_id");
 				
 				if(!signMap.containsKey(signId)) {
 					continue;
 				}
+
+				int destNumber			= res.getInt("destination_number");
+				int entryNumber			= res.getInt("entry_number");
+				String entryType			= res.getString("entry_type");
+				int textNumber			= res.getInt("text_number");
+				String textType			= res.getString("text_type");
+				String text				= res.getString("text");
+				String directionCode		= res.getString("direction_code");
 				
-				String textType = 		res.getString("text_type");
-				String text =			res.getString("text");
-				String directionCode =	res.getString("direction_code");
+				RDFSignElemInfo signElem = new RDFSignElemInfo(destNumber, entryNumber, entryType, textNumber, textType, text, directionCode);
 				
 				RDFSignInfo sign = signMap.get(signId);
-				sign.setTextType(textType);
-				sign.setText(text);
-				sign.setDirectionCode(directionCode);
+				sign.addSignElem(signElem);
+
 			}
 		}
 		catch (Exception e) {
@@ -206,23 +210,32 @@ public class RDFSignInfoKML {
 				debug++;
 				
 				long signId = 			res.getLong("sign_id");
+				long destLinkId = 		res.getLong("dest_link_id");
 				
-				if(!signMap.containsKey(signId)) {
+				if(!signMap.containsKey(signId) && !linkMap.containsKey(destLinkId)) {
 					continue;
 				}
 				
-				long destLinkId = 		res.getLong("dest_link_id");
+				int destNumber =		res.getInt("destination_number");
 				String exitNumber =		res.getString("exit_number");
 				boolean straightOnSign =	res.getString("straight_on_sign").equals(YES) ? true : false;
 				
-				RDFSignInfo sign = signMap.get(signId);
-				sign.setDestLinkid(destLinkId);
-				sign.setExitNumber(exitNumber);
-				sign.setStraightOnSign(straightOnSign);
+				RDFSignInfo sign;
+				if(signMap.containsKey(signId)) {
+					sign = signMap.get(signId);
+				}
+				else {
+					sign = new RDFSignInfo(signId);
+					signMap.put(signId, sign);
+				}
+				
+				RDFSignDestInfo signDest = new RDFSignDestInfo(destLinkId, destNumber, exitNumber, straightOnSign);
+				
+				sign.addSignDest(signDest);
 				
 				// add to link
 				RDFLinkInfo link = linkMap.get(destLinkId);
-				if(link != null);
+				if(link != null)
 					link.addSign(sign);
 			}
 		}

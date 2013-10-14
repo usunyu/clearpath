@@ -104,22 +104,38 @@ public class Geometry {
 		// return Math.atan2(y, x);
 		double direction = (Math.atan2(y, x) * 180. / Math.PI + 360) % 360;
 		
-		if(direction >= 0 && direction < 45)
+		if(direction >= 0 && direction < 22.5)
 			return 0;
-		else if(direction >= 45 && direction < 90)
+		else if(direction >= 22.5 && direction < 45)
 			return 1;
-		else if(direction >= 90 && direction < 135)
+		else if(direction >= 45 && direction < 67.5)
 			return 2;
-		else if(direction >= 135 && direction < 180)
+		else if(direction >= 67.5 && direction < 90)
 			return 3;
-		else if(direction >= 180 && direction < 225)
+		else if(direction >= 90 && direction < 112.5)
 			return 4;
-		else if(direction >= 225 && direction < 270)
+		else if(direction >= 112.5 && direction < 135)
 			return 5;
-		else if(direction >= 270 && direction < 315)
+		else if(direction >= 135 && direction < 157.5)
 			return 6;
-		else if(direction >= 315 && direction < 360)
+		else if(direction >= 157.5 && direction < 180)
 			return 7;
+		else if(direction >= 180 && direction < 202.5)
+			return 8;
+		else if(direction >= 202.5 && direction < 225)
+			return 9;
+		else if(direction >= 225 && direction < 247.5)
+			return 10;
+		else if(direction >= 247.5 && direction < 270)
+			return 11;
+		else if(direction >= 270 && direction < 292.5)
+			return 12;
+		else if(direction >= 292.5 && direction < 315)
+			return 13;
+		else if(direction >= 315 && direction < 337.5)
+			return 14;
+		else if(direction >= 337.5 && direction < 360)
+			return 15;
 
 		return -1; // worng case
 	}
@@ -127,16 +143,16 @@ public class Geometry {
 	public static int getTurn(int dirIndex1, int dirIndex2) {
 		int turn = -1;
 		int indexDif = Math.abs(dirIndex2 - dirIndex1);
-		if(indexDif >=2 && indexDif < 4) {
+		if(indexDif >= 4 && indexDif < 8) {
 			if(dirIndex2 > dirIndex1)
 				turn = RIGHT;
 			else
 				turn = LEFT;
 		}
-		else if(indexDif == 4) {
+		else if(indexDif == 8) {
 			turn = UTURN;
 		}
-		else if(indexDif > 4 && indexDif <= 6) {
+		else if(indexDif > 8 && indexDif <= 12) {
 			if(dirIndex2 > dirIndex1)
 				turn = LEFT;
 			else
@@ -146,26 +162,30 @@ public class Geometry {
 	}
 	
 	public static boolean isSameDirection(int dir1, int dir2) {
-		if(Math.abs(dir1 - dir2) == 1)
+		int dirDif = Math.abs(dir1 - dir2);
+		if(dirDif <= 2 || dirDif >= 14)
 			return true;
-		else if(dir1 == 0 && dir2 == 7)
-			return true;
-		else if(dir1 == 7 && dir2 == 0)
-			return true;
-		else
-			return false;
+		return false;
 	}
 	
 	public static String getDirectionStr(int dirIndex) {
 		String dirStr = "";
-		if(dirIndex == 7 || dirIndex == 0)
+		if(dirIndex == 15 || dirIndex == 0)
 			dirStr = "north";
 		else if(dirIndex == 1 || dirIndex == 2)
-			dirStr = "east";
+			dirStr = "northeast";
 		else if(dirIndex == 3 || dirIndex == 4)
-			dirStr = "south";
+			dirStr = "east";
 		else if(dirIndex == 5 || dirIndex == 6)
+			dirStr = "eastsouth";
+		else if(dirIndex == 7 || dirIndex == 8)
+			dirStr = "south";
+		else if(dirIndex == 9 || dirIndex == 10)
+			dirStr = "southwest";
+		else if(dirIndex == 11 || dirIndex == 12)
 			dirStr = "west";
+		else if(dirIndex == 13 || dirIndex == 14)
+			dirStr = "westnorth";
 		return dirStr;
 	}
 }

@@ -60,6 +60,7 @@ public class RDFTdspGeneration {
 		prepareRoute();
 		
 		RDFInput.readLinkFile(linkMap, nodeMap, nodeToLink);
+		RDFInput.readLinkName(linkMap);
 		RDFInput.readLinkGeometry(linkMap);
 		RDFInput.readLinkLane(linkMap);
 		
@@ -109,12 +110,13 @@ public class RDFTdspGeneration {
 	public static void turnByTurn() {
 		System.out.println("turn by turn...");
 		long preNodeId = -1;
-		String preStName = "";
+		String preBaseName = "";
+		String preStreetName = "";
 		int preDirIndex = -1;
 		double distance = 0;
 		DecimalFormat df = new DecimalFormat("#0.0");
-		boolean onRamp = false;
-		boolean preOnRamp = false;
+//		boolean onRamp = false;
+//		boolean preOnRamp = false;
 		for(int i = 0; i < pathNodeList.size(); i++) {
 			if(i == 0) {
 				preNodeId = pathNodeList.get(i);
@@ -123,93 +125,92 @@ public class RDFTdspGeneration {
 			
 			long curNodeId = pathNodeList.get(i);
 			String nodeStr = preNodeId + "," + curNodeId;
-			RDFLinkInfo linkInfo = nodeToLink.get(nodeStr);
+			RDFLinkInfo link = nodeToLink.get(nodeStr);
+			
+			int functionalClass = link.getFunctionalClass();
 			
 			RDFNodeInfo preNode = nodeMap.get(preNodeId);
 			RDFNodeInfo curNode = nodeMap.get(curNodeId);
 			
 			int curDirIndex = Geometry.getDirectionIndex(preNode.getLocation(), curNode.getLocation());
 			
-			String curStName = linkInfo.getBaseName();
+			String curBaseName = link.getBaseName();
+			LinkedList<String> curStreetNameList = link.getStreetNameList();
+			String curStreetName = curStreetNameList.getFirst();
 			
-			//curStName = getUniformSTName(curStName);
+//			onRamp = link.isRamp();
 			
-			onRamp = linkInfo.isRamp();
-			
-			if(i == 1) {
-				preStName = curStName;
-				distance = curDirIndex;
+			if(i == 1) {	// initial
+				preBaseName = curBaseName;
+				preStreetName = curStreetName;
+				preDirIndex = curDirIndex;
 			}
 			
 			// no turn need, cumulative distance
-			if(Geometry.isSameDirection(curDirIndex, preDirIndex) && preStName.equals(curStName)) {
-				if(onRamp != preOnRamp) {
-					if(onRamp) {	// take ramp
-						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
-					}
-					else {	// exit ramp
-						System.out.println("Take ramp onto " + curStName + ".");
-					}
-					distance = 0;
-				}
+			if(Geometry.isSameDirection(curDirIndex, preDirIndex) && preBaseName.equals(curBaseName)) {
+//				if(onRamp != preOnRamp) {
+//					if(onRamp) {	// take ramp
+//						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " for " + df.format(distance) + " miles.");
+//					}
+//					else {	// exit ramp
+//						System.out.println("Take ramp onto " + curStreetName + ".");
+//					}
+//					distance = 0;
+//				}
 			}
-			else if(!preStName.equals(curStName) && Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change road
-				if(onRamp != preOnRamp) {
-					if(onRamp) {	// take ramp
-						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
-					}
-					else {	// exit ramp
-						System.out.println("Take ramp onto " + curStName + ".");
-					}
-				}
-				else {
-					System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
-				}
+			else if(!preBaseName.equals(curBaseName) && Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change road
+//				if(onRamp != preOnRamp) {
+//					if(onRamp) {	// take ramp
+//						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " for " + df.format(distance) + " miles.");
+//					}
+//					else {	// exit ramp
+//						System.out.println("Take ramp onto " + curStreetName + ".");
+//					}
+//				}
+//				else {
+//					System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " for " + df.format(distance) + " miles.");
+//				}
+				System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " for " + df.format(distance) + " miles.");
 				distance = 0;
 			}
-			else if(preStName.equals(curStName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
-				if(onRamp != preOnRamp) {
-					if(onRamp) {	// take ramp
-						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
-					}
-					else {	// exit ramp
-						System.out.println("Take ramp onto " + curStName + ".");
-					}
-					distance = 0;
-				}
+			else if(preBaseName.equals(curBaseName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
+//				if(onRamp != preOnRamp) {
+//					if(onRamp) {	// take ramp
+//						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " for " + df.format(distance) + " miles.");
+//					}
+//					else {	// exit ramp
+//						System.out.println("Take ramp onto " + curStreetName + ".");
+//					}
+//					distance = 0;
+//				}
 			}
 			else {	// change direction and road
-				if(onRamp != preOnRamp) {
-					if(onRamp) {	// take ramp
-						System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
-					}
-					else {	// exit ramp
-						System.out.println("Take ramp onto " + curStName + ".");
-					}
-				}
-				else {
-					System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStName + " for " + df.format(distance) + " miles.");
+				if(functionalClass > 2) {
+					System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+					System.out.println( df.format(distance) + " miles");
 					int turn = Geometry.getTurn(preDirIndex, curDirIndex);
 					if(turn == Geometry.LEFT)
-						System.out.println("Turn left on to " + curStName + ".");
+						System.out.println("Turn left on to " + curStreetName);
 					if(turn == Geometry.RIGHT)
-						System.out.println("Turn right on to " + curStName + ".");
+						System.out.println("Turn right on to " + curStreetName);
 				}
-				
+				else {
+					// using sign table
+				}
 				distance = 0;
 			}
-			distance += Geometry.calculateDistance(linkInfo.getPointList());
+			distance += Geometry.calculateDistance(link.getPointList());
 			
 			// arrive destination
 			if(i == pathNodeList.size() - 1) {
-				System.out.println("Go straight on " + curStName + " for " + df.format(distance) + " miles.");
+				System.out.println("Go straight on " + curStreetName + " for " + df.format(distance) + " miles.");
 				System.out.println("Arrive destination.");
 			}
 				
 			preNodeId = curNodeId;
-			preStName = curStName;
+			preBaseName = curBaseName;
+			preStreetName = curStreetName;
 			preDirIndex = curDirIndex;
-			preOnRamp = onRamp;
 		}
 		System.out.println("turn by turn finish!");
 	}
@@ -304,7 +305,8 @@ public class RDFTdspGeneration {
 			
 			Collections.reverse(pathNodeList);	// reverse the path list
 		}
-		
+		// prepare for next routing
+		prepareRoute();
 		System.out.println("find the path successful!");
 	}
 	
