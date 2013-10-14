@@ -133,7 +133,7 @@ public class RDFSignInfoKML {
 				}
 				kmlStr += "</coordinates></LineString>";
 				kmlStr += "<Style><LineStyle>";
-				kmlStr += "<color>64000000</color>";
+				kmlStr += "<color>FFFF0000</color>";
 				kmlStr += "<width>2</width>";
 				kmlStr += "</LineStyle></Style></Placemark>\n";
 				
