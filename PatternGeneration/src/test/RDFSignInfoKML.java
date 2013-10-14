@@ -209,6 +209,10 @@ public class RDFSignInfoKML {
 			while (res.next()) {
 				debug++;
 				
+				if(debug == 15365) {
+					System.out.print("Err");
+				}
+				
 				long signId = 			res.getLong("sign_id");
 				long destLinkId = 		res.getLong("dest_link_id");
 				
@@ -237,6 +241,7 @@ public class RDFSignInfoKML {
 				RDFLinkInfo link = linkMap.get(destLinkId);
 				if(link != null)
 					link.addSign(sign);
+				
 			}
 		}
 		catch (Exception e) {

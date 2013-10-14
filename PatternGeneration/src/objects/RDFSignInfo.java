@@ -29,6 +29,7 @@ public class RDFSignInfo {
 			if(signDest.getDestNumber() < curSignDest.getDestNumber()) {
 				signDestList.add(i, signDest);
 				add = true;
+				break;
 			}
 		}
 		if(!add) {
