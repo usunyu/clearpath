@@ -192,13 +192,30 @@ public class RDFTdspGeneration {
 		return turnStr;
 	}
 	
+	public static boolean isArterialClass(int functionalClass) {
+		if(functionalClass >= 3 && functionalClass <= 5)
+			return true;
+		else
+			return false;
+	}
+	
+	public static boolean isHighwayClass(int functionalClass) {
+		if(functionalClass >= 1 && functionalClass <= 2)
+			return true;
+		else
+			return false;
+	}
+	
 	public static void turnByTurn() {
 		System.out.println("turn by turn...");
 		long preNodeId = -1;
+		
 		String preBaseName = "";
 		String preStreetName = "";
 		boolean preExitName = false;
+		int preFunctionalClass = -1;
 		int preDirIndex = -1;
+		
 		double distance = 0;
 		boolean firstRoute = true;
 		DecimalFormat df = new DecimalFormat("#0.0");
@@ -227,30 +244,20 @@ public class RDFTdspGeneration {
 			
 			LinkedList<RDFSignInfo> signList = link.getSignList();
 			
-			if(i == 1) {	// initial
+			if(i == 1) {	// initial prev
 				preBaseName = curBaseName;
 				preStreetName = curStreetName;
 				preDirIndex = curDirIndex;
+				preFunctionalClass = functionalClass;
 			}
 			
-			// no turn need, cumulative distance
-			if(Geometry.isSameDirection(curDirIndex, preDirIndex) && preBaseName.equals(curBaseName)) {
-				// using sign table
-				if(signList != null) {
-					String signText = getSignText(linkId, signList);
-					if(signText != null) {
-						if(firstRoute) {
-							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
-							firstRoute = false;
-						}
-						System.out.println( df.format(distance) + " miles");
-						System.out.println(signText);
-						distance = 0;
-					}
+			// for arterial
+			if(isArterialClass(preFunctionalClass) && isArterialClass(functionalClass)) {
+				// no turn need, cumulative distance
+				if(Geometry.isSameDirection(curDirIndex, preDirIndex) && preBaseName.equals(curBaseName)) {
+					
 				}
-			}
-			else if(!preBaseName.equals(curBaseName) && Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change road
-				if(functionalClass > 2) {
+				else if(!preBaseName.equals(curBaseName) && Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change road
 					if(!preStreetName.equals(UNKNOWN) && !preExitName) {
 						if(firstRoute) {
 							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
@@ -261,23 +268,7 @@ public class RDFTdspGeneration {
 						distance = 0;
 					}
 				}
-				else {
-					if(signList != null) {
-						String signText = getSignText(linkId, signList);
-						if(signText != null) {
-							if(firstRoute) {
-								System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
-								firstRoute = false;
-							}
-							System.out.println( df.format(distance) + " miles");
-							System.out.println(signText);
-							distance = 0;
-						}
-					}
-				}
-			}
-			else if(preBaseName.equals(curBaseName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
-				if(functionalClass > 2) {
+				else if(preBaseName.equals(curBaseName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
 					if(!preStreetName.equals(UNKNOWN) && !preExitName) {
 						if(firstRoute) {
 							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
@@ -293,24 +284,7 @@ public class RDFTdspGeneration {
 						distance = 0;
 					}
 				}
-				else {
-					// using sign table
-					if(signList != null) {
-						String signText = getSignText(linkId, signList);
-						if(signText != null) {
-							if(firstRoute) {
-								System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
-								firstRoute = false;
-							}
-							System.out.println( df.format(distance) + " miles");
-							System.out.println(signText);
-							distance = 0;
-						}
-					}
-				}
-			}
-			else {	// change direction and road
-				if(functionalClass > 2) {
+				else {	// change direction and road
 					if(!preStreetName.equals(UNKNOWN) && !preExitName) {
 						if(firstRoute) {
 							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
@@ -326,21 +300,30 @@ public class RDFTdspGeneration {
 						distance = 0;
 					}
 				}
-				else {
-					// using sign table
-					if(signList != null) {
-						String signText = getSignText(linkId, signList);
-						if(signText != null) {
-							if(firstRoute) {
-								System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
-								firstRoute = false;
-							}
-							System.out.println( df.format(distance) + " miles");
-							System.out.println(signText);
-							distance = 0;
+			}
+			// for highway
+			if(isHighwayClass(preFunctionalClass) && isHighwayClass(functionalClass)) {
+				// using sign table
+				if(signList != null) {
+					String signText = getSignText(linkId, signList);
+					if(signText != null) {
+						if(firstRoute) {
+							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+							firstRoute = false;
 						}
+						System.out.println( df.format(distance) + " miles");
+						System.out.println(signText);
+						distance = 0;
 					}
 				}
+			}
+			// from arterial to highway
+			if(isArterialClass(preFunctionalClass) && isHighwayClass(functionalClass)) {
+				System.out.println("from arterial to highway");
+			}
+			// from highway to arterial
+			if(isHighwayClass(preFunctionalClass) && isArterialClass(functionalClass)) {
+				System.out.println("from arterial to highway");
 			}
 			distance += Geometry.calculateDistance(link.getPointList());
 			
@@ -358,6 +341,7 @@ public class RDFTdspGeneration {
 			preStreetName = curStreetName;
 			preDirIndex = curDirIndex;
 			preExitName = exitName;
+			preFunctionalClass = functionalClass;
 		}
 		System.out.println("turn by turn finish!");
 	}
