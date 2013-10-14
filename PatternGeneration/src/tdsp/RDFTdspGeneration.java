@@ -164,6 +164,34 @@ public class RDFTdspGeneration {
 		return signInfoStr;
 	}
 	
+	public static String getTurnText(int turn) {
+		String turnStr = "";
+		switch(turn) {
+			case Geometry.LEFT: 
+				turnStr = "Turn left ";
+				break;
+			case Geometry.RIGHT:
+				turnStr = "Turn right ";
+				break;
+			case Geometry.SLIGHTLEFT:
+				turnStr = "Take slight left ";
+				break;
+			case Geometry.SLIGHTRIGHT:
+				turnStr = "Take slight right ";
+				break;
+			case Geometry.SHARPLEFT:
+				turnStr = "Take sharp  left ";
+				break;
+			case Geometry.SHARPRIGHT:
+				turnStr = "Take sharp right ";
+				break;
+			case Geometry.UTURN:
+				turnStr = "Take u-turn ";
+				break;
+		}
+		return turnStr;
+	}
+	
 	public static void turnByTurn() {
 		System.out.println("turn by turn...");
 		long preNodeId = -1;
@@ -257,11 +285,11 @@ public class RDFTdspGeneration {
 						}
 						System.out.println( df.format(distance) + " miles");
 						int turn = Geometry.getTurn(preDirIndex, curDirIndex);
-						if(turn == Geometry.LEFT && !exitName)
-							System.out.println("Turn left to stay on " + curStreetName);
-						if(turn == Geometry.RIGHT && !exitName)
-							System.out.println("Turn right to stay on " + curStreetName);
-						
+						if(!exitName) {
+							String turnText = getTurnText(turn);
+							turnText += "to stay on " + curStreetName;
+							System.out.println(turnText);
+						}
 						distance = 0;
 					}
 				}
@@ -290,10 +318,11 @@ public class RDFTdspGeneration {
 						}
 						System.out.println( df.format(distance) + " miles");
 						int turn = Geometry.getTurn(preDirIndex, curDirIndex);
-						if(turn == Geometry.LEFT && !exitName)
-							System.out.println("Turn left on to " + curStreetName);
-						if(turn == Geometry.RIGHT && !exitName)
-							System.out.println("Turn right on to " + curStreetName);
+						if(!exitName) {
+							String turnText = getTurnText(turn);
+							turnText += "on to " + curStreetName;
+							System.out.println(turnText);
+						}
 						distance = 0;
 					}
 				}
@@ -321,7 +350,7 @@ public class RDFTdspGeneration {
 					System.out.println("Go straight on " + curStreetName);
 					System.out.println( df.format(distance) + " miles");
 				}
-				System.out.println("Arrive destination.");
+				System.out.println("Arrive destination");
 			}
 				
 			preNodeId = curNodeId;

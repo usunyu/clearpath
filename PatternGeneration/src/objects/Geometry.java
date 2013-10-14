@@ -4,14 +4,18 @@ import java.util.*;
 
 public class Geometry {
 	static public double Radius = 6371 * 0.621371192;
-	static public int NORTH = 0;
-	static public int SOUTH = 1;
-	static public int WEST = 3;
-	static public int EAST = 2;
+	static public final int NORTH = 0;
+	static public final int SOUTH = 1;
+	static public final int WEST = 3;
+	static public final int EAST = 2;
 	
-	static public int LEFT = 0;
-	static public int RIGHT = 1;
-	static public int UTURN = 2;
+	static public final int LEFT = 0;
+	static public final int RIGHT = 1;
+	static public final int SLIGHTLEFT = 2;
+	static public final int SLIGHTRIGHT = 3;
+	static public final int SHARPLEFT = 4;
+	static public final int SHARPRIGHT = 5;
+	static public final int UTURN = 6;
 
 	public static double calculateDistance(LocationInfo start, LocationInfo end) {
 		double lat1 = start.getLatitude();
@@ -142,21 +146,40 @@ public class Geometry {
 	
 	public static int getTurn(int dirIndex1, int dirIndex2) {
 		int turn = -1;
-		int indexDif = Math.abs(dirIndex2 - dirIndex1);
-		if(indexDif >= 4 && indexDif < 8) {
-			if(dirIndex2 > dirIndex1)
+		int indexDif = dirIndex2 - dirIndex1;
+		// right round
+		if(indexDif > 0) {
+			if(indexDif == 3)
+				turn = SLIGHTRIGHT;
+			else if(indexDif >= 4 && indexDif <= 5)
 				turn = RIGHT;
-			else
+			else if(indexDif >= 6 && indexDif <= 7)
+				turn = SHARPRIGHT;
+			else if(indexDif == 8)
+				turn = UTURN;
+			else if(indexDif >=9 && indexDif <= 10)
+				turn = SHARPLEFT;
+			else if(indexDif >= 11 && indexDif <= 12)
 				turn = LEFT;
+			else if(indexDif == 13)
+				turn = SLIGHTLEFT;
 		}
-		else if(indexDif == 8) {
-			turn = UTURN;
-		}
-		else if(indexDif > 8 && indexDif <= 12) {
-			if(dirIndex2 > dirIndex1)
+		// left round
+		if(indexDif < 0) {
+			if(indexDif == -3)
+				turn = SLIGHTLEFT;
+			else if(indexDif <= -4 && indexDif >= -5)
 				turn = LEFT;
-			else
+			else if(indexDif <= -6 && indexDif >= -7)
+				turn = SHARPLEFT;
+			else if(indexDif == -8)
+				turn = UTURN;
+			else if(indexDif <= -9 && indexDif >= -10)
+				turn = SHARPRIGHT;
+			else if(indexDif <= -11 && indexDif >= -12)
 				turn = RIGHT;
+			else if(indexDif == -13)
+				turn = SLIGHTRIGHT;
 		}
 		return turn;
 	}
