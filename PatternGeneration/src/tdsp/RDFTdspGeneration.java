@@ -224,6 +224,7 @@ public class RDFTdspGeneration {
 			boolean preExitName = false;
 			int preFunctionalClass = -1;
 			int preDirIndex = -1;
+			String lastRouteText = UNKNOWN;
 			
 			double distance = 0;
 			boolean firstRoute = true;
@@ -338,12 +339,16 @@ public class RDFTdspGeneration {
 						if(!signTextSet.contains(curBaseName)) {
 							System.out.println( df.format(distance) + " miles");
 							String signText = searchPathSign(i, signTextSet);
-							if(signDest.getExitNumber() != null)
-								signText = "Take the exit " + signDest.getExitNumber() + " on to " + signText;
-							else
-								signText = "Take the exit on to " + signText;
-							System.out.println(signText);
-							distance = 0;
+							// last route text is different from this one
+							if(!signText.equals(lastRouteText)) {
+								if(signDest.getExitNumber() != null)
+									signText = "Take the exit " + signDest.getExitNumber() + " on to " + signText;
+								else
+									signText = "Take the exit on to " + signText;
+								System.out.println(signText);
+								distance = 0;
+								lastRouteText = signText;
+							}
 						}
 					}
 				}
