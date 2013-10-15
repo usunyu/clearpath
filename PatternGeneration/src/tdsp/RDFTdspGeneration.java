@@ -369,7 +369,11 @@ public class RDFTdspGeneration {
 							signText = text;
 							break;
 						}
-						signText = "Take the " + signText + " exit";
+						if(signDest.getExitNumber() != null)
+							signText = "Take the " + signText + " exit " + signDest.getExitNumber();
+						else
+							signText = "Take the " + signText + " exit";
+						System.out.println(signText);
 						distance = 0;
 						// reset
 						lastRouteText = UNKNOWN;
