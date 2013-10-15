@@ -269,7 +269,7 @@ public class RDFTdspGeneration {
 					// change direction or road happen
 					if(!preBaseName.equals(curBaseName) || !Geometry.isSameDirection(curDirIndex, preDirIndex)) {
 						// pre street has name and not exit name
-						if(!preStreetName.equals(UNKNOWN) && !preExitName) {
+						if(!preBaseName.equals(UNKNOWN) && !curBaseName.equals(UNKNOWN) && !preExitName) {
 							// first route happen
 							if(firstRoute) {
 								System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
