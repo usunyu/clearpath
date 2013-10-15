@@ -149,36 +149,36 @@ public class Geometry {
 		int indexDif = dirIndex2 - dirIndex1;
 		// right round
 		if(indexDif > 0) {
-			if(indexDif >= 2 && indexDif <= 3)
+			if(indexDif == 2)
 				turn = SLIGHTRIGHT;
-			else if(indexDif >= 4 && indexDif <= 5)
+			else if(indexDif >= 3 && indexDif <= 6)
 				turn = RIGHT;
-			else if(indexDif >= 6 && indexDif <= 7)
+			else if(indexDif == 7)
 				turn = SHARPRIGHT;
 			else if(indexDif == 8)
 				turn = UTURN;
-			else if(indexDif >=9 && indexDif <= 10)
+			else if(indexDif == 9)
 				turn = SHARPLEFT;
-			else if(indexDif >= 11 && indexDif <= 12)
+			else if(indexDif >= 10 && indexDif <= 13)
 				turn = LEFT;
-			else if(indexDif >= 13 && indexDif <= 14)
+			else if(indexDif == 14)
 				turn = SLIGHTLEFT;
 		}
 		// left round
 		if(indexDif < 0) {
-			if(indexDif <= -2 && indexDif >= -3)
+			if(indexDif == -2)
 				turn = SLIGHTLEFT;
-			else if(indexDif <= -4 && indexDif >= -5)
+			else if(indexDif <= -3 && indexDif >= -6)
 				turn = LEFT;
-			else if(indexDif <= -6 && indexDif >= -7)
+			else if(indexDif == -7)
 				turn = SHARPLEFT;
 			else if(indexDif == -8)
 				turn = UTURN;
-			else if(indexDif <= -9 && indexDif >= -10)
+			else if(indexDif == -9)
 				turn = SHARPRIGHT;
-			else if(indexDif <= -11 && indexDif >= -12)
+			else if(indexDif <= -10 && indexDif >= -13)
 				turn = RIGHT;
-			else if(indexDif <= -13 && indexDif >= -14)
+			else if(indexDif == -14)
 				turn = SLIGHTRIGHT;
 		}
 		return turn;
