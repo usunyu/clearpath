@@ -332,11 +332,11 @@ public class RDFTdspGeneration {
 					// using sign table
 					RDFSignInfo sign = getTargetSign(linkId, signList);
 					if(sign != null) {	// valid sign exist, take exit onto
-						System.out.println( df.format(distance) + " miles");
 						RDFSignDestInfo signDest = sign.getSignDest(linkId);
 						HashSet<String> signTextSet = getSignText(signDest);
 						// if the current name is contained in the available sign text, no need for routing
 						if(!signTextSet.contains(curBaseName)) {
+							System.out.println( df.format(distance) + " miles");
 							String signText = searchPathSign(i, signTextSet);
 							if(signDest.getExitNumber() != null)
 								signText = "Take the exit " + signDest.getExitNumber() + " on to " + signText;
