@@ -358,7 +358,22 @@ public class RDFTdspGeneration {
 				}
 				// from highway to arterial
 				if(isHighwayClass(preFunctionalClass) && isArterialClass(functionalClass)) {
-					//System.out.println("from arterial to highway");
+					// using sign table
+					RDFSignInfo sign = getTargetSign(linkId, signList);
+					if(sign != null) {	// valid sign exist, take exit onto
+						RDFSignDestInfo signDest = sign.getSignDest(linkId);
+						HashSet<String> signTextSet = getSignText(signDest);
+						/* here I just use the first text for simple, but may cause route problem */
+						String signText = null;
+						for(String text : signTextSet) {
+							signText = text;
+							break;
+						}
+						signText = "Take the " + signText + " exit";
+						distance = 0;
+						// reset
+						lastRouteText = UNKNOWN;
+					}
 				}
 				distance += Geometry.calculateDistance(link.getPointList());
 				
