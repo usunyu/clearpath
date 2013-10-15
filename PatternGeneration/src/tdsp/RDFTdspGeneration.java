@@ -117,53 +117,6 @@ public class RDFTdspGeneration {
 	 	return stName;
 	 }
 	
-	public static RDFSignInfo getCorrectSign(long linkId, LinkedList<RDFSignInfo> signList) {
-		RDFSignInfo correctSign = null;
-		for(RDFSignInfo sign : signList) {
-			if(sign.containDestLinkId(linkId)) {
-				correctSign = sign;
-				break;
-			}
-		}
-		return correctSign;
-	}
-	
-	public static String getSignText(long linkId, LinkedList<RDFSignInfo> signList) {
-		RDFSignInfo sign = getCorrectSign(linkId, signList);
-		String signInfoStr = null;
-		// contain the correct sign
-		if(sign != null) {
-			RDFSignDestInfo signDest = sign.getSignDest(linkId);
-			ArrayList<RDFSignElemInfo> signElemList = signDest.getSignElemList();
-			RDFSignElemInfo signElemR = null;
-			RDFSignElemInfo signElemT = null;
-			for(RDFSignElemInfo signElem : signElemList) {
-				if(signElem.getTextType().equals("R")) {
-					signElemR = signElem;
-				}
-				if(signElem.getTextType().equals("T")) {
-					signElemT = signElem;
-				}
-				/* problem */
-				if(signElemR != null && signElemT != null) {
-					break;
-				}
-			}
-			if(signElemR != null) {
-				if( signDest.getExitNumber() != null ) {
-					signInfoStr = "Take the exit " + signDest.getExitNumber() + " onto " + signElemR.getText();
-				}
-				else {
-					signInfoStr = "Take the exit onto " + signElemR.getText();
-				}
-			}
-			if(signElemT != null) {
-				signInfoStr += " toward " + signElemT.getText();
-			}
-		}
-		return signInfoStr;
-	}
-	
 	public static String getTurnText(int turn) {
 		String turnStr = "";
 		switch(turn) {
@@ -204,6 +157,45 @@ public class RDFTdspGeneration {
 			return true;
 		else
 			return false;
+	}
+	
+	public static RDFSignInfo getTargetSign(long linkId, LinkedList<RDFSignInfo> signList) {
+		RDFSignInfo targetSign = null;
+		if(signList == null)
+			return targetSign;
+		for(RDFSignInfo sign : signList) {
+			if(sign.containDestLinkId(linkId)) {
+				targetSign = sign;
+				break;
+			}
+		}
+		return targetSign;
+	}
+
+	public static String getSignText(RDFSignDestInfo signDest) {
+		String signText = "";
+		ArrayList<RDFSignElemInfo> signElemList = signDest.getSignElemList();
+		RDFSignElemInfo signElemR = null;
+		RDFSignElemInfo signElemT = null;
+		for(RDFSignElemInfo signElem : signElemList) {
+			if(signElem.getTextType().equals("R")) {
+				signElemR = signElem;
+			}
+			if(signElem.getTextType().equals("T")) {
+				signElemT = signElem;
+			}
+			/* problem : here we just get the first two, but actually not, need to study documentation deeply */
+			if(signElemR != null && signElemT != null) {
+				break;
+			}
+		}
+		if(signElemR != null) {
+			signText = signElemR.getText();
+		}
+		if(signElemT != null) {
+			signText += " toward " + signElemT.getText();
+		}
+		return signText;
 	}
 	
 	public static void turnByTurn() {
@@ -253,77 +245,86 @@ public class RDFTdspGeneration {
 			
 			// for arterial
 			if(isArterialClass(preFunctionalClass) && isArterialClass(functionalClass)) {
-				// no turn need, cumulative distance
-				if(Geometry.isSameDirection(curDirIndex, preDirIndex) && preBaseName.equals(curBaseName)) {
-					
-				}
-				else if(!preBaseName.equals(curBaseName) && Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change road
+				// change direction or road happen
+				if(!preBaseName.equals(curBaseName) || !Geometry.isSameDirection(curDirIndex, preDirIndex)) {
+					// pre street has name and not exit name
 					if(!preStreetName.equals(UNKNOWN) && !preExitName) {
+						// first route happen
 						if(firstRoute) {
 							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
 							firstRoute = false;
 						}
-						System.out.println( df.format(distance) + " miles");
-						System.out.println("Merge on to " + curStreetName);
-						distance = 0;
-					}
-				}
-				else if(preBaseName.equals(curBaseName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
-					if(!preStreetName.equals(UNKNOWN) && !preExitName) {
-						if(firstRoute) {
-							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
-							firstRoute = false;
+						// sign table first
+						RDFSignInfo sign = getTargetSign(linkId, signList);
+						if(sign != null) {	// valid sign exist, take ramp on to highway
+							System.out.println( df.format(distance) + " miles");
+							RDFSignDestInfo signDest = sign.getSignDest(linkId);
+							String signText = getSignText(signDest);
+							if(link.isRamp())
+								System.out.println("Take ramp onto " + signText);
+							else 
+								System.out.println("Merge onto " + signText);
+							distance = 0;
 						}
-						System.out.println( df.format(distance) + " miles");
-						int turn = Geometry.getTurn(preDirIndex, curDirIndex);
-						if(!exitName) {
-							String turnText = getTurnText(turn);
-							turnText += "to stay on " + curStreetName;
-							System.out.println(turnText);
+						else {	// check normal condition
+							// no turn need, cumulative distance
+							if(Geometry.isSameDirection(curDirIndex, preDirIndex) && preBaseName.equals(curBaseName)) {
+								
+							}
+							else if(!preBaseName.equals(curBaseName) && Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change road
+								if(!curStreetName.equals(UNKNOWN) && !exitName) {
+									System.out.println( df.format(distance) + " miles");
+									System.out.println("Merge onto " + curStreetName);
+									distance = 0;
+								}
+							}
+							else if(preBaseName.equals(curBaseName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
+								if(!curStreetName.equals(UNKNOWN) && !exitName) {
+									System.out.println( df.format(distance) + " miles");
+									int turn = Geometry.getTurn(preDirIndex, curDirIndex);
+									String turnText = getTurnText(turn);
+									turnText += "to stay on " + curStreetName;
+									System.out.println(turnText);
+									distance = 0;
+								}
+							}
+							else {	// change direction and road
+								if(!curStreetName.equals(UNKNOWN) && !exitName) {
+									System.out.println( df.format(distance) + " miles");
+									int turn = Geometry.getTurn(preDirIndex, curDirIndex);
+									String turnText = getTurnText(turn);
+									turnText += "onto " + curStreetName;
+									System.out.println(turnText);
+									distance = 0;
+								}
+							}
 						}
-						distance = 0;
-					}
-				}
-				else {	// change direction and road
-					if(!preStreetName.equals(UNKNOWN) && !preExitName) {
-						if(firstRoute) {
-							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
-							firstRoute = false;
-						}
-						System.out.println( df.format(distance) + " miles");
-						int turn = Geometry.getTurn(preDirIndex, curDirIndex);
-						if(!exitName) {
-							String turnText = getTurnText(turn);
-							turnText += "on to " + curStreetName;
-							System.out.println(turnText);
-						}
-						distance = 0;
 					}
 				}
 			}
 			// for highway
 			if(isHighwayClass(preFunctionalClass) && isHighwayClass(functionalClass)) {
 				// using sign table
-				if(signList != null) {
-					String signText = getSignText(linkId, signList);
-					if(signText != null) {
-						if(firstRoute) {
-							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
-							firstRoute = false;
-						}
-						System.out.println( df.format(distance) + " miles");
-						System.out.println(signText);
-						distance = 0;
-					}
+				RDFSignInfo sign = getTargetSign(linkId, signList);
+				if(sign != null) {	// valid sign exist, take exit onto
+					System.out.println( df.format(distance) + " miles");
+					RDFSignDestInfo signDest = sign.getSignDest(linkId);
+					String signText = getSignText(signDest);
+					if(signDest.getExitNumber() != null)
+						signText = "Take the exit " + signDest.getExitNumber() + " on to " + signText;
+					else
+						signText = "Take the exit on to " + signText;
+					System.out.println(signText);
+					distance = 0;
 				}
 			}
 			// from arterial to highway
 			if(isArterialClass(preFunctionalClass) && isHighwayClass(functionalClass)) {
-				System.out.println("from arterial to highway");
+				//System.out.println("from arterial to highway");
 			}
 			// from highway to arterial
 			if(isHighwayClass(preFunctionalClass) && isArterialClass(functionalClass)) {
-				System.out.println("from arterial to highway");
+				//System.out.println("from arterial to highway");
 			}
 			distance += Geometry.calculateDistance(link.getPointList());
 			
