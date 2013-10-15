@@ -243,6 +243,10 @@ public class RDFTdspGeneration {
 				RDFLinkInfo link = nodeToLink.get(nodeStr);
 				
 				long linkId = link.getLinkId();
+				
+				if(linkId == 932297836)
+					System.err.print("err");
+				
 				int functionalClass = link.getFunctionalClass();
 				boolean exitName = link.isExitName();
 				
@@ -293,8 +297,8 @@ public class RDFTdspGeneration {
 							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
 							firstRoute = false;
 						}
-						// pre and cur street has name and not exit name
-						if(!preBaseName.equals(UNKNOWN) && !curBaseName.equals(UNKNOWN) && !preExitName && !exitName) {
+						// pre or cur street has name and not exit name
+						if((!preBaseName.equals(UNKNOWN) && !preExitName) || (!curBaseName.equals(UNKNOWN) && !exitName)) {
 							// no turn need, cumulative distance
 							if(Geometry.isSameDirection(curDirIndex, preDirIndex) && preBaseName.equals(curBaseName)) {
 								
@@ -307,24 +311,24 @@ public class RDFTdspGeneration {
 								}
 							}
 							else if(preBaseName.equals(curBaseName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
+								System.out.println( df.format(distance) + " miles");
+								int turn = Geometry.getTurn(preDirIndex, curDirIndex);
+								String turnText = getTurnText(turn);
 								if(!curStreetName.equals(UNKNOWN) && !exitName) {
-									System.out.println( df.format(distance) + " miles");
-									int turn = Geometry.getTurn(preDirIndex, curDirIndex);
-									String turnText = getTurnText(turn);
 									turnText += "to stay on " + curStreetName;
-									System.out.println(turnText);
-									distance = 0;
 								}
+								System.out.println(turnText);
+								distance = 0;
 							}
 							else {	// change direction and road
+								int turn = Geometry.getTurn(preDirIndex, curDirIndex);
+								System.out.println( df.format(distance) + " miles");
+								String turnText = getTurnText(turn);
 								if(!curStreetName.equals(UNKNOWN) && !exitName) {
-									System.out.println( df.format(distance) + " miles");
-									int turn = Geometry.getTurn(preDirIndex, curDirIndex);
-									String turnText = getTurnText(turn);
 									turnText += "onto " + curStreetName;
-									System.out.println(turnText);
-									distance = 0;
 								}
+								System.out.println(turnText);
+								distance = 0;
 							}
 						}
 					}
@@ -386,8 +390,8 @@ public class RDFTdspGeneration {
 				// arrive destination
 				if(i == pathNodeList.size() - 1) {
 					if(distance > 0) {
-						System.out.println("Go straight on " + curStreetName);
 						System.out.println( df.format(distance) + " miles");
+						distance = 0;
 					}
 					System.out.println("Arrive destination");
 				}
