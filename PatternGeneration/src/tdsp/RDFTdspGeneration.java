@@ -337,11 +337,11 @@ public class RDFTdspGeneration {
 						HashSet<String> signTextSet = getSignText(signDest);
 						// if the current name is contained in the available sign text, no need for routing
 						if(!signTextSet.contains(curBaseName)) {
-							System.out.println( df.format(distance) + " miles");
 							String signText = searchPathSign(i, signTextSet);
 							// last route text is different from this one
 							if(!signText.equals(lastRouteText)) {
 								lastRouteText = signText;
+								System.out.println( df.format(distance) + " miles");
 								if(signDest.getExitNumber() != null)
 									signText = "Take the exit " + signDest.getExitNumber() + " on to " + signText;
 								else
