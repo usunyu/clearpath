@@ -172,28 +172,43 @@ public class RDFTdspGeneration {
 		return targetSign;
 	}
 
-	public static String getSignText(RDFSignDestInfo signDest) {
-		String signText = "";
+	public static HashSet<String> getSignText(RDFSignDestInfo signDest) {
+		HashSet<String> signTextSet = null;
 		ArrayList<RDFSignElemInfo> signElemList = signDest.getSignElemList();
-		RDFSignElemInfo signElemR = null;
-		RDFSignElemInfo signElemT = null;
 		for(RDFSignElemInfo signElem : signElemList) {
 			if(signElem.getTextType().equals("R")) {
-				signElemR = signElem;
+				if(signTextSet == null) {
+					signTextSet = new HashSet<String>();
+				}
+				signTextSet.add(signElem.getText());
 			}
-			if(signElem.getTextType().equals("T")) {
-				signElemT = signElem;
+		}
+		return signTextSet;
+	}
+	
+	/**
+	 * search forward to find if the road name contained in the available sign text, if so, chose that for routing
+	 * @param currentIndex
+	 * @param signTextSet
+	 * @return
+	 */
+	public static String searchPathSign(int currentIndex, HashSet<String> signTextSet) {
+		String signText = null;
+		long preNodeId = -1;
+		for(int i = currentIndex; i < pathNodeList.size(); i++) {
+			if(i == 0) {
+				preNodeId = pathNodeList.get(i);
+				continue;
 			}
-			/* problem : here we just get the first two, but actually not, need to study documentation deeply */
-			if(signElemR != null && signElemT != null) {
+			long curNodeId = pathNodeList.get(i);
+			String nodeStr = preNodeId + "," + curNodeId;
+			RDFLinkInfo link = nodeToLink.get(nodeStr);
+			String baseName = link.getBaseName();
+			if(signTextSet.contains(baseName)) {
+				signText = baseName;
 				break;
 			}
-		}
-		if(signElemR != null) {
-			signText = signElemR.getText();
-		}
-		if(signElemT != null) {
-			signText += " toward " + signElemT.getText();
+			preNodeId = curNodeId;
 		}
 		return signText;
 	}
@@ -257,14 +272,19 @@ public class RDFTdspGeneration {
 						// sign table first
 						RDFSignInfo sign = getTargetSign(linkId, signList);
 						if(sign != null) {	// valid sign exist, take ramp on to highway
-							System.out.println( df.format(distance) + " miles");
 							RDFSignDestInfo signDest = sign.getSignDest(linkId);
-							String signText = getSignText(signDest);
-							if(link.isRamp())
-								System.out.println("Take ramp onto " + signText);
-							else 
-								System.out.println("Merge onto " + signText);
-							distance = 0;
+							// get all the route sign text available
+							HashSet<String> signTextSet = getSignText(signDest);
+							String signText = searchPathSign(i, signTextSet);
+							
+							if(signText != null) {	// find the target sign
+								System.out.println( df.format(distance) + " miles");
+								if(link.isRamp())
+									System.out.println("Take ramp onto " + signText);
+								else 
+									System.out.println("Merge onto " + signText);
+								distance = 0;
+							}
 						}
 						else {	// check normal condition
 							// no turn need, cumulative distance
@@ -309,13 +329,17 @@ public class RDFTdspGeneration {
 				if(sign != null) {	// valid sign exist, take exit onto
 					System.out.println( df.format(distance) + " miles");
 					RDFSignDestInfo signDest = sign.getSignDest(linkId);
-					String signText = getSignText(signDest);
-					if(signDest.getExitNumber() != null)
-						signText = "Take the exit " + signDest.getExitNumber() + " on to " + signText;
-					else
-						signText = "Take the exit on to " + signText;
-					System.out.println(signText);
-					distance = 0;
+					HashSet<String> signTextSet = getSignText(signDest);
+					// if the current name is contained in the available sign text, no need for routing
+					if(!signTextSet.contains(curBaseName)) {
+						String signText = searchPathSign(i, signTextSet);
+						if(signDest.getExitNumber() != null)
+							signText = "Take the exit " + signDest.getExitNumber() + " on to " + signText;
+						else
+							signText = "Take the exit on to " + signText;
+						System.out.println(signText);
+						distance = 0;
+					}
 				}
 			}
 			// from arterial to highway
