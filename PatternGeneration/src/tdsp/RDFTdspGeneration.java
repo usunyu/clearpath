@@ -213,6 +213,32 @@ public class RDFTdspGeneration {
 		return signText;
 	}
 	
+	/**
+	 * check if all the rest link's name is unknown, if so, use non-street-name routing
+	 * @param currentIndex
+	 * @return
+	 */
+	public static boolean checkRestAllUnknown(int currentIndex) {
+		boolean restAllUnknown = true;
+		long preNodeId = -1;
+		for(int i = currentIndex; i < pathNodeList.size(); i++) {
+			if(i == currentIndex) {
+				preNodeId = pathNodeList.get(i);
+				continue;
+			}
+			long curNodeId = pathNodeList.get(i);
+			String nodeStr = preNodeId + "," + curNodeId;
+			RDFLinkInfo link = nodeToLink.get(nodeStr);
+			String baseName = link.getBaseName();
+			if(!baseName.equals(UNKNOWN)) {
+				restAllUnknown = false;
+				break;
+			}
+			preNodeId = curNodeId;
+		}
+		return restAllUnknown;
+	}
+	
 	public static void turnByTurn() {
 		System.out.println("turn by turn...");
 		int debug = 0;
@@ -230,6 +256,8 @@ public class RDFTdspGeneration {
 			boolean firstRoute = true;
 			DecimalFormat df = new DecimalFormat("#0.0");
 			
+			boolean restAllUnknown = false;
+			
 			for(int i = 0; i < pathNodeList.size(); i++) {
 				debug++;
 				
@@ -243,9 +271,6 @@ public class RDFTdspGeneration {
 				RDFLinkInfo link = nodeToLink.get(nodeStr);
 				
 				long linkId = link.getLinkId();
-				
-				if(linkId == 932297836)
-					System.err.print("err");
 				
 				int functionalClass = link.getFunctionalClass();
 				boolean exitName = link.isExitName();
@@ -311,24 +336,42 @@ public class RDFTdspGeneration {
 								}
 							}
 							else if(preBaseName.equals(curBaseName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
-								System.out.println( df.format(distance) + " miles");
-								int turn = Geometry.getTurn(preDirIndex, curDirIndex);
-								String turnText = getTurnText(turn);
 								if(!curStreetName.equals(UNKNOWN) && !exitName) {
+									System.out.println( df.format(distance) + " miles");
+									int turn = Geometry.getTurn(preDirIndex, curDirIndex);
+									String turnText = getTurnText(turn);
 									turnText += "to stay on " + curStreetName;
+									System.out.println(turnText);
+									distance = 0;
 								}
-								System.out.println(turnText);
-								distance = 0;
+								else {
+									if(restAllUnknown || (restAllUnknown = checkRestAllUnknown(i))) {	// all rest link has unknown name
+										int turn = Geometry.getTurn(preDirIndex, curDirIndex);
+										System.out.println( df.format(distance) + " miles");
+										String turnText = getTurnText(turn);
+										System.out.println(turnText);
+										distance = 0;
+									}
+								}
 							}
 							else {	// change direction and road
-								int turn = Geometry.getTurn(preDirIndex, curDirIndex);
-								System.out.println( df.format(distance) + " miles");
-								String turnText = getTurnText(turn);
 								if(!curStreetName.equals(UNKNOWN) && !exitName) {
+									int turn = Geometry.getTurn(preDirIndex, curDirIndex);
+									System.out.println( df.format(distance) + " miles");
+									String turnText = getTurnText(turn);
 									turnText += "onto " + curStreetName;
+									System.out.println(turnText);
+									distance = 0;
 								}
-								System.out.println(turnText);
-								distance = 0;
+								else {
+									if(restAllUnknown || (restAllUnknown = checkRestAllUnknown(i))) {	// all rest link has unknown name
+										int turn = Geometry.getTurn(preDirIndex, curDirIndex);
+										System.out.println( df.format(distance) + " miles");
+										String turnText = getTurnText(turn);
+										System.out.println(turnText);
+										distance = 0;
+									}
+								}
 							}
 						}
 					}
