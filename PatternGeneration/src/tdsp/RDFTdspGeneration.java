@@ -341,13 +341,13 @@ public class RDFTdspGeneration {
 							String signText = searchPathSign(i, signTextSet);
 							// last route text is different from this one
 							if(!signText.equals(lastRouteText)) {
+								lastRouteText = signText;
 								if(signDest.getExitNumber() != null)
 									signText = "Take the exit " + signDest.getExitNumber() + " on to " + signText;
 								else
 									signText = "Take the exit on to " + signText;
 								System.out.println(signText);
 								distance = 0;
-								lastRouteText = signText;
 							}
 						}
 					}
