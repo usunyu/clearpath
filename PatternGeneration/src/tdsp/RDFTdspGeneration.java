@@ -196,7 +196,7 @@ public class RDFTdspGeneration {
 		String signText = null;
 		long preNodeId = -1;
 		for(int i = currentIndex; i < pathNodeList.size(); i++) {
-			if(i == 0) {
+			if(i == currentIndex) {
 				preNodeId = pathNodeList.get(i);
 				continue;
 			}
