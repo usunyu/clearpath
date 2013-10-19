@@ -58,21 +58,23 @@ public class InputFileGeneration {
 		//fetchLink();
 		//writeLinkFile(true);
 		
+		int month = 9; // October
+		
 		/* write average file for cube */
 		for(int i = 0; i < days.length; i++)
-			writeAverageCube(8, i); // September
+			writeAverageCube(month, i);
 		/* test */
 		//writeAverageCube(8, 4);
 		
 		/* change the interval to 15 min */
 		for(int i = 0; i < days.length; i++) {
 			// September
-			System.out.println("change the interval for " + months[8] + ", " + days[i] + "...");
-			readAverageCube(8, i);
+			System.out.println("change the interval for " + months[month] + ", " + days[i] + "...");
+			readAverageCube(month, i);
 			changeInterval();
-			writeAverage15Cube(8, i);
-			renameAverageFile(8, i);
-			System.out.println("change the interval for " + months[8] + ", " + days[i] + " finish!");
+			writeAverage15Cube(month, i);
+			renameAverageFile(month, i);
+			System.out.println("change the interval for " + months[month] + ", " + days[i] + " finish!");
 		}
 		/* test */
 		//readAverageCube(8, 4);

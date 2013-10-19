@@ -26,7 +26,7 @@ public class OutputDatabaseGeneration {
 	/**
 	 * @param table
 	 */
-	static String tableName = "HIGHWAY_AVERAGES_SEP_CLEAN";
+	static String tableName = "HIGHWAY_AVERAGES_CLEAN";
 	/**
 	 * @param arguments
 	 */
@@ -40,13 +40,15 @@ public class OutputDatabaseGeneration {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		//createTable(tableName);
+		int month = 9; // October
+		tableName = "HIGHWAY_AVERAGES_" + months[month].substring(0, 3) + "_CLEAN";
+		createTable(tableName);
 		//dropTable(tableName);
 		for(int i = 0; i < days.length; i++) {
-			System.out.println("output the data for " + months[8] + ", " + days[i] + "...");
-			readAverageClean(8, i);
-			insertTable(tableName, 8, i);
-			System.out.println("output the data for " + months[8] + ", " + days[i] + " finish!");
+			System.out.println("output the data for " + months[month] + ", " + days[i] + "...");
+			readAverageClean(month, i);
+			insertTable(tableName, month, i);
+			System.out.println("output the data for " + months[month] + ", " + days[i] + " finish!");
 		}
 		/* test */
 		//readAverageClean(7, 0);

@@ -49,13 +49,14 @@ public class DataClean {
 		fetchSensor();
 		mapCloseSensor();
 		//generateSensorKML();
+		int month = 9; // October
 		for(int i = 0; i < days.length; i++) {
 			// September
-			System.out.println("clean data for " + months[8] + ", " + days[i] + "...");
-			readAverageCube(8, i);
+			System.out.println("clean data for " + months[month] + ", " + days[i] + "...");
+			readAverageCube(month, i);
 			cleanData();
-			writeCleanFile(8, i);
-			System.out.println("clean data for " + months[8] + ", " + days[i] + " finish!");
+			writeCleanFile(month, i);
+			System.out.println("clean data for " + months[month] + ", " + days[i] + " finish!");
 		}
 		/* test */
 		//readAverageCube(8, 4);
