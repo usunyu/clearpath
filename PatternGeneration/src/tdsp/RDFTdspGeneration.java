@@ -172,20 +172,13 @@ public class RDFTdspGeneration {
 		return targetSign;
 	}
 	
-	/**
-	 * get the text from the sign elem set
-	 * @param signElemSet
-	 * @return
-	 */
-	public static HashSet<String> getSignText(HashSet<RDFSignElemInfo> signElemSet) {
-		HashSet<String> signTextSet = null;
+	public static boolean containText(HashSet<RDFSignElemInfo> signElemSet, String text) {
 		for(RDFSignElemInfo elem : signElemSet) {
-			if(signTextSet == null) {
-				signTextSet = new HashSet<String>();
+			if(elem.getText().equals(text)) {
+				return true;
 			}
-			signTextSet.add(elem.getText());
 		}
-		return signTextSet;
+		return false;
 	}
 
 	/**
@@ -470,10 +463,9 @@ public class RDFTdspGeneration {
 						
 						// get all the route sign elem available
 						HashSet<RDFSignElemInfo> signElemSet = getSignElem(signDest);
-						HashSet<String> signTextSet = getSignText(signElemSet);
 						
 						// if the current name is contained in the available sign text, no need for routing
-						if(!signTextSet.contains(curBaseName)) {
+						if(!containText(signElemSet, curBaseName)) {
 							RDFSignElemInfo signElem = searchPathSign(i, signElemSet);
 							String signText = signElem.getText();
 							// last route text is different from this one
