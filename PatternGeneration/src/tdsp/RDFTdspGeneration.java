@@ -188,27 +188,36 @@ public class RDFTdspGeneration {
 	
 	/**
 	 * search forward to find if the road name contained in the available sign text, if so, chose that for routing
+	 * if the set only contain one text, we chose it
 	 * @param currentIndex
 	 * @param signTextSet
 	 * @return
 	 */
 	public static String searchPathSign(int currentIndex, HashSet<String> signTextSet) {
 		String signText = null;
-		long preNodeId = -1;
-		for(int i = currentIndex; i < pathNodeList.size(); i++) {
-			if(i == currentIndex) {
-				preNodeId = pathNodeList.get(i);
-				continue;
+		
+		if(signTextSet.size() == 1) {
+			for(String str : signTextSet) {
+				signText = str;
 			}
-			long curNodeId = pathNodeList.get(i);
-			String nodeStr = preNodeId + "," + curNodeId;
-			RDFLinkInfo link = nodeToLink.get(nodeStr);
-			String baseName = link.getBaseName();
-			if(signTextSet.contains(baseName)) {
-				signText = baseName;
-				break;
+		}
+		else {	// search through the path
+			long preNodeId = -1;
+			for(int i = currentIndex; i < pathNodeList.size(); i++) {
+				if(i == currentIndex) {
+					preNodeId = pathNodeList.get(i);
+					continue;
+				}
+				long curNodeId = pathNodeList.get(i);
+				String nodeStr = preNodeId + "," + curNodeId;
+				RDFLinkInfo link = nodeToLink.get(nodeStr);
+				String baseName = link.getBaseName();
+				if(signTextSet.contains(baseName)) {
+					signText = baseName;
+					break;
+				}
+				preNodeId = curNodeId;
 			}
-			preNodeId = curNodeId;
 		}
 		return signText;
 	}
@@ -301,6 +310,7 @@ public class RDFTdspGeneration {
 						RDFSignDestInfo signDest = sign.getSignDest(linkId);
 						// get all the route sign text available
 						HashSet<String> signTextSet = getSignText(signDest);
+						// search for the correct one
 						String signText = searchPathSign(i, signTextSet);
 						// first route happen
 						if(firstRoute) {
