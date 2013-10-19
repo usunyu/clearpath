@@ -177,4 +177,8 @@ SELECT lane_id, link_id, lane_travel_direction, lane_type FROM rdf_lane ORDER BY
 SELECT * FROM rdf_sign_element
 SELECT * FROM rdf_sign_destination
 SELECT * FROM rdf_sign_origin
+/* special case */
+SELECT * FROM rdf_sign_element WHERE sign_id = 35690552
+SELECT * FROM rdf_sign_destination WHERE sign_id = 35690552
+SELECT * FROM rdf_sign_origin WHERE sign_id = 35690552
 
