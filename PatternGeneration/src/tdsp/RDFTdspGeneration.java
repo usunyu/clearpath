@@ -180,7 +180,7 @@ public class RDFTdspGeneration {
 				if(signTextSet == null) {
 					signTextSet = new HashSet<String>();
 				}
-				signTextSet.add(signElem.getText());
+				signTextSet.add(signElem.getText() + " " + signElem.getDirectionCode());
 			}
 		}
 		return signTextSet;
@@ -195,7 +195,7 @@ public class RDFTdspGeneration {
 	 */
 	public static String searchPathSign(int currentIndex, HashSet<String> signTextSet) {
 		String signText = null;
-		
+		// only one sign available
 		if(signTextSet.size() == 1) {
 			for(String str : signTextSet) {
 				signText = str;
