@@ -317,11 +317,6 @@ public class RDFTdspGeneration {
 						}
 					}
 					else {	// check normal condition
-						// first route happen
-						if(firstRoute) {
-							System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
-							firstRoute = false;
-						}
 						// pre or cur street has name and not exit name
 						if((!preBaseName.equals(UNKNOWN) && !preExitName) || (!curBaseName.equals(UNKNOWN) && !exitName)) {
 							// no turn need, cumulative distance
@@ -329,6 +324,11 @@ public class RDFTdspGeneration {
 								
 							}
 							else if(!preBaseName.equals(curBaseName) && Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change road
+								// first route happen
+								if(firstRoute) {
+									System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+									firstRoute = false;
+								}
 								if(!curStreetName.equals(UNKNOWN) && !exitName) {
 									System.out.println( df.format(distance) + " miles");
 									System.out.println("Merge onto " + curStreetName);
@@ -336,6 +336,11 @@ public class RDFTdspGeneration {
 								}
 							}
 							else if(preBaseName.equals(curBaseName) && !Geometry.isSameDirection(curDirIndex, preDirIndex)) {	// change direction
+								// first route happen
+								if(firstRoute) {
+									System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName);
+									firstRoute = false;
+								}
 								if(!curStreetName.equals(UNKNOWN) && !exitName) {
 									System.out.println( df.format(distance) + " miles");
 									int turn = Geometry.getTurn(preDirIndex, curDirIndex);
@@ -356,6 +361,11 @@ public class RDFTdspGeneration {
 							}
 							else {	// change direction and road
 								if(!curStreetName.equals(UNKNOWN) && !exitName) {
+									// first route happen
+									if(firstRoute) {
+										System.out.println("Head " + Geometry.getDirectionStr(preDirIndex) + " on " + preStreetName + " toward " + curStreetName);
+										firstRoute = false;
+									}
 									int turn = Geometry.getTurn(preDirIndex, curDirIndex);
 									System.out.println( df.format(distance) + " miles");
 									String turnText = getTurnText(turn);
