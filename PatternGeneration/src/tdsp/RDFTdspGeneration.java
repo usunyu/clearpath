@@ -207,7 +207,7 @@ public class RDFTdspGeneration {
 		//	towardText = towardElemList.getFirst().getText();
 		//}
 		if(towardElemList != null) {
-			towardText = towardElemList.getFirst().getText();
+			towardText = towardElemList.getLast().getText();
 		}
 		return towardText;
 	}
