@@ -393,7 +393,7 @@ public class RDFTdspGeneration {
 							System.out.println( df.format(distance) + " miles");
 							String signText = signElem.getText();
 							String dirCode = signElem.getDirectionCode();
-							if(!dirCode.contains("")) {
+							if(!dirCode.equals("")) {
 								signText += " " + dirCode;
 							}
 							if(link.isRamp())
@@ -492,7 +492,7 @@ public class RDFTdspGeneration {
 								lastRouteText = signText;
 								System.out.println( df.format(distance) + " miles");
 								String dirCode = signElem.getDirectionCode();
-								if(!dirCode.contains("")) {
+								if(!dirCode.equals("")) {
 									signText += " " + dirCode;
 								}
 								if(signDest.getExitNumber() != null)
