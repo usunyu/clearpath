@@ -203,7 +203,10 @@ public class RDFTdspGeneration {
 	public static String getTowardText(RDFSignDestInfo signDest) {
 		String towardText = null;
 		LinkedList<RDFSignElemInfo> towardElemList = getTowardElem(signDest);
-		if(towardElemList != null && towardElemList.size() == 1) {	// only have one, we use it
+		//if(towardElemList != null && towardElemList.size() == 1) {	// only have one, we use it
+		//	towardText = towardElemList.getFirst().getText();
+		//}
+		if(towardElemList != null) {
 			towardText = towardElemList.getFirst().getText();
 		}
 		return towardText;
