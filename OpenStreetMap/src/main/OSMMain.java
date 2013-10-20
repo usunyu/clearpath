@@ -6,7 +6,7 @@ import kml.*;
 import osm2wkt.*;
 import output.*;
 
-public class Main {
+public class OSMMain {
 
 	/**
 	 * @param
