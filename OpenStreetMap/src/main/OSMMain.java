@@ -25,17 +25,17 @@ public class OSMMain {
 			Osm2Wkt.run(args);
 			System.out.println("\nstep2: input file generation...");
 			OSMInputFileGeneration.run(args);
-			System.out.println("\nstep3: output file generation...");
-			OSMOutputFileGeneration.run(args);
-			System.out.println("\nstep4(optional): generate map kml...");
-			OSMGenerateKMLMap.run(args);
-			System.out.println("\nstep5(optional): generate node kml...");
-			OSMGenerateKMLNode.run(args);
-			System.out.println("\nstep6: divide way to edge...");
-			OSMDivideWayToEdge.run(args);
-			System.out.println("\nstep7: generate adj list...");
-			OSMGenerateAdjList.run(args);
-			System.out.println("\nall done!");
+//			System.out.println("\nstep3: output file generation...");
+//			OSMOutputFileGeneration.run(args);
+//			System.out.println("\nstep4(optional): generate map kml...");
+//			OSMGenerateKMLMap.run(args);
+//			System.out.println("\nstep5(optional): generate node kml...");
+//			OSMGenerateKMLNode.run(args);
+//			System.out.println("\nstep6: divide way to edge...");
+//			OSMDivideWayToEdge.run(args);
+//			System.out.println("\nstep7: generate adj list...");
+//			OSMGenerateAdjList.run(args);
+//			System.out.println("\nall done!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

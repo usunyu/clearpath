@@ -55,8 +55,8 @@ import osm2wkt.exports.*;
  * 3) generate a file xxx.wkts
  * 
  * format:
- * wayId1||nodeId1,nodeId2,...nodeId3
- * wayId2||nodeId4,nodeId5,...nodeId6
+ * wayId1:nodeId1,nodeId2,...nodeId3
+ * wayId2:nodeId4,nodeId5,...nodeId6
  * denote every way contains which nodes
  * 
  * this process get rid of all non-routeable way, such as building, shape type;
@@ -113,6 +113,9 @@ public class Osm2Wkt {
 	private final static String WKT_TAG_MARKSEP1 = ",";
 	private final static String WKT_TAG_MARKSEP2 = " ";
 	/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
+	static String WKTS_TAG_SEPARATION	= ",";
+	static String WKTS_TAG_COLON		= ":";
+	static String WKTS_TAG_LINEEND		= "\r\n";
 	//static ArrayList<Long> extraPointsArrayList = new ArrayList<Long>();
 	//static HashMap<Long, Landmark> extraPointsHashMap = new HashMap<Long, Landmark>();
 	/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
@@ -629,8 +632,8 @@ public class Osm2Wkt {
 		// 	}
 		// }
 		try {
-			FileWriter fstream = new FileWriter(FOLDER_ROOT + "/" + MISS_LANDMARK);
-			BufferedWriter out = new BufferedWriter(fstream);
+			FileWriter fstream = null;
+			BufferedWriter out = null;
 			
 			Iterator<Map.Entry<Long, Vector<Long>>> iter = streets.entrySet().iterator();
 			while (iter.hasNext()) {
@@ -639,6 +642,12 @@ public class Osm2Wkt {
 			    Vector<Long> l = entry.getValue();
 			    for(Long mark : l){
 					if(!landmarks.containsKey(mark)){
+						
+						if(fstream == null && out == null) {
+							fstream = new FileWriter(FOLDER_ROOT + "/" + MISS_LANDMARK);
+							out = new BufferedWriter(fstream);
+						}
+						
 						String strLine = "node " + mark + " for way " + streetId + " not found" + "\r\n";
 						out.write(strLine);
 						// remove the bad street from streets
@@ -648,7 +657,7 @@ public class Osm2Wkt {
 				}
 			}
 			
-			out.close();
+			if(out != null) { out.close(); }
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -1253,7 +1262,7 @@ public class Osm2Wkt {
 			for (int i=0; i < streets.size(); i++) {
 				
 				Long wayId = (Long)streets.keySet().toArray()[i];
-				wktstream.append(wayId + "||");
+				wktstream.append(wayId + WKTS_TAG_COLON);
 				Vector<Long> s = streets.get(wayId);
 				
 				String refStr = "";
@@ -1262,10 +1271,10 @@ public class Osm2Wkt {
 					Landmark mark = landmarks.get(l);
 					refStr += mark.id;
 					if(j < s.size() - 1)
-						refStr += ",";
+						refStr += WKTS_TAG_SEPARATION;
 				}
 				wktstream.append(refStr);
-				wktstream.append("\r\n");
+				wktstream.append(WKTS_TAG_LINEEND);
 			}
 			/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 
