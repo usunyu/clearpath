@@ -203,7 +203,7 @@ public class RDFTdspGeneration {
 	public static String getTowardText(RDFSignDestInfo signDest) {
 		String towardText = null;
 		LinkedList<RDFSignElemInfo> towardElemList = getTowardElem(signDest);
-		if(towardElemList.size() == 1) {	// only have one, we use it
+		if(towardElemList != null && towardElemList.size() == 1) {	// only have one, we use it
 			towardText = towardElemList.getFirst().getText();
 		}
 		return towardText;
@@ -215,17 +215,17 @@ public class RDFTdspGeneration {
 	 * @return
 	 */
 	public static LinkedList<RDFSignElemInfo> getTowardElem(RDFSignDestInfo signDest) {
-		LinkedList<RDFSignElemInfo> signElemList = null;
+		LinkedList<RDFSignElemInfo> towardElemList = null;
 		ArrayList<RDFSignElemInfo> signElemArray = signDest.getSignElemList();
 		for(RDFSignElemInfo signElem : signElemArray) {
 			if(signElem.getTextType().equals("T")) {
-				if(signElemList == null) {
-					signElemList = new LinkedList<RDFSignElemInfo>();
+				if(towardElemList == null) {
+					towardElemList = new LinkedList<RDFSignElemInfo>();
 				}
-				signElemList.add(signElem);
+				towardElemList.add(signElem);
 			}
 		}
-		return signElemList;
+		return towardElemList;
 	}
 	
 	public static String getDirectionStr(LinkedList<Integer> dirList) {
