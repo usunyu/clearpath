@@ -200,23 +200,32 @@ public class RDFTdspGeneration {
 		return signElemList;
 	}
 	
+	public static String getTowardText(RDFSignDestInfo signDest) {
+		String towardText = null;
+		LinkedList<RDFSignElemInfo> towardElemList = getTowardElem(signDest);
+		if(towardElemList.size() == 1) {	// only have one, we use it
+			towardText = towardElemList.getFirst().getText();
+		}
+		return towardText;
+	}
+	
 	/**
 	 * get the toward elem form the sign dest object
 	 * @param signDest
 	 * @return
 	 */
-	public static HashSet<RDFSignElemInfo> getTowardElem(RDFSignDestInfo signDest) {
-		HashSet<RDFSignElemInfo> signElemSet = null;
-		ArrayList<RDFSignElemInfo> signElemList = signDest.getSignElemList();
-		for(RDFSignElemInfo signElem : signElemList) {
+	public static LinkedList<RDFSignElemInfo> getTowardElem(RDFSignDestInfo signDest) {
+		LinkedList<RDFSignElemInfo> signElemList = null;
+		ArrayList<RDFSignElemInfo> signElemArray = signDest.getSignElemList();
+		for(RDFSignElemInfo signElem : signElemArray) {
 			if(signElem.getTextType().equals("T")) {
-				if(signElemSet == null) {
-					signElemSet = new HashSet<RDFSignElemInfo>();
+				if(signElemList == null) {
+					signElemList = new LinkedList<RDFSignElemInfo>();
 				}
-				signElemSet.add(signElem);
+				signElemList.add(signElem);
 			}
 		}
-		return signElemSet;
+		return signElemList;
 	}
 	
 	public static String getDirectionStr(LinkedList<Integer> dirList) {
@@ -256,9 +265,7 @@ public class RDFTdspGeneration {
 		RDFSignElemInfo signElem = null;
 		// only one sign available
 		if(signElemList.size() == 1) {
-			for(RDFSignElemInfo elem : signElemList) {
-				signElem = elem;
-			}
+			signElem = signElemList.getFirst();
 		}
 		else {	// search through the path
 			long preNodeId = -1;
@@ -393,13 +400,18 @@ public class RDFTdspGeneration {
 							System.out.println( df.format(distance) + " miles");
 							String signText = signElem.getText();
 							String dirCode = signElem.getDirectionCode();
+							String towardText = getTowardText(signDest);
 							if(!dirCode.equals("")) {
 								signText += " " + dirCode;
 							}
+							if(towardText != null) {
+								signText += " toward " + towardText;
+							}
 							if(link.isRamp())
-								System.out.println("Take ramp onto " + signText);
-							else 
-								System.out.println("Merge onto " + signText);
+								signText = "Take ramp onto " + signText;
+							else
+								signText = "Merge onto " + signText;
+							System.out.println(signText);
 							distance = 0;
 						}
 					}
@@ -481,11 +493,11 @@ public class RDFTdspGeneration {
 						RDFSignDestInfo signDest = sign.getSignDest(linkId);
 						
 						// get all the route sign elem available
-						LinkedList<RDFSignElemInfo> signElemSet = getSignElem(signDest);
+						LinkedList<RDFSignElemInfo> signElemList = getSignElem(signDest);
 						
 						// if the current name is contained in the available sign text, no need for routing
-						if(!containText(signElemSet, curBaseName)) {
-							RDFSignElemInfo signElem = searchPathSign(i, signElemSet);
+						if(!containText(signElemList, curBaseName)) {
+							RDFSignElemInfo signElem = searchPathSign(i, signElemList);
 							String signText = signElem.getText();
 							// last route text is different from this one
 							if(!signText.equals(lastRouteText)) {
@@ -494,6 +506,10 @@ public class RDFTdspGeneration {
 								String dirCode = signElem.getDirectionCode();
 								if(!dirCode.equals("")) {
 									signText += " " + dirCode;
+								}
+								String towardText = getTowardText(signDest);
+								if(towardText != null) {
+									signText += " toward " + towardText;
 								}
 								if(signDest.getExitNumber() != null)
 									signText = "Take the exit " + signDest.getExitNumber() + " on to " + signText;
@@ -516,15 +532,11 @@ public class RDFTdspGeneration {
 					if(sign != null) {	// valid sign exist, take exit onto
 						RDFSignDestInfo signDest = sign.getSignDest(linkId);
 						
-						LinkedList<RDFSignElemInfo> signElemSet = getSignElem(signDest);
+						LinkedList<RDFSignElemInfo> signElemList = getSignElem(signDest);
 
 						System.out.println( df.format(distance) + " miles");
 						/* here I just use the first text for simple, but may cause route problem */
-						String signText = null;
-						for(RDFSignElemInfo elem : signElemSet) {
-							signText = elem.getText();
-							break;
-						}
+						String signText = signElemList.getFirst().getText();
 						if(signDest.getExitNumber() != null)
 							signText = "Take the " + signText + " exit " + signDest.getExitNumber();
 						else
