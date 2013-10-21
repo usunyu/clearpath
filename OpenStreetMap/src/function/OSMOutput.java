@@ -37,6 +37,19 @@ public class OSMOutput {
 	static String UNKNOWN_STREET 	= "Unknown Street";
 	static String UNKNOWN_HIGHWAY 	= "Unknown Highway";
 	/**
+	 * @param osm
+	 */
+	static String MOTORWAY		= "motorway";
+	static String MOTORWAY_LINK	= "motorway_link";
+	static String PRIMARY		= "primary";
+	static String PRIMARY_LINK	= "primary_link";
+	static String SECONDARY		= "secondary";
+	static String SECONDARY_LINK= "secondary_link";
+	static String TERTIARY		= "tertiary";
+	static String TERTIARY_LINK	= "tertiary_link";
+	static String RESIDENTIAL	= "residential";
+	static String UNCLASSIFIED	= "unclassified";
+	/**
 	 * @param const
 	 */
 	static int FEET_PER_MILE	= 5280;
@@ -86,8 +99,8 @@ public class OSMOutput {
 				
 				String kmlStr = "<Placemark>";
 				kmlStr += "<description>";
-				kmlStr += "start:" + lastNodeId + "\r\n";
-				kmlStr += "end:" + nodeId + "\r\n";
+				kmlStr += "start:" + lastNodeId + LINEEND;
+				kmlStr += "end:" + nodeId + LINEEND;
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
 				kmlStr += lastNode.getLocation().getLongitude() + "," + lastNode.getLocation().getLatitude() + ",0 ";
@@ -144,41 +157,41 @@ public class OSMOutput {
 					// feet/second
 					double speed = 1;
 					boolean isFix = false;
-					if (edgeInfo.getHighway().equals("motorway")) {
+					if (edgeInfo.getHighway().equals(MOTORWAY)) {
 						speed = (double) 60 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals("motorway_link")) {
+					if (edgeInfo.getHighway().equals(MOTORWAY_LINK)) {
 						speed = (double) 55 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals("residential")) {
+					if (edgeInfo.getHighway().equals(RESIDENTIAL)) {
 						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
-					if (edgeInfo.getHighway().equals("tertiary")) {
+					if (edgeInfo.getHighway().equals(TERTIARY)) {
 						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
-					if (edgeInfo.getHighway().equals("tertiary_link")) {
+					if (edgeInfo.getHighway().equals(TERTIARY_LINK)) {
 						speed = (double) 25 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
-					if (edgeInfo.getHighway().equals("secondary")) {
+					if (edgeInfo.getHighway().equals(SECONDARY)) {
 						speed = (double) 35 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals("secondary_link")) {
+					if (edgeInfo.getHighway().equals(SECONDARY_LINK)) {
 						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals("primary")) {
+					if (edgeInfo.getHighway().equals(PRIMARY)) {
 						speed = (double) 35 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals("primary_link")) {
+					if (edgeInfo.getHighway().equals(PRIMARY_LINK)) {
 						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals("unclassified")) {
+					if (edgeInfo.getHighway().equals(UNCLASSIFIED)) {
 						speed = (double) 15 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
-					if (edgeInfo.getHighway().equals("null")) {
+					if (edgeInfo.getHighway().equals(UNKNOWN_HIGHWAY)) {
 						speed = (double) 15 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
