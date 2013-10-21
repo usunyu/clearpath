@@ -1,253 +1,37 @@
 package output;
 
-import java.io.*;
 import java.util.*;
+
+import function.*;
 
 import object.*;
 
 public class OSMOutputFileGeneration {
 
 	/**
-	 * @param file
-	 */
-	static String root 			= "file";
-	//static String nodeFile 		= "osm_node.txt";
-	//static String wayFile 		= "osm_way.txt";
-	//static String wayInfoFile 	= "osm_way_info.txt";
-	//static String wktsFile 		= "map.osm.wkts";
-	
-	//static String nodeFile	 	= "los_angeles_node.txt";
-	//static String wayFile	 	= "los_angeles_way.txt";
-	//static String wayInfoFile 	= "los_angeles_way_info.txt";
-	//static String wktsFile 		= "los_angeles.osm.wkts";
-	
-	//static String nodeFile	 	= "minnesota_node.txt";
-	//static String wayFile	 	= "minnesota_way.txt";
-	//static String wayInfoFile 	= "minnesota_way_info.txt";
-	//static String wktsFile 		= "minnesota.osm.wkts";
-	
-	static String nodeFile;
-	static String wayFile;
-	static String wayInfoFile;
-	static String wktsFile;
-	/**
 	 * @param node
 	 */
-	static ArrayList<NodeInfo> nodeArrayList = new ArrayList<NodeInfo>();
-	static HashMap<Long, NodeInfo> nodeHashMap = new HashMap<Long, NodeInfo>();
+	public static HashMap<Long, NodeInfo> nodeHashMap = new HashMap<Long, NodeInfo>();
 	/**
 	 * @param way
 	 */
-	static ArrayList<WayInfo> wayArrayList = new ArrayList<WayInfo>();
-	static HashMap<Long, WayInfo> wayHashMap = new HashMap<Long, WayInfo>();
-	
-	private static void inputArgs(String arg) {
-		nodeFile 	= arg + "_node.txt";
-		wayFile 	= arg + "_way.txt";
-		wayInfoFile = arg + "_way_info.txt";
-		wktsFile 	= arg + ".osm.wkts";
-	}
+	public static HashMap<Long, WayInfo> wayHashMap = new HashMap<Long, WayInfo>();
 	
 	public static void run(String[] args) {
-		inputArgs(args[0]);
 		main(args);
 	}
 	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		readNodeFile();
-		readWayFile();
-		readWktsFile();
-		overwriteNodeFile();
-		// true: with all info_tag, false: with necessary info
-		overwriteWayFile(false);
-	}
-	
-	public static void overwriteWayFile(boolean allTag) {
-		System.out.println("overwrite way file...");
-		int debug = 0;
-		try {
-			FileWriter fstream = new FileWriter(root + "/" + (allTag ? wayInfoFile : wayFile));
-			BufferedWriter out = new BufferedWriter(fstream);
-			for (int i = 0; i < wayArrayList.size(); i++) {
-				debug++;
-				WayInfo wayInfo = wayArrayList.get(i);
-				long wayId = wayInfo.getWayId();
-				char isOneway = wayInfo.isOneway() ? 'O' : 'B';
-				String name = wayInfo.getName();
-				String highway = wayInfo.getHighway();
-				ArrayList<Long> localNodeArrayList = wayInfo.getNodeArrayList();
-				String nodeListStr = "";
-				for(int j = 0; j < localNodeArrayList.size(); j++) {
-					nodeListStr += localNodeArrayList.get(j);
-					if(j < localNodeArrayList.size() - 1)
-						nodeListStr += ",";
-				}
-				String strLine = wayId + "||" + isOneway + "||" + name + "||"  + highway + "||" + nodeListStr;
-				if(allTag) {
-					HashMap<String, String> infoHashMap = wayInfo.getInfoHashMap();
-					Iterator<String> iter = infoHashMap.keySet().iterator();
-					while(iter.hasNext()) {
-						String key = iter.next();
-						String val = infoHashMap.get(key);
-						strLine += "||" + key + ";;" + val;
-					}
-				}
-				strLine += "\r\n";
-				out.write(strLine);
-			}
-			out.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("overwriteWayFile: debug code: " + debug);
-		}
-		System.out.println("overwrite way file finish!");
-	}
-	
-	public static void overwriteNodeFile() {
-		System.out.println("overwrite node file...");
-		int debug = 0;
-		try {
-			FileWriter fstream = new FileWriter(root + "/" + nodeFile);
-			BufferedWriter out = new BufferedWriter(fstream);
-			for (int i = 0; i < nodeArrayList.size(); i++) {
-				debug++;
-				NodeInfo nodeInfo = nodeArrayList.get(i);
-				long nodeId = nodeInfo.getNodeId();
-				LocationInfo location = nodeInfo.getLocation();
-				double latitude = location.getLatitude();
-				double longitude = location.getLongitude();
-				
-				String strLine = nodeId + "||" + latitude + "," + longitude + "\r\n";
-				
-				out.write(strLine);
-			}
-			out.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("overwriteNodeFile: debug code: " + debug);
-		}
-		System.out.println("overwrite node file finish!");
-	}
-	
-	public static void readWktsFile() {
-		System.out.println("read wkts file...");
-		int debug = 0;
-		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + wktsFile);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine;
-			
-			while ((strLine = br.readLine()) != null) {
-				debug++;
-				String[] splitted = strLine.split("\\|\\|");
-				long wayId = Long.parseLong(splitted[0]);
-				WayInfo wayInfo = wayHashMap.get(wayId);
-				String nodeListStr = splitted[1];
-				String[] nodeList = nodeListStr.split(",");
-				ArrayList<Long> localNodeArrayList = new ArrayList<Long>();
-				for(int i = 0; i < nodeList.length; i++) {
-					long nodeId = Long.parseLong(nodeList[i]);
-					NodeInfo nodeInfo = nodeHashMap.get(nodeId);
-					localNodeArrayList.add(nodeId);
-					if(!nodeArrayList.contains(nodeInfo)) {
-						nodeArrayList.add(nodeInfo);
-					}
-				}
-				wayInfo.setNodeArrayList(localNodeArrayList);
-				wayArrayList.add(wayInfo);
-				if(debug % 10000 == 0)
-					System.out.println("processed line " + debug);
-			}
-			
-			br.close();
-			in.close();
-			fstream.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("readWktsFile: debug code: " + debug);
-		}
-		System.out.println("read wkts file finish!");
-	}
-	
-	public static void readWayFile() {
-		System.out.println("read way file...");
-		int debug = 0;
-		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + wayFile);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine;
-			
-			while ((strLine = br.readLine()) != null) {
-				debug++;
-				String[] splitted = strLine.split("\\|\\|");
-				long wayId = Long.parseLong(splitted[0]);
-				boolean isOneway = splitted[1].equals("O") ? true : false;
-				String name = splitted[2];
-				String highway = splitted[3];
-				//String nodeListStr = splitted[2];
-				//String[] nodeList = nodeListStr.split(",");
-				//ArrayList<Long> localNodeArrayList = new ArrayList<Long>(); 
-				//for(int i = 0; i < nodeList.length; i++) {
-				//	long nodeId = Long.parseLong(nodeList[i]);
-				//	localNodeArrayList.add(nodeId);
-				//}
-				HashMap<String, String> infoHashMap = new HashMap<String, String>();
-				for(int i = 4; i < splitted.length; i++) {
-					String[] map = splitted[i].split(";;");
-					String key = map[0];
-					String value = map[1];
-					infoHashMap.put(key, value);
-				}
-				WayInfo wayInfo = new WayInfo(wayId, isOneway, name, highway, null, infoHashMap);
-				//wayArrayList.add(wayInfo);
-				wayHashMap.put(wayId, wayInfo);
-			}
-			br.close();
-			in.close();
-			fstream.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("readWayFile: debug code: " + debug);
-		}
-		System.out.println("read way file finish!");
-	}
-
-	public static void readNodeFile() {
-		System.out.println("read node file...");
-		int debug = 0;
-		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + nodeFile);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine;
-			
-			while ((strLine = br.readLine()) != null) {
-				debug++;
-				String[] splitted = strLine.split("\\|\\|");
-				long nodeId = Long.parseLong(splitted[0]);
-				String locationStr = splitted[1];
-				String[] location = locationStr.split(",");
-				double latitude = Double.parseDouble(location[0]);
-				double longitude = Double.parseDouble(location[1]);
-				LocationInfo locationInfo = new LocationInfo(latitude, longitude);
-				NodeInfo nodeInfo = new NodeInfo(nodeId, locationInfo);
-				nodeHashMap.put(nodeId, nodeInfo);
-			}
-			br.close();
-			in.close();
-			fstream.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("readNodeFile: debug code: " + debug);
-		}
-		System.out.println("read node file finish!");
+		OSMInput.paramConfig(args[0]);
+		OSMInput.readNodeFile(nodeHashMap);
+		OSMInput.readWayFile(wayHashMap);
+		OSMInput.readWayInfo(wayHashMap);
+		OSMInput.readWktsFile(wayHashMap, nodeHashMap);
+		
+		OSMOutput.paramConfig(args[0]);
+		// over write the cvs file
+		OSMOutput.writeNodeFile(nodeHashMap);
+		OSMOutput.writeWayFile(wayHashMap);
+		OSMOutput.writeWayInfo(wayHashMap);
 	}
 }

@@ -10,13 +10,11 @@ public class WayInfo {
 	ArrayList<Long> nodeArrayList;
 	HashMap<String, String> infoHashMap;
 	
-	public WayInfo(long wayId, boolean isOneway, String name, String highway, ArrayList<Long> nodeArrayList, HashMap<String, String> infoHashMap) {
+	public WayInfo(long wayId, boolean isOneway, String name, String highway) {
 		this.wayId = wayId;
 		this.isOneway = isOneway;
 		this.name = name;
 		this.highway = highway;
-		this.nodeArrayList = nodeArrayList;
-		this.infoHashMap = infoHashMap;
 	}
 	
 	public long getWayId() {
@@ -45,5 +43,9 @@ public class WayInfo {
 
 	public HashMap<String, String> getInfoHashMap() {
 		return infoHashMap;
+	}
+
+	public void setInfoHashMap(HashMap<String, String> infoHashMap) {
+		this.infoHashMap = infoHashMap;
 	}
 }

@@ -14,6 +14,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import output.OSMOutputFileGeneration;
+
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.events.Attribute;
@@ -29,6 +31,10 @@ public class OSMInput {
 	static String osmFile;
 	static String nodeCSVFile;
 	static String wayCSVFile;
+	static String wayInfoFile;
+	static String wktsFile;
+	static String edgeCVSFile;
+	// temp
 	static String extraNodeFile;
 	
 	/**
@@ -46,19 +52,234 @@ public class OSMInput {
 	static final String HIGHWAY		= "highway";
 	static final String ONEWAY		= "oneway";
 	static final String YES			= "yes";
-	static final String RELATION		= "relation";
+	static final String RELATION	= "relation";
 	
 	/**
 	 * @param csv
 	 */
-	static String UNKNOWN_STREET 		= "Unknown Street";
+	static String SEPARATION		= "|";
+	static String ESCAPE_SEPARATION	= "\\|";
+	static String SEGMENT			= "/";
+	static String COMMA				= ",";
+	static String SEMICOLON			= ";";
+	static String COLON				= ":";
+	static String ONEDIRECT			= "O";
+	static String BIDIRECT			= "B";
+	static String LINEEND			= "\r\n";
+	static String UNKNOWN_STREET 	= "Unknown Street";
 	static String UNKNOWN_HIGHWAY 	= "Unknown Highway";
 	
 	public static void paramConfig(String name) {
 		osmFile 		= name + ".osm";
 		nodeCSVFile 	= name + "_node.csv";
 		wayCSVFile 		= name + "_way.csv";
+		wayInfoFile		= name + "_info.csv";
+		wktsFile		= name + ".osm.wkts";
+		edgeCVSFile		= name + "_edge.csv";
+		// temp
 		extraNodeFile	= name + "_way_extra.csv";
+	}
+	
+	/**
+	 * read edge file
+	 * @param edgeHashMap
+	 */
+	public static void readEdgeFile(HashMap<Long, EdgeInfo> edgeHashMap) {
+		System.out.println("read edge file...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + edgeCVSFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				long id = Long.parseLong(nodes[0]);
+				long wayId = Long.parseLong(nodes[0].substring(0, nodes[0].length() - 4));
+				int edgeId = Integer.parseInt(nodes[0].substring(nodes[0].length() - 4));
+				String name = nodes[1];
+				String highway = nodes[2];
+				long startNode = Long.parseLong(nodes[3]);
+				long endNode = Long.parseLong(nodes[4]);
+				int distance = Integer.parseInt(nodes[5]);
+
+				EdgeInfo edgeInfo = new EdgeInfo(wayId, edgeId, name, highway, startNode, endNode, distance);
+				edgeHashMap.put(id, edgeInfo);
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("readEdgeFile: debug code: " + debug);
+		}
+		System.out.println("read edge file finish!");
+	}
+	
+	/**
+	 * read wkts file, update way map and node map
+	 * @param wayHashMap
+	 * @param nodeHashMap
+	 */
+	public static void readWktsFile(HashMap<Long, WayInfo> wayHashMap, HashMap<Long, NodeInfo> nodeHashMap) {
+		System.out.println("read wkts file...");
+		int debug = 0;
+		try {
+			HashMap<Long, WayInfo> wayNeedHashMap = new HashMap<Long, WayInfo>();
+			HashMap<Long, NodeInfo> nodeNeedHashMap = new HashMap<Long, NodeInfo>();
+			FileInputStream fstream = new FileInputStream(root + SEGMENT + wktsFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				long wayId = Long.parseLong(nodes[0]);
+				WayInfo wayInfo = wayHashMap.get(wayId);
+				ArrayList<Long> localNodeArrayList = new ArrayList<Long>();
+				for(int i = 1; i < nodes.length; i++) {
+					long nodeId = Long.parseLong(nodes[i]);
+					NodeInfo nodeInfo = nodeHashMap.get(nodeId);
+					localNodeArrayList.add(nodeId);
+					if(!nodeNeedHashMap.containsKey(nodeId)) {
+						nodeNeedHashMap.put(nodeId, nodeInfo);
+					}
+				}
+				wayInfo.setNodeArrayList(localNodeArrayList);
+				if(!wayNeedHashMap.containsKey(wayId)) {
+					wayNeedHashMap.put(wayId, wayInfo);
+				}
+				if(debug % 10000 == 0)
+					System.out.println("processed line " + debug);
+			}
+			// update way map
+			OSMOutputFileGeneration.wayHashMap = wayNeedHashMap;
+			// update node map
+			OSMOutputFileGeneration.nodeHashMap = nodeNeedHashMap;
+			br.close();
+			in.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("readWktsFile: debug code: " + debug);
+		}
+		System.out.println("read wkts file finish!");
+	}
+	
+	/**
+	 * read way info file
+	 * @param wayHashMap
+	 */
+	public static void readWayInfo(HashMap<Long, WayInfo> wayHashMap) {
+		System.out.println("read way info...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + SEGMENT + wayInfoFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(ESCAPE_SEPARATION + ESCAPE_SEPARATION);
+				long wayId = Long.parseLong(nodes[0]);
+				WayInfo wayInfo = wayHashMap.get(wayId);
+				HashMap<String, String> infoHashMap = null;
+				
+				for(int i = 1; i < nodes.length; i++) {
+					String[] keyValueSet = nodes[i].split(ESCAPE_SEPARATION);
+					String key = keyValueSet[0];
+					String value = keyValueSet[1];
+					if(infoHashMap == null) {
+						infoHashMap = new HashMap<String, String>();
+					}
+					infoHashMap.put(key, value);
+				}
+				wayInfo.setInfoHashMap(infoHashMap);
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("readWayInfo: debug code: " + debug);
+		}
+		System.out.println("read way info finish!");
+	}
+	
+	/**
+	 * read way csv file
+	 * @param wayHashMap
+	 */
+	public static void readWayFile(HashMap<Long, WayInfo> wayHashMap) {
+		System.out.println("read way file...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + SEGMENT + wayCSVFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				long wayId = Long.parseLong(nodes[0]);
+				boolean isOneway = nodes[1].equals(ONEDIRECT) ? true : false;
+				String name = nodes[2];
+				String highway = nodes[3];
+				
+				WayInfo wayInfo = new WayInfo(wayId, isOneway, name, highway);
+				wayHashMap.put(wayId, wayInfo);
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("readWayFile: debug code: " + debug);
+		}
+		System.out.println("read way file finish!");
+	}
+	
+	/**
+	 * read the node file
+	 * @param nodeHashMap
+	 */
+	public static void readNodeFile(HashMap<Long, NodeInfo> nodeHashMap) {
+		System.out.println("read node file...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + SEGMENT + nodeCSVFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				long nodeId = Long.parseLong(nodes[0]);
+				double latitude = Double.parseDouble(nodes[1]);
+				double longitude = Double.parseDouble(nodes[2]);
+				LocationInfo locationInfo = new LocationInfo(latitude, longitude);
+				NodeInfo nodeInfo = new NodeInfo(nodeId, locationInfo);
+				nodeHashMap.put(nodeId, nodeInfo);
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("readNodeFile: debug code: " + debug);
+		}
+		System.out.println("read node file finish!");
 	}
 	
 	/**
@@ -74,7 +295,7 @@ public class OSMInput {
 			// First create a new XMLInputFactory
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 			// Setup a new eventReader
-			InputStream in = new FileInputStream(root + "/" + osmFile);
+			InputStream in = new FileInputStream(root + SEGMENT + osmFile);
 			XMLEventReader eventReader = inputFactory.createXMLEventReader(in);
 			// Read the XML document
 			// NodeInfo
@@ -91,6 +312,7 @@ public class OSMInput {
 			String name = null;
 			String highway = null;
 			boolean isOneway = false;
+			HashMap<String, String> infoHashMap = null;
 			while (eventReader.hasNext()) {
 				debug++;
 				XMLEvent event = eventReader.nextEvent();
@@ -111,12 +333,15 @@ public class OSMInput {
 						}
 						location = new LocationInfo(latitude, longitude);
 					}
+					
 					// If we have a item element we create a new item
 					if (startElement.getName().getLocalPart().equals(WAY)) {	// read way
 						// set default
 						isOneway = false;
 						name = UNKNOWN_STREET;
 						highway = UNKNOWN_HIGHWAY;
+						infoHashMap = null;
+						
 						Iterator<Attribute> attributes = startElement.getAttributes();
 						while (attributes.hasNext()) {
 							Attribute attribute = attributes.next();
@@ -148,6 +373,10 @@ public class OSMInput {
 						}
 						else {
 							// TODO: put other in info map
+							if(infoHashMap == null) {
+								infoHashMap = new HashMap<String, String>();
+							}
+							infoHashMap.put(kAttr, vAttr);
 						}
 					}
 					
@@ -157,18 +386,19 @@ public class OSMInput {
 				}
 				
 				// If we reach the end of an item element we add it to the list
-			        if (event.isEndElement()) {
-			        	EndElement endElement = event.asEndElement();
-			        	if (endElement.getName().getLocalPart().equals(NODE)) {
-			        		nodeInfo = new NodeInfo(nodeId, location);
-			        		nodeArrayList.add(nodeInfo);
-			        	}
-			        	if (endElement.getName().getLocalPart().equals(WAY)) {
-			        		// skip nodeArrayList and infoHashMap
-			        		wayInfo = new WayInfo(wayId, isOneway, name, highway, null, null);
-			        		wayArrayList.add(wayInfo);
-			        	}
-			        }
+				if (event.isEndElement()) {
+			       	EndElement endElement = event.asEndElement();
+			       	if (endElement.getName().getLocalPart().equals(NODE)) {
+			       		nodeInfo = new NodeInfo(nodeId, location);
+			       		nodeArrayList.add(nodeInfo);
+			       	}
+			       	if (endElement.getName().getLocalPart().equals(WAY)) {
+		        		// skip nodeArrayList, we add it from wkts file
+		        		wayInfo = new WayInfo(wayId, isOneway, name, highway);
+		        		wayInfo.setInfoHashMap(infoHashMap);
+		        		wayArrayList.add(wayInfo);
+		        	}
+				}
 			}
 		}
 		catch (Exception e) {
@@ -307,7 +537,7 @@ public class OSMInput {
 						}
 					}
 					
-					WayInfo wayInfo = new WayInfo(wayId, isOneway, name, highway, null, infoHashMap);
+					WayInfo wayInfo = new WayInfo(wayId, isOneway, name, highway);
 					
 					wayArrayList.add(wayInfo);
 				}

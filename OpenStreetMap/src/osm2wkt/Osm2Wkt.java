@@ -55,8 +55,8 @@ import osm2wkt.exports.*;
  * 3) generate a file xxx.wkts
  * 
  * format:
- * wayId1:nodeId1,nodeId2,...nodeId3
- * wayId2:nodeId4,nodeId5,...nodeId6
+ * wayId1|nodeId1|nodeId2|...nodeId3
+ * wayId2|nodeId4|nodeId5|...nodeId6
  * denote every way contains which nodes
  * 
  * this process get rid of all non-routeable way, such as building, shape type;
@@ -113,8 +113,7 @@ public class Osm2Wkt {
 	private final static String WKT_TAG_MARKSEP1 = ",";
 	private final static String WKT_TAG_MARKSEP2 = " ";
 	/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
-	static String WKTS_TAG_SEPARATION	= ",";
-	static String WKTS_TAG_COLON		= ":";
+	static String WKTS_TAG_SEPARATION	= "|";
 	static String WKTS_TAG_LINEEND		= "\r\n";
 	//static ArrayList<Long> extraPointsArrayList = new ArrayList<Long>();
 	//static HashMap<Long, Landmark> extraPointsHashMap = new HashMap<Long, Landmark>();
@@ -1262,7 +1261,7 @@ public class Osm2Wkt {
 			for (int i=0; i < streets.size(); i++) {
 				
 				Long wayId = (Long)streets.keySet().toArray()[i];
-				wktstream.append(wayId + WKTS_TAG_COLON);
+				wktstream.append(wayId + WKTS_TAG_SEPARATION);
 				Vector<Long> s = streets.get(wayId);
 				
 				String refStr = "";

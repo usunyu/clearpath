@@ -30,12 +30,12 @@ import javax.xml.stream.events.XMLEvent;
  * 
  * format:
  * xxx_node.csv
- * nodeId        ,          lat           ,         lon
- * (id of node),(latitude of node),(longitude of node)
+ * nodeId        |          lat           |         lon
+ * (id of node)|(latitude of node)|(longitude of node)
  * 
  * xxx_way.csv
- * wayId        ,          isOneway                      ,       name         ,   highway
- * (id of way),(O:oneway B:bidirectional way),(name of street),(type of way)
+ * wayId        |          isOneway          |       name     |   highway
+ * (id of way)|(O:oneway B:bidirectional way)|(name of street)|(type of way)
  * 
  * type of way, refer to http://wiki.openstreetmap.org/wiki/Key:highway
  */
