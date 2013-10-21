@@ -50,6 +50,7 @@ public class OSMOutput {
 	static String RESIDENTIAL	= "residential";
 	static String CYCLEWAY		= "cycleway";
 	static String PATH			= "path";
+	static String TRACK			= "track";
 	static String UNCLASSIFIED	= "unclassified";
 	/**
 	 * @param const

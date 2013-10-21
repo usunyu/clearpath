@@ -30,6 +30,7 @@ public class OSMRouting {
 	static String RESIDENTIAL	= "residential";
 	static String CYCLEWAY		= "cycleway";
 	static String PATH			= "path";
+	static String TRACK			= "track";
 	static String UNCLASSIFIED	= "unclassified";
 	/**
 	 * @param node
@@ -77,6 +78,7 @@ public class OSMRouting {
 		hierarchyHashMap.put(RESIDENTIAL, 5);
 		hierarchyHashMap.put(CYCLEWAY, 5);
 		hierarchyHashMap.put(PATH, 6);
+		hierarchyHashMap.put(TRACK, 6);
 		hierarchyHashMap.put(UNCLASSIFIED, 6);
 	}
 	
@@ -278,7 +280,11 @@ public class OSMRouting {
 		HighwayEntrance entrance = entranceMap.get(finalEntrance);
 		HighwayEntrance exit = entranceMap.get(finalExit);
 		if(entrance != null && exit != null) {
-			
+			ArrayList<Long> entrancePath = entrance.getLocalToHighPath();
+			ArrayList<Long> exitPath = exit.getLocalToHighPath();
+			// add entrance and exit path
+			pathNodeList.addAll(0, entrancePath);
+			pathNodeList.addAll(pathNodeList.size(), exitPath);
 			System.out.println("find the path successful!");
 		}
 		else {
