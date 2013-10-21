@@ -21,6 +21,8 @@ public class OSMOutput {
 	static String pathKMLFile;
 	// temp
 	static String extraNodeFile;
+	// test
+	static String entranceExitFile;
 	/**
 	 * @param csv
 	 */
@@ -77,6 +79,57 @@ public class OSMOutput {
 		pathKMLFile		= name + "_path.kml";
 		// temp
 		extraNodeFile	= name + "_way_extra.csv";
+		// test
+		entranceExitFile= name + "_entrance_exit.csv";
+	}
+	
+	public static void generateEntranceExitKML(long start, long end, HashMap<Long, HighwayEntrance> entranceMap, HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, HighwayEntrance> exitMap) {
+		System.out.println("generate entrance exit kml...");
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + entranceExitFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			ArrayList<NodeInfo> nodeList = new ArrayList<NodeInfo>();
+			NodeInfo startNode = nodeHashMap.get(start);
+			NodeInfo endNode = nodeHashMap.get(end);
+			
+			nodeList.add(startNode);
+			nodeList.add(endNode);
+			
+			for(long nodeId : nodeHashMap.keySet()) {
+				NodeInfo node = nodeHashMap.get(nodeId);
+				nodeList.add(node);
+			}
+			
+			for(long nodeId : exitMap.keySet()) {
+				NodeInfo node = nodeHashMap.get(nodeId);
+				nodeList.add(node);
+			}
+			
+			for(NodeInfo nodeInfo : nodeList) {
+				debug++;
+				String strLine = "<Placemark>";
+				strLine += "<name>" + nodeInfo.getNodeId() + "</name>";
+				strLine += "<description>";
+				strLine += "Id:" + nodeInfo.getNodeId();
+				strLine += "</description>";
+				strLine += "<Point><coordinates>";
+				strLine += nodeInfo.getLocation().getLongitude() + "," + nodeInfo.getLocation().getLatitude();
+				strLine += ",0</coordinates></Point>";
+				strLine += "</Placemark>";
+				
+				out.write(strLine);
+			}
+			out.write("</Document></kml>");
+			out.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("generateKMLNode: debug code: " + debug);
+		}
+		System.out.println("generate entrance exit kml finish!");
 	}
 	
 	/**

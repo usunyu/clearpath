@@ -192,6 +192,9 @@ public class OSMRouting {
 		HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, false);
 		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode, true);
 		
+		// test
+		OSMOutput.generateEntranceExitKML(startNode, endNode, entranceMap, nodeHashMap, exitMap);
+		
 		int cost = Integer.MAX_VALUE;
 		long finalEntrance = -1;
 		long finalExit = -1;
