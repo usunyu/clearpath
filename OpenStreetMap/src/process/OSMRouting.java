@@ -86,7 +86,7 @@ public class OSMRouting {
 		}
 	}
 	
-	public static HashMap<Long, HighwayEntrance> searchHighwayEntrance(long startNode) {
+	public static HashMap<Long, HighwayEntrance> searchHighwayEntrance(long startNode, boolean exit) {
 		HashMap<Long, HighwayEntrance> highwayEntranceMap = new HashMap<Long, HighwayEntrance>();
 		
 		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
@@ -140,7 +140,8 @@ public class OSMRouting {
 						}
 						path.add(entrance.getNodeId());	// add intermediate node
 					}
-					Collections.reverse(path);
+					if(!exit)
+						Collections.reverse(path);
 					HighwayEntrance highwayEntrance = new HighwayEntrance(nodeId);
 					highwayEntrance.setLocalToHighPath(path);
 					highwayEntranceMap.put(nodeId, highwayEntrance);
@@ -172,8 +173,8 @@ public class OSMRouting {
 	public static void tdspHierarchy(long startNode, long endNode, int startTime) {
 		System.out.println("start finding the path...");
 		
-		HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode);
-		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode);
+		HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, false);
+		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode, true);
 		
 		int cost = Integer.MAX_VALUE;
 		long finalEntrance = -1;
@@ -274,9 +275,16 @@ public class OSMRouting {
 			prepareRoute();
 		}
 		
-		
-		
-		System.out.println("find the path successful!");
+		HighwayEntrance entrance = entranceMap.get(finalEntrance);
+		HighwayEntrance exit = entranceMap.get(finalExit);
+		if(entrance != null && exit != null) {
+			
+			System.out.println("find the path successful!");
+		}
+		else {
+			System.err.println("cannot find the entrance, program exit!");
+			System.exit(-1);
+		}
 	}
 
 	public static void tdsp(long startNode, long endNode, int startTime) {
