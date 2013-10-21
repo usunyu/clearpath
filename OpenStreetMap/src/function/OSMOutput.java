@@ -48,6 +48,8 @@ public class OSMOutput {
 	static String TERTIARY		= "tertiary";
 	static String TERTIARY_LINK	= "tertiary_link";
 	static String RESIDENTIAL	= "residential";
+	static String CYCLEWAY		= "cycleway";
+	static String PATH			= "path";
 	static String UNCLASSIFIED	= "unclassified";
 	/**
 	 * @param const
@@ -164,22 +166,30 @@ public class OSMOutput {
 						speed = (double) 55 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals(RESIDENTIAL)) {
-						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 10 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						isFix = true;
+					}
+					if (edgeInfo.getHighway().equals(CYCLEWAY)) {
+						speed = (double) 10 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						isFix = true;
+					}
+					if (edgeInfo.getHighway().equals(PATH)) {
+						speed = (double) 5 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals(TERTIARY)) {
-						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 20 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals(TERTIARY_LINK)) {
-						speed = (double) 25 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 15 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals(SECONDARY)) {
-						speed = (double) 35 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals(SECONDARY_LINK)) {
-						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 25 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals(PRIMARY)) {
 						speed = (double) 35 * FEET_PER_MILE / (SECOND_PER_HOUR);
@@ -188,11 +198,11 @@ public class OSMOutput {
 						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals(UNCLASSIFIED)) {
-						speed = (double) 15 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 5 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals(UNKNOWN_HIGHWAY)) {
-						speed = (double) 15 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 5 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
 

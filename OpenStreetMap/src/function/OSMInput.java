@@ -181,6 +181,48 @@ public class OSMInput {
 		}
 		System.out.println("read edge file finish!");
 	}
+
+	/**
+	 * read edge file
+	 * @param edgeHashMap
+	 */
+	public static void readEdgeFile(HashMap<Long, EdgeInfo> edgeHashMap, HashMap<String, EdgeInfo> nodesToEdge) {
+		System.out.println("read edge file...");
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + edgeCVSFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				long id = Long.parseLong(nodes[0]);
+				long wayId = Long.parseLong(nodes[0].substring(0, nodes[0].length() - 4));
+				int edgeId = Integer.parseInt(nodes[0].substring(nodes[0].length() - 4));
+				String name = nodes[1];
+				String highway = nodes[2];
+				long startNode = Long.parseLong(nodes[3]);
+				long endNode = Long.parseLong(nodes[4]);
+				int distance = Integer.parseInt(nodes[5]);
+
+				EdgeInfo edgeInfo = new EdgeInfo(wayId, edgeId, name, highway, startNode, endNode, distance);
+				edgeHashMap.put(id, edgeInfo);
+				
+				String nodeId = startNode + COMMA + endNode;
+				nodesToEdge.put(nodeId, edgeInfo);
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("readEdgeFile: debug code: " + debug);
+		}
+		System.out.println("read edge file finish!");
+	}
 	
 	/**
 	 * read wkts file, update way map and node map
