@@ -31,6 +31,13 @@ public class OSMRouting {
 	static String CYCLEWAY		= "cycleway";
 	static String PATH			= "path";
 	static String TRACK			= "track";
+	static String TRUNK			= "trunk";
+	static String TRUNK_LINK	= "trunk_link";
+	static String CONSTRUCTION	= "construction";
+	static String PROPOSED		= "proposed";
+	static String ROAD			= "road";
+	static String ABANDONED		= "abandoned";
+	static String SCALE			= "scale";
 	static String UNCLASSIFIED	= "unclassified";
 	/**
 	 * @param node
@@ -79,6 +86,13 @@ public class OSMRouting {
 		hierarchyHashMap.put(CYCLEWAY, 5);
 		hierarchyHashMap.put(PATH, 6);
 		hierarchyHashMap.put(TRACK, 6);
+		hierarchyHashMap.put(TRUNK, 6);
+		hierarchyHashMap.put(TRUNK_LINK, 6);
+		hierarchyHashMap.put(CONSTRUCTION, 6);
+		hierarchyHashMap.put(PROPOSED, 6);
+		hierarchyHashMap.put(ROAD, 6);
+		hierarchyHashMap.put(ABANDONED, 6);
+		hierarchyHashMap.put(SCALE, 6);
 		hierarchyHashMap.put(UNCLASSIFIED, 6);
 	}
 	

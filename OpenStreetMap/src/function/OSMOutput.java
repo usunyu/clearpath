@@ -51,6 +51,13 @@ public class OSMOutput {
 	static String CYCLEWAY		= "cycleway";
 	static String PATH			= "path";
 	static String TRACK			= "track";
+	static String TRUNK			= "trunk";
+	static String TRUNK_LINK	= "trunk_link";
+	static String ROAD			= "road";
+	static String PROPOSED		= "proposed";
+	static String CONSTRUCTION	= "construction";
+	static String ABANDONED		= "abandoned";
+	static String SCALE			= "scale";
 	static String UNCLASSIFIED	= "unclassified";
 	/**
 	 * @param const
@@ -166,15 +173,16 @@ public class OSMOutput {
 					if (edgeInfo.getHighway().equals(MOTORWAY_LINK)) {
 						speed = (double) 55 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals(RESIDENTIAL)) {
+					if (edgeInfo.getHighway().equals(RESIDENTIAL) || edgeInfo.getHighway().equals(CYCLEWAY)) {
 						speed = (double) 10 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
-					if (edgeInfo.getHighway().equals(CYCLEWAY)) {
-						speed = (double) 10 * FEET_PER_MILE / (SECOND_PER_HOUR);
-						isFix = true;
-					}
-					if (edgeInfo.getHighway().equals(PATH)) {
+					if (edgeInfo.getHighway().equals(UNKNOWN_HIGHWAY) || edgeInfo.getHighway().equals(UNCLASSIFIED) || 
+							edgeInfo.getHighway().equals(PATH) || edgeInfo.getHighway().equals(TRACK) || 
+							edgeInfo.getHighway().equals(CONSTRUCTION) || edgeInfo.getHighway().equals(TRUNK) ||
+							edgeInfo.getHighway().equals(PROPOSED) || edgeInfo.getHighway().equals(TRUNK_LINK) ||
+							edgeInfo.getHighway().equals(ROAD) || edgeInfo.getHighway().equals(ABANDONED) ||
+							edgeInfo.getHighway().equals(SCALE)) {
 						speed = (double) 5 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
@@ -197,14 +205,6 @@ public class OSMOutput {
 					}
 					if (edgeInfo.getHighway().equals(PRIMARY_LINK)) {
 						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
-					}
-					if (edgeInfo.getHighway().equals(UNCLASSIFIED)) {
-						speed = (double) 5 * FEET_PER_MILE / (SECOND_PER_HOUR);
-						isFix = true;
-					}
-					if (edgeInfo.getHighway().equals(UNKNOWN_HIGHWAY)) {
-						speed = (double) 5 * FEET_PER_MILE / (SECOND_PER_HOUR);
-						isFix = true;
 					}
 
 					travelTime = (int) Math.round(edgeInfo.getDistance() / speed);
