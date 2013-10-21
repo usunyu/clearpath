@@ -53,6 +53,7 @@ public class OSMDivideWayToEdge {
 					long endNode = nodeId;
 					NodeInfo nodeInfo1 = nodeHashMap.get(startNode);
 					NodeInfo nodeInfo2 = nodeHashMap.get(endNode);
+					// feet
 					double dDistance = Distance.calculateDistance(nodeInfo1.getLocation(), nodeInfo2.getLocation()) * 5280;
 					int distance = (int)Math.round(dDistance);
 					EdgeInfo edgeInfo = new EdgeInfo(wayId, edgeId, name, highway, startNode, endNode, distance);

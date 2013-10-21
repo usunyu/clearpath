@@ -1,15 +1,9 @@
 package function;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.io.*;
+import java.util.*;
 
-import object.EdgeInfo;
-import object.LocationInfo;
-import object.NodeInfo;
-import object.WayInfo;
+import object.*;
 
 public class OSMOutput {
 	/**
@@ -24,6 +18,7 @@ public class OSMOutput {
 	static String nodeKMLFile;
 	static String edgeCVSFile;
 	static String adjlistFile;
+	static String pathKMLFile;
 	// temp
 	static String extraNodeFile;
 	/**
@@ -35,10 +30,17 @@ public class OSMOutput {
 	static String COLON			= ":";
 	static String ONEDIRECT		= "O";
 	static String BIDIRECT		= "B";
+	static String FIX			= "F";
+	static String VARIABLE		= "V";
 	static String LINEEND		= "\r\n";
 	
 	static String UNKNOWN_STREET 	= "Unknown Street";
 	static String UNKNOWN_HIGHWAY 	= "Unknown Highway";
+	/**
+	 * @param const
+	 */
+	static int FEET_PER_MILE	= 5280;
+	static int SECOND_PER_HOUR	= 3600;
 	
 	public static void paramConfig(String name) {
 		osmFile 		= name + ".osm";
@@ -49,10 +51,73 @@ public class OSMOutput {
 		nodeKMLFile		= name + "_node.kml";
 		edgeCVSFile		= name + "_edge.csv";
 		adjlistFile		= name + "_adjlist.csv";
+		pathKMLFile		= name + "_path.kml";
 		// temp
 		extraNodeFile	= name + "_way_extra.csv";
 	}
 	
+	/**
+	 * generate path kml
+	 * @param nodeHashMap
+	 * @param pathNodeList
+	 */
+	public static void generatePathKML(HashMap<Long, NodeInfo> nodeHashMap, ArrayList<Long> pathNodeList) {
+		System.out.println("generate path kml...");
+		
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + pathKMLFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+
+			long lastNodeId = 0;
+			for (int i = 0; i < pathNodeList.size(); i++) {
+				debug++;
+				
+				if(i == 0) {
+					lastNodeId = pathNodeList.get(i);
+					continue;
+				}
+				
+				long nodeId = pathNodeList.get(i);
+				
+				NodeInfo lastNode = nodeHashMap.get(lastNodeId);
+				NodeInfo currentNode = nodeHashMap.get(nodeId);
+				
+				String kmlStr = "<Placemark>";
+				kmlStr += "<description>";
+				kmlStr += "start:" + lastNodeId + "\r\n";
+				kmlStr += "end:" + nodeId + "\r\n";
+				kmlStr += "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				kmlStr += lastNode.getLocation().getLongitude() + "," + lastNode.getLocation().getLatitude() + ",0 ";
+				kmlStr += currentNode.getLocation().getLongitude() + "," + currentNode.getLocation().getLatitude() + ",0 ";
+				kmlStr += "</coordinates></LineString>";
+				kmlStr += "<Style><LineStyle>";
+				kmlStr += "<color>#FF00FF14</color>";
+				kmlStr += "<width>3</width>";
+				kmlStr += "</LineStyle></Style></Placemark>\n";
+				out.write(kmlStr);
+				
+				lastNodeId = nodeId;
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("generatePathKML: debug code: " + debug);
+		}
+		
+		System.out.println("generate path kml finish!");
+	}
+	
+	/**
+	 * generate adjlist
+	 * @param nodeHashMap
+	 * @param adjList
+	 * @param nodesToEdge
+	 */
 	public static void generateAdjList(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, ArrayList<Long>> adjList, HashMap<String, EdgeInfo> nodesToEdge) {
 		System.out.println("generate adjlist file...");
 		int debug = 0;
@@ -76,44 +141,45 @@ public class OSMOutput {
 
 					EdgeInfo edgeInfo = nodesToEdge.get(nodeIdString);
 					int travelTime = 1;
+					// feet/second
 					double speed = 1;
 					boolean isFix = false;
 					if (edgeInfo.getHighway().equals("motorway")) {
-						speed = (double) 60 * 5280 / (60 * 60);
+						speed = (double) 60 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals("motorway_link")) {
-						speed = (double) 55 * 5280 / (60 * 60);
+						speed = (double) 55 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals("residential")) {
-						speed = (double) 30 * 5280 / (60 * 60);
+						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals("tertiary")) {
-						speed = (double) 30 * 5280 / (60 * 60);
+						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals("tertiary_link")) {
-						speed = (double) 25 * 5280 / (60 * 60);
+						speed = (double) 25 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals("secondary")) {
-						speed = (double) 35 * 5280 / (60 * 60);
+						speed = (double) 35 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals("secondary_link")) {
-						speed = (double) 30 * 5280 / (60 * 60);
+						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals("primary")) {
-						speed = (double) 35 * 5280 / (60 * 60);
+						speed = (double) 35 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals("primary_link")) {
-						speed = (double) 30 * 5280 / (60 * 60);
+						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals("unclassified")) {
-						speed = (double) 15 * 5280 / (60 * 60);
+						speed = (double) 15 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals("null")) {
-						speed = (double) 15 * 5280 / (60 * 60);
+						speed = (double) 15 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
 
@@ -129,7 +195,7 @@ public class OSMOutput {
 							timeList[k] = travelTime;
 						}
 						
-						strLine += localNodeArrayList.get(j) + "(V)" + COLON;
+						strLine += localNodeArrayList.get(j) + "(" + VARIABLE + ")" + COLON;
 						for (int k = 0; k < timeList.length; k++) {
 							strLine += timeList[k];
 							if (k < timeList.length - 1)
@@ -138,7 +204,7 @@ public class OSMOutput {
 								strLine += SEMICOLON;
 						}
 					} else {
-						strLine += localNodeArrayList.get(j) + "(F)" + COLON;
+						strLine += localNodeArrayList.get(j) + "(" + FIX + ")" + COLON;
 						strLine += travelTime + SEMICOLON;
 					}
 				}

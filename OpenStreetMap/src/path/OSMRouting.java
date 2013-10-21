@@ -4,37 +4,27 @@ import java.util.*;
 import java.util.Map.*;
 import java.io.*;
 
+import function.OSMInput;
+import function.OSMOutput;
+
 import object.*;
 import library.*;
+import main.OSMMain;
 
 public class OSMRouting {
 
 	/**
 	 * @param param
 	 */
-	static long startNode 		= 95687844;
-	static long endNode 		= 122759345;
+	static long startNode 		= 122688467;
+	static long endNode 		= 703503358;
 	static int startTime 		= 10;
 	static int timeInterval 	= 15;
 	static int timeRange 		= 60;
 	/**
-	 * @param file
-	 */
-	static String root 			= "file";
-	
-	//static String adjlistFile = "osm_adjlist.txt";
-	//static String nodeFile = "osm_node.txt";
-	//static String kmlFile = "osm_path.kml";
-	
-	static String nodeFile	 	= "los_angeles_node.txt";
-	static String adjlistFile 	= "los_angeles_adjlist.txt";
-	static String kmlFile 		= "los_angeles_path.kml";
-	/**
 	 * @param node
 	 */
 	static HashMap<Long, NodeInfo> nodeHashMap = new HashMap<Long, NodeInfo>();
-	// help for routing
-	static HashMap<Long, NodeRouteInfo> nodeRouteMap = new HashMap<Long, NodeRouteInfo>();
 	/**
 	 * @param graph
 	 */
@@ -45,80 +35,32 @@ public class OSMRouting {
 	static ArrayList<Long> pathNodeList = new ArrayList<Long>();
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		buildAdjList();
-		readNodeFile();
+		OSMInput.paramConfig(OSMMain.osm);
+		OSMInput.buildAdjList(adjListHashMap);
+		OSMInput.readNodeFile(nodeHashMap);
+		
+		prepareRoute();
 		tdsp(startNode, endNode, startTime);
-		generatePathKML();
+		
+		OSMOutput.paramConfig(OSMMain.osm);
+		OSMOutput.generatePathKML(nodeHashMap, pathNodeList);
 	}
 	
-	public static void generatePathKML() {
-		System.out.println("generate path kml...");
-		
-		int debug = 0;
-		try {
-			FileWriter fstream = new FileWriter(root + "/" + kmlFile);
-			BufferedWriter out = new BufferedWriter(fstream);
-			out.write("<kml><Document>");
-
-			long lastNodeId = 0;
-			for (int i = 0; i < pathNodeList.size(); i++) {
-				debug++;
-				
-				if(i == 0) {
-					lastNodeId = pathNodeList.get(i);
-					continue;
-				}
-				
-				long nodeId = pathNodeList.get(i);
-				
-				NodeInfo lastNode = nodeHashMap.get(lastNodeId);
-				NodeInfo currentNode = nodeHashMap.get(nodeId);
-				
-				String kmlStr = "<Placemark>";
-				kmlStr += "<description>";
-				kmlStr += "start:" + lastNodeId + "\r\n";
-				kmlStr += "end:" + nodeId + "\r\n";
-				kmlStr += "</description>";
-				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
-				kmlStr += lastNode.getLocation().getLongitude() + "," + lastNode.getLocation().getLatitude() + ",0 ";
-				kmlStr += currentNode.getLocation().getLongitude() + "," + currentNode.getLocation().getLatitude() + ",0 ";
-				kmlStr += "</coordinates></LineString>";
-				kmlStr += "<Style><LineStyle>";
-				kmlStr += "<color>#FF00FF14</color>";
-				kmlStr += "<width>3</width>";
-				kmlStr += "</LineStyle></Style></Placemark>\n";
-				out.write(kmlStr);
-				
-				lastNodeId = nodeId;
-			}
-			out.write("</Document></kml>");
-			out.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("generateKML: debug code: " + debug);
+	public static void prepareRoute() {
+		for(NodeInfo node : nodeHashMap.values()) {
+			node.prepareRoute();
 		}
-		
-		System.out.println("generate path kml finish!");
 	}
 
 	public static void tdsp(long startNode, long endNode, int startTime) {
 		System.out.println("start finding the path...");
-		PriorityQueue<NodeRouteInfo> priorityQ = new PriorityQueue<NodeRouteInfo>(
-				20, new Comparator<NodeRouteInfo>() {
-			public int compare(NodeRouteInfo n1, NodeRouteInfo n2) {
+		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
+			public int compare(NodeInfo n1, NodeInfo n2) {
 				return n1.getCost() - n2.getCost();
 			}
 		});
 		
-		// int adjlistSize = adjListHashMap.keySet().size();
-		
-		// boolean[] visited = new boolean[adjlistSize];
-		// for(int i = 0; i < adjlistSize; i++)
-		// 	visited[i] = false;
-		
-		NodeRouteInfo current = nodeRouteMap.get(startNode);	// get start node
+		NodeInfo current = nodeHashMap.get(startNode);	// get start node
 		if(current == null) {
 			System.err.println("cannot find start node, program exit!");
 			System.exit(-1);
@@ -148,9 +90,9 @@ public class OSMRouting {
 			for(ToNodeInfo toNode : adjNodeList) {
 				long toNodeId = toNode.getNodeId();
 				
-				NodeRouteInfo toNodeRoute = nodeRouteMap.get(toNodeId);
+				NodeInfo toNodeInfo = nodeHashMap.get(toNodeId);
 				
-				if(toNodeRoute.isVisited())	// if the node is visited, we bypass it
+				if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
 					continue;
 				
 				int travelTime;
@@ -162,10 +104,10 @@ public class OSMRouting {
 				// if we find a node with updated distance, just insert it to the priority queue
 				// even we pop out another node with same id later, we know that it was visited and will ignore it
 				int totalTime = arrTime + travelTime;
-				if (totalTime < toNodeRoute.getCost()) {
-					toNodeRoute.setCost(totalTime);
-					toNodeRoute.setParentId(nodeId);
-					priorityQ.offer(toNodeRoute);
+				if (totalTime < toNodeInfo.getCost()) {
+					toNodeInfo.setCost(totalTime);
+					toNodeInfo.setParentId(nodeId);
+					priorityQ.offer(toNodeInfo);
 				}
 			}
 		}
@@ -173,7 +115,7 @@ public class OSMRouting {
 		if (startNode == endNode)
 			System.out.println("start node is the same as end node.");
 		else {
-			current = nodeRouteMap.get(endNode);
+			current = nodeHashMap.get(endNode);
 			if(current == null) {
 				System.err.println("cannot find end node, program exit!");
 				System.exit(-1);
@@ -181,7 +123,7 @@ public class OSMRouting {
 			pathNodeList.add(endNode);	// add end node
 			
 			while(current.getParentId() != -1 && current.getParentId() != startNode) {
-				current = nodeRouteMap.get(current.getParentId());
+				current = nodeHashMap.get(current.getParentId());
 				if(current == null) {
 					System.err.println("cannot find intermediate node, program exit!");
 					System.exit(-1);
@@ -200,101 +142,9 @@ public class OSMRouting {
 			Collections.reverse(pathNodeList);	// reverse the path list
 		}
 		
+		// prepare for next time
+		prepareRoute();
+		
 		System.out.println("find the path successful!");
-	}
-
-	public static void buildAdjList() {
-		System.out.println("loading adjlist file: " + adjlistFile);
-
-		int debug = 0;
-		try {
-			FileInputStream fstream = new FileInputStream(root + "/"
-					+ adjlistFile);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine;
-
-			System.out.println("building graph, please wait...");
-
-			while ((strLine = br.readLine()) != null) {
-				debug++;
-				if (debug % 100000 == 0)
-					System.out.println("completed " + debug + " lines.");
-
-				String[] splitStr = strLine.split("\\|\\|");
-				long startNode = Long.parseLong(splitStr[0].substring(1));
-
-				ArrayList<ToNodeInfo> toNodeList = new ArrayList<ToNodeInfo>();
-				String[] nodeListStr = splitStr[1].split(";");
-				for (int i = 0; i < nodeListStr.length; i++) {
-					String nodeStr = nodeListStr[i];
-					long toNode = Long.parseLong(nodeStr.substring(
-							nodeStr.indexOf('n') + 1, nodeStr.indexOf('(')));
-					String fixStr = nodeStr.substring(nodeStr.indexOf('(') + 1,
-							nodeStr.indexOf(')'));
-					ToNodeInfo toNodeInfo;
-					if (fixStr.equals("F")) { // fixed
-						int travelTime = Integer.parseInt(nodeStr.substring(nodeStr.indexOf(':') + 1));
-						toNodeInfo = new ToNodeInfo(toNode, travelTime);
-					} else { // variable
-						String timeListStr = nodeStr.substring(nodeStr
-								.indexOf(':') + 1);
-						String[] timeValueStr = timeListStr.split(",");
-						int[] travelTimeArray = new int[timeValueStr.length];
-						for (int j = 0; j < timeValueStr.length; j++)
-							travelTimeArray[j] = Integer.parseInt(timeValueStr[j]);
-						toNodeInfo = new ToNodeInfo(toNode, travelTimeArray);
-					}
-					toNodeList.add(toNodeInfo);
-				}
-				adjListHashMap.put(startNode, toNodeList);
-			}
-
-			br.close();
-			in.close();
-			fstream.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("buildList: debug code: " + debug);
-		}
-		System.out.println("building list finish!");
-	}
-
-	public static void readNodeFile() {
-		System.out.println("load node file: " + nodeFile);
-		int debug = 0;
-		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + nodeFile);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine;
-
-			System.out.println("reading node info, please wait...");
-
-			while ((strLine = br.readLine()) != null) {
-				debug++;
-				String[] splitted = strLine.split("\\|\\|");
-				long nodeId = Long.parseLong(splitted[0]);
-				String locationStr = splitted[1];
-				String[] location = locationStr.split(",");
-				double latitude = Double.parseDouble(location[0]);
-				double longitude = Double.parseDouble(location[1]);
-				LocationInfo locationInfo = new LocationInfo(latitude,
-						longitude);
-				NodeInfo nodeInfo = new NodeInfo(nodeId, locationInfo);
-				nodeHashMap.put(nodeId, nodeInfo);
-				NodeRouteInfo nodeCost = new NodeRouteInfo(nodeId);
-				nodeRouteMap.put(nodeId, nodeCost);
-			}
-			br.close();
-			in.close();
-			fstream.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("readNodeFile: debug code: " + debug);
-		}
-		System.out.println("read node file finish!");
 	}
 }

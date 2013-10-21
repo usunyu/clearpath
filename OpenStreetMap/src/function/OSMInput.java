@@ -34,6 +34,7 @@ public class OSMInput {
 	static String wayInfoFile;
 	static String wktsFile;
 	static String edgeCVSFile;
+	static String adjlistFile;
 	// temp
 	static String extraNodeFile;
 	
@@ -65,6 +66,8 @@ public class OSMInput {
 	static String COLON				= ":";
 	static String ONEDIRECT			= "O";
 	static String BIDIRECT			= "B";
+	static String FIX				= "F";
+	static String VARIABLE			= "V";
 	static String LINEEND			= "\r\n";
 	static String UNKNOWN_STREET 	= "Unknown Street";
 	static String UNKNOWN_HIGHWAY 	= "Unknown Highway";
@@ -76,8 +79,68 @@ public class OSMInput {
 		wayInfoFile		= name + "_info.csv";
 		wktsFile		= name + ".osm.wkts";
 		edgeCVSFile		= name + "_edge.csv";
+		edgeCVSFile		= name + "_edge.csv";
+		adjlistFile		= name + "_adjlist.csv";
 		// temp
 		extraNodeFile	= name + "_way_extra.csv";
+	}
+	
+	/**
+	 * build adjlist
+	 * @param adjListHashMap
+	 */
+	public static void buildAdjList(HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap) {
+		System.out.println("loading adjlist file: " + adjlistFile);
+
+		int debug = 0;
+		try {
+			FileInputStream fstream = new FileInputStream(root + "/" + adjlistFile);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+
+			System.out.println("building graph...");
+
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				if (debug % 100000 == 0)
+					System.out.println("completed " + debug + " lines.");
+
+				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				long startNode = Long.parseLong(nodes[0]);
+
+				ArrayList<ToNodeInfo> toNodeList = new ArrayList<ToNodeInfo>();
+				String[] adjlists = nodes[1].split(SEMICOLON);
+				for (int i = 0; i < adjlists.length; i++) {
+					String adjComponent = adjlists[i];
+					long toNode = Long.parseLong(adjComponent.substring(0, adjComponent.indexOf('(')));
+					String fixStr = adjComponent.substring(adjComponent.indexOf('(') + 1, adjComponent.indexOf(')'));
+					ToNodeInfo toNodeInfo;
+					if (fixStr.equals(FIX)) { // fixed
+						int travelTime = Integer.parseInt(adjComponent.substring(adjComponent.indexOf(COLON) + 1));
+						toNodeInfo = new ToNodeInfo(toNode, travelTime);
+					} else { // variable
+						String timeList = adjComponent.substring(adjComponent.indexOf(COLON) + 1);
+						String[] timeValueList = timeList.split(COMMA);
+						int[] travelTimeArray = new int[timeValueList.length];
+						for (int j = 0; j < timeValueList.length; j++)
+							travelTimeArray[j] = Integer.parseInt(timeValueList[j]);
+						toNodeInfo = new ToNodeInfo(toNode, travelTimeArray);
+					}
+					toNodeList.add(toNodeInfo);
+				}
+				adjListHashMap.put(startNode, toNodeList);
+			}
+
+			br.close();
+			in.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("buildList: debug code: " + debug);
+		}
+		System.out.println("building list finish!");
 	}
 	
 	/**
