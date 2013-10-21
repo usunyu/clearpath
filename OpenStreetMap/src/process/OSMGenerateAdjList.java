@@ -1,43 +1,24 @@
-package adjlist;
+package process;
 
 import java.util.*;
 
+import data.*;
 import object.*;
 import function.*;
 
 public class OSMGenerateAdjList {
-	/**
-	 * @param node
-	 */
-	static HashMap<Long, NodeInfo> nodeHashMap = new HashMap<Long, NodeInfo>();
-	/**
-	 * @param way
-	 */
-	// static ArrayList<WayInfo> wayArrayList = new ArrayList<WayInfo>();
-	/**
-	 * @param edge
-	 */
-	static HashMap<Long, EdgeInfo> edgeHashMap = new HashMap<Long, EdgeInfo>();
-	/**
-	 * @param connect
-	 */
-	static HashMap<Long, ArrayList<Long>> adjList = new HashMap<Long, ArrayList<Long>>();
-	static HashMap<String, EdgeInfo> nodesToEdge = new HashMap<String, EdgeInfo>();
 
 	public static void run(String[] args) {
 		main(args);
 	}
 
 	public static void main(String[] args) {
-		OSMInput.paramConfig(args[0]);
-		OSMInput.readNodeFile(nodeHashMap);
-		OSMInput.readEdgeFile(edgeHashMap);
-		buildAdjList();
+		buildAdjList(OSMData.nodeHashMap, OSMData.edgeHashMap, OSMData.adjList, OSMData.nodesToEdge);
 		OSMOutput.paramConfig(args[0]);
-		OSMOutput.generateAdjList(nodeHashMap, adjList, nodesToEdge);
+		OSMOutput.generateAdjList(OSMData.nodeHashMap, OSMData.adjList, OSMData.nodesToEdge);
 	}
 
-	public static void buildAdjList() {
+	public static void buildAdjList(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, EdgeInfo> edgeHashMap, HashMap<Long, ArrayList<Long>> adjList, HashMap<String, EdgeInfo> nodesToEdge) {
 		System.out.println("build adjlist file...");
 		/* build adjlist using edge */
 		for(EdgeInfo edgeInfo : edgeHashMap.values()) {

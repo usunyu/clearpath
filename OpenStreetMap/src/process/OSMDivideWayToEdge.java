@@ -1,40 +1,24 @@
-package output;
+package process;
 
 import java.util.*;
 
+import data.*;
 import object.*;
 import function.*;
 
 public class OSMDivideWayToEdge {
-	/**
-	 * @param node
-	 */
-	static HashMap<Long, NodeInfo> nodeHashMap = new HashMap<Long, NodeInfo>();
-	/**
-	 * @param way
-	 */
-	static HashMap<Long, WayInfo> wayHashMap = new HashMap<Long, WayInfo>();
-	/**
-	 * @param edge
-	 */
-	static HashMap<Long, EdgeInfo> edgeHashMap = new HashMap<Long, EdgeInfo>();
 	
 	public static void run(String[] args) {
 		main(args);
 	}
 	
 	public static void main(String[] args) {
-		OSMInput.paramConfig(args[0]);
-		OSMInput.readNodeFile(nodeHashMap);
-		OSMInput.readWayFile(wayHashMap);
-		OSMInput.readWktsFile(wayHashMap, nodeHashMap);
-
-		divideWayToEdge();
+		divideWayToEdge(OSMData.wayHashMap, OSMData.nodeHashMap, OSMData.edgeHashMap);
 		OSMOutput.paramConfig(args[0]);
-		OSMOutput.writeEdgeFile(edgeHashMap);
+		OSMOutput.writeEdgeFile(OSMData.edgeHashMap);
 	}
 	
-	public static void divideWayToEdge() {
+	public static void divideWayToEdge(HashMap<Long, WayInfo> wayHashMap, HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, EdgeInfo> edgeHashMap) {
 		System.out.println("divide way to edge...");
 		
 		for(WayInfo wayInfo : wayHashMap.values()) {

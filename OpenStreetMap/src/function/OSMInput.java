@@ -14,7 +14,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import output.OSMOutputFileGeneration;
+import data.OSMData;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -262,9 +262,9 @@ public class OSMInput {
 					System.out.println("processed line " + debug);
 			}
 			// update way map
-			OSMOutputFileGeneration.wayHashMap = wayNeedHashMap;
+			OSMData.wayHashMap = wayNeedHashMap;
 			// update node map
-			OSMOutputFileGeneration.nodeHashMap = nodeNeedHashMap;
+			OSMData.nodeHashMap = nodeNeedHashMap;
 			br.close();
 			in.close();
 			fstream.close();

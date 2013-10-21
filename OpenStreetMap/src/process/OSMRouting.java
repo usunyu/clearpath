@@ -1,15 +1,10 @@
-package path;
+package process;
 
 import java.util.*;
-import java.util.Map.*;
-import java.io.*;
 
-import function.OSMInput;
-import function.OSMOutput;
-
+import function.*;
 import object.*;
-import library.*;
-import main.OSMMain;
+import main.*;
 
 public class OSMRouting {
 

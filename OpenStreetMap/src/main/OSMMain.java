@@ -1,10 +1,7 @@
 package main;
 
-import adjlist.*;
-import input.*;
-import kml.*;
 import osm2wkt.*;
-import output.*;
+import process.*;
 
 public class OSMMain {
 
