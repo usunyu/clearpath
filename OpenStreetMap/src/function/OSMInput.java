@@ -298,6 +298,8 @@ public class OSMInput {
 				
 				for(int i = 1; i < nodes.length; i++) {
 					String[] keyValueSet = nodes[i].split(ESCAPE_SEPARATION);
+					if(keyValueSet == null || keyValueSet.length == 0)
+						continue;
 					String key = keyValueSet[0];
 					String value = keyValueSet[1];
 					if(infoHashMap == null) {

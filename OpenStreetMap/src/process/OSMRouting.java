@@ -176,6 +176,8 @@ public class OSMRouting {
 		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode);
 		
 		int cost = Integer.MAX_VALUE;
+		long finalEntrance = -1;
+		long finalExit = -1;
 		
 		for(long entranceId : entranceMap.keySet()) {
 			PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
@@ -264,11 +266,15 @@ public class OSMRouting {
 					}
 					Collections.reverse(pathNodeList);
 				}
+				finalEntrance = entranceId;
+				finalExit = exitId;
 			}
 			
 			// prepare for next time
 			prepareRoute();
 		}
+		
+		
 		
 		System.out.println("find the path successful!");
 	}

@@ -17,7 +17,6 @@ public class OSMMain {
 		try {
 			args = new String[1];
 			args[0] = osm;
-					
 			System.out.println("\nstep1: osm2wkt...");
 			Osm2Wkt.run(args);
 			System.out.println("\nstep2: input file generation...");
