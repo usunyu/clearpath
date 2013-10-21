@@ -1230,6 +1230,7 @@ public class Osm2Wkt {
 		System.out.println("writing wkt file ...");
 
 		try {
+			/*
 			File wkt = new File(wktfile);
 			if(!append){
 				if(wkt.exists()) wkt.delete();
@@ -1242,7 +1243,6 @@ public class Osm2Wkt {
 				wktstream.append("\n");
 			}
 
-			/*
 			for(Vector<Long> s : streets.values()){
 				wktstream.append(WKT_TAG_BEGIN);
 
@@ -1258,12 +1258,12 @@ public class Osm2Wkt {
 			*/
 			
 			/* * * * * * * * * * * * * * ** * ** Yu Sun Modify ** * * * * * * * * * * * ** * * * */
-			for (int i=0; i < streets.size(); i++) {
-				
-				Long wayId = (Long)streets.keySet().toArray()[i];
-				wktstream.append(wayId + WKTS_TAG_SEPARATION);
+			FileWriter fstream = new FileWriter(wktfile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			for(long wayId : streets.keySet()) {
+				String strLine = wayId + WKTS_TAG_SEPARATION;
 				Vector<Long> s = streets.get(wayId);
-				
 				String refStr = "";
 				for(int j = 0; j < s.size(); j++) {
 					Long l = s.elementAt(j);
@@ -1272,12 +1272,14 @@ public class Osm2Wkt {
 					if(j < s.size() - 1)
 						refStr += WKTS_TAG_SEPARATION;
 				}
-				wktstream.append(refStr);
-				wktstream.append(WKTS_TAG_LINEEND);
+				strLine += refStr + WKTS_TAG_LINEEND;
+				out.write(strLine);
 			}
+			out.close();
+			fstream.close();
 			/* * * * * * * * * * * * * ** * * * * * * * ** * * * * * * * ** * * * * * * * ** * * */
 
-			wktstream.close();
+			/*wktstream.close();*/
 
 		} catch (IOException e) {
 			System.out.println("writing wkt file failed: " + e.getLocalizedMessage());
