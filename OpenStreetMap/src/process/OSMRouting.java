@@ -385,7 +385,7 @@ public class OSMRouting {
 		}
 		
 		HighwayEntrance entrance = entranceMap.get(finalEntrance);
-		HighwayEntrance exit = entranceMap.get(finalExit);
+		HighwayEntrance exit = exitMap.get(finalExit);
 		if(entrance != null && exit != null) {
 			ArrayList<Long> entrancePath = entrance.getLocalToHighPath();
 			ArrayList<Long> exitPath = exit.getLocalToHighPath();
