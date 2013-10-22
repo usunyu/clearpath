@@ -138,6 +138,8 @@ public class OSMRouting {
 				
 				if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
 					continue;
+
+				toNodeInfo.setVisited();
 				
 				String nodeIdKey = nodeId + "," + toNodeId;
 				EdgeInfo edge = nodesToEdge.get(nodeIdKey);
@@ -241,6 +243,8 @@ public class OSMRouting {
 					
 					if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
 						continue;
+
+					toNodeInfo.setVisited();
 					
 					String nodeIdKey = nodeId + "," + toNodeId;
 					EdgeInfo edge = nodesToEdge.get(nodeIdKey);
@@ -352,6 +356,8 @@ public class OSMRouting {
 				
 				if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
 					continue;
+
+				toNodeInfo.setVisited();
 				
 				int travelTime;
 				if(toNode.isFix())	// fix time
