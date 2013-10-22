@@ -71,6 +71,7 @@ public class OSMRouting {
 		//tdsp(START_NODE, END_NODE, START_TIME);
 		tdspHierarchy(START_NODE, END_NODE, START_TIME);
 		OSMOutput.generatePathKML(nodeHashMap, pathNodeList);
+		OSMOutput.generatePathNodeKML(nodeHashMap, pathNodeList);
 	}
 	
 	public static void initialHierarchy() {
@@ -280,7 +281,7 @@ public class OSMRouting {
 		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayExit(endNode);
 		
 		// test
-		//OSMOutput.generateEntranceExitKML(startNode, endNode, entranceMap, exitMap, nodeHashMap);
+		OSMOutput.generateEntranceExitKML(startNode, endNode, entranceMap, exitMap, nodeHashMap);
 		
 		int cost = Integer.MAX_VALUE;
 		long finalEntrance = -1;

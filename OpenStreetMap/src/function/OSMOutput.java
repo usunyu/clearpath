@@ -23,6 +23,7 @@ public class OSMOutput {
 	static String extraNodeFile;
 	// test
 	static String entranceExitFile;
+	static String pathNodeKMLFile;
 	/**
 	 * @param csv
 	 */
@@ -81,6 +82,7 @@ public class OSMOutput {
 		extraNodeFile	= name + "_way_extra.csv";
 		// test
 		entranceExitFile= name + "_entrance_exit.kml";
+		pathNodeKMLFile	= name + "_path_node.kml";
 	}
 	
 	public static void generateEntranceExitKML(long start, long end, HashMap<Long, HighwayEntrance> entranceMap, HashMap<Long, HighwayEntrance> exitMap, HashMap<Long, NodeInfo> nodeHashMap) {
@@ -130,6 +132,44 @@ public class OSMOutput {
 			System.err.println("generateKMLNode: debug code: " + debug);
 		}
 		System.out.println("generate entrance exit kml finish!");
+	}
+	
+	/**
+	 * generate path node kml
+	 * @param nodeHashMap
+	 * @param pathNodeList
+	 */
+	public static void generatePathNodeKML(HashMap<Long, NodeInfo> nodeHashMap, ArrayList<Long> pathNodeList) {
+		System.out.println("generate path node kml...");
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + pathNodeKMLFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			for(long nodeId : pathNodeList) {
+				debug++;
+				NodeInfo nodeInfo = nodeHashMap.get(nodeId);
+				String strLine = "<Placemark>";
+				strLine += "<name>" + nodeInfo.getNodeId() + "</name>";
+				strLine += "<description>";
+				strLine += "Id:" + nodeInfo.getNodeId();
+				strLine += "</description>";
+				strLine += "<Point><coordinates>";
+				strLine += nodeInfo.getLocation().getLongitude() + "," + nodeInfo.getLocation().getLatitude();
+				strLine += ",0</coordinates></Point>";
+				strLine += "</Placemark>";
+				
+				out.write(strLine);
+			}
+			out.write("</Document></kml>");
+			out.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("generatePathNodeKML: debug code: " + debug);
+		}
+		System.out.println("generate node kml finish!");
 	}
 	
 	/**
