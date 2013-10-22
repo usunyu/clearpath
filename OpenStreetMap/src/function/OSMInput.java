@@ -89,7 +89,7 @@ public class OSMInput {
 	 * build adjlist
 	 * @param adjListHashMap
 	 */
-	public static void buildAdjList(HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap) {
+	public static void buildAdjList(HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap) {
 		System.out.println("loading adjlist file: " + adjlistFile);
 
 		int debug = 0;
@@ -115,19 +115,41 @@ public class OSMInput {
 					String adjComponent = adjlists[i];
 					long toNode = Long.parseLong(adjComponent.substring(0, adjComponent.indexOf('(')));
 					String fixStr = adjComponent.substring(adjComponent.indexOf('(') + 1, adjComponent.indexOf(')'));
-					ToNodeInfo toNodeInfo;
 					if (fixStr.equals(FIX)) { // fixed
 						int travelTime = Integer.parseInt(adjComponent.substring(adjComponent.indexOf(COLON) + 1));
-						toNodeInfo = new ToNodeInfo(toNode, travelTime);
+						ToNodeInfo toNodeInfo = new ToNodeInfo(toNode, travelTime);
+						toNodeList.add(toNodeInfo);
+						// build the reverse adjlist
+						ArrayList<ToNodeInfo> fromNodeList;
+						if(adjReverseListHashMap.containsKey(toNode)) {
+							fromNodeList = adjReverseListHashMap.get(toNode);
+						}
+						else {
+							fromNodeList = new ArrayList<ToNodeInfo>();
+							adjReverseListHashMap.put(toNode, fromNodeList);
+						}
+						ToNodeInfo fromNodeInfo = new ToNodeInfo(startNode, travelTime);
+						fromNodeList.add(fromNodeInfo);
 					} else { // variable
 						String timeList = adjComponent.substring(adjComponent.indexOf(COLON) + 1);
 						String[] timeValueList = timeList.split(COMMA);
 						int[] travelTimeArray = new int[timeValueList.length];
 						for (int j = 0; j < timeValueList.length; j++)
 							travelTimeArray[j] = Integer.parseInt(timeValueList[j]);
-						toNodeInfo = new ToNodeInfo(toNode, travelTimeArray);
+						ToNodeInfo toNodeInfo = new ToNodeInfo(toNode, travelTimeArray);
+						toNodeList.add(toNodeInfo);
+						// build the reverse adjlist
+						ArrayList<ToNodeInfo> fromNodeList;
+						if(adjReverseListHashMap.containsKey(toNode)) {
+							fromNodeList = adjReverseListHashMap.get(toNode);
+						}
+						else {
+							fromNodeList = new ArrayList<ToNodeInfo>();
+							adjReverseListHashMap.put(toNode, fromNodeList);
+						}
+						ToNodeInfo fromNodeInfo = new ToNodeInfo(startNode, travelTimeArray);
+						fromNodeList.add(fromNodeInfo);
 					}
-					toNodeList.add(toNodeInfo);
 				}
 				adjListHashMap.put(startNode, toNodeList);
 			}

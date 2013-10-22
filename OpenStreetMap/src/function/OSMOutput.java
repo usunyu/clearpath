@@ -80,10 +80,10 @@ public class OSMOutput {
 		// temp
 		extraNodeFile	= name + "_way_extra.csv";
 		// test
-		entranceExitFile= name + "_entrance_exit.csv";
+		entranceExitFile= name + "_entrance_exit.kml";
 	}
 	
-	public static void generateEntranceExitKML(long start, long end, HashMap<Long, HighwayEntrance> entranceMap, HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, HighwayEntrance> exitMap) {
+	public static void generateEntranceExitKML(long start, long end, HashMap<Long, HighwayEntrance> entranceMap, HashMap<Long, HighwayEntrance> exitMap, HashMap<Long, NodeInfo> nodeHashMap) {
 		System.out.println("generate entrance exit kml...");
 		int debug = 0;
 		try {
@@ -97,7 +97,7 @@ public class OSMOutput {
 			nodeList.add(startNode);
 			nodeList.add(endNode);
 			
-			for(long nodeId : nodeHashMap.keySet()) {
+			for(long nodeId : entranceMap.keySet()) {
 				NodeInfo node = nodeHashMap.get(nodeId);
 				nodeList.add(node);
 			}

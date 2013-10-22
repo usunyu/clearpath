@@ -51,6 +51,7 @@ public class OSMRouting {
 	 * @param graph
 	 */
 	static HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap = new HashMap<Long, ArrayList<ToNodeInfo>>();
+	static HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap = new HashMap<Long, ArrayList<ToNodeInfo>>();
 	static HashMap<String, EdgeInfo> nodesToEdge = new HashMap<String, EdgeInfo>();
 	/**
 	 * @param path
@@ -60,7 +61,12 @@ public class OSMRouting {
 
 	public static void main(String[] args) {
 		OSMInput.paramConfig(OSMMain.osm);
+<<<<<<< HEAD
+		OSMInput.buildAdjList(adjListHashMap, adjReverseListHashMap);
+=======
+		OSMOutput.paramConfig(OSMMain.osm);
 		OSMInput.buildAdjList(adjListHashMap);
+>>>>>>> b86a64281f765915bcbf557153e065ea45d025b2
 		OSMInput.readNodeFile(nodeHashMap);
 		OSMInput.readEdgeFile(edgeHashMap, nodesToEdge);
 		
@@ -68,8 +74,6 @@ public class OSMRouting {
 		prepareRoute();
 		//tdsp(START_NODE, END_NODE, START_TIME);
 		tdspHierarchy(START_NODE, END_NODE, START_TIME);
-		
-		OSMOutput.paramConfig(OSMMain.osm);
 		OSMOutput.generatePathKML(nodeHashMap, pathNodeList);
 	}
 	
@@ -102,7 +106,92 @@ public class OSMRouting {
 		}
 	}
 	
-	public static HashMap<Long, HighwayEntrance> searchHighwayEntrance(long startNode, boolean exit) {
+	public static HashMap<Long, HighwayEntrance> searchHighwayExit(long endNode) {
+		HashMap<Long, HighwayEntrance> highwayExitMap = new HashMap<Long, HighwayEntrance>();
+		
+		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
+			public int compare(NodeInfo n1, NodeInfo n2) {
+				return n1.getCost() - n2.getCost();
+			}
+		});
+		
+		NodeInfo current = nodeHashMap.get(endNode);	// get start node
+		if(current == null) {
+			System.err.println("cannot find start node, program exit!");
+			System.exit(-1);
+		}
+		
+		current.setCost(0);	// set start cost to 0
+		
+		priorityQ.offer(current);
+		
+		// find four exit
+		while ((current = priorityQ.poll()) != null && highwayExitMap.size() < 4) {
+			long nodeId = current.getNodeId();
+			
+			ArrayList<ToNodeInfo> adjNodeList = adjReverseListHashMap.get(nodeId);
+			if(adjNodeList == null)
+				continue;
+			
+			int arrTime = current.getCost();
+			
+			for(ToNodeInfo fromNode : adjNodeList) {
+				long fromNodeId = fromNode.getNodeId();
+				
+				NodeInfo fromNodeInfo = nodeHashMap.get(fromNodeId);
+				
+				if(fromNodeInfo.isVisited())	// if the node is visited, we bypass it
+					continue;
+
+				fromNodeInfo.setVisited();
+				
+				String nodeIdKey = fromNodeId + "," + nodeId;
+				EdgeInfo edge = nodesToEdge.get(nodeIdKey);
+				
+				String highway = edge.getHighway();
+				int hierarchy = hierarchyHashMap.get(highway);
+				if(hierarchy == 1) {	// find one highway exit
+					ArrayList<Long> path = new ArrayList<Long>();
+					NodeInfo entrance = current;
+					path.add(entrance.getNodeId());
+					while(entrance.getParentId() != -1) {
+						entrance = nodeHashMap.get(entrance.getParentId());
+						if(entrance == null) {
+							System.err.println("cannot find intermediate node, program exit!");
+							System.exit(-1);
+						}
+						path.add(entrance.getNodeId());	// add intermediate node
+					}
+
+					HighwayEntrance highwayExit = new HighwayEntrance(nodeId);
+					highwayExit.setLocalToHighPath(path);
+					highwayExitMap.put(nodeId, highwayExit);
+					continue;
+				}
+				
+				int travelTime;
+				if(fromNode.isFix())	// fix time
+					travelTime = fromNode.getTravelTime();
+				else	// fetch from time array
+					travelTime = fromNode.getTravelTimeArray()[30];	// use mid value
+				
+				// if we find a node with updated distance, just insert it to the priority queue
+				// even we pop out another node with same id later, we know that it was visited and will ignore it
+				int totalTime = arrTime + travelTime;
+				if (totalTime < fromNodeInfo.getCost()) {
+					fromNodeInfo.setCost(totalTime);
+					fromNodeInfo.setParentId(nodeId);
+					priorityQ.offer(fromNodeInfo);
+				}
+			}
+		}
+		
+		prepareRoute();
+		
+		return highwayExitMap;
+	}
+	
+	public static HashMap<Long, HighwayEntrance> searchHighwayEntrance(long startNode) {
 		HashMap<Long, HighwayEntrance> highwayEntranceMap = new HashMap<Long, HighwayEntrance>();
 		
 		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
@@ -158,8 +247,8 @@ public class OSMRouting {
 						}
 						path.add(entrance.getNodeId());	// add intermediate node
 					}
-					if(!exit)
-						Collections.reverse(path);
+
+					Collections.reverse(path);
 					HighwayEntrance highwayEntrance = new HighwayEntrance(nodeId);
 					highwayEntrance.setLocalToHighPath(path);
 					highwayEntranceMap.put(nodeId, highwayEntrance);
@@ -191,11 +280,11 @@ public class OSMRouting {
 	public static void tdspHierarchy(long startNode, long endNode, int startTime) {
 		System.out.println("start finding the path...");
 		
-		HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, false);
-		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode, true);
+		HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode);
+		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayExit(endNode);
 		
 		// test
-		OSMOutput.generateEntranceExitKML(startNode, endNode, entranceMap, nodeHashMap, exitMap);
+		//OSMOutput.generateEntranceExitKML(startNode, endNode, entranceMap, exitMap, nodeHashMap);
 		
 		int cost = Integer.MAX_VALUE;
 		long finalEntrance = -1;
