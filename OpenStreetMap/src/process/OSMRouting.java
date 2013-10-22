@@ -67,7 +67,7 @@ public class OSMRouting {
 		OSMInput.readEdgeFile(edgeHashMap, nodesToEdge);
 		
 		initialHierarchy();
-		prepareRoute();
+		prepareRoute(nodeHashMap);
 		//tdsp(START_NODE, END_NODE, START_TIME);
 		tdspHierarchy(START_NODE, END_NODE, START_TIME);
 		OSMOutput.generatePathKML(nodeHashMap, pathNodeList);
@@ -97,13 +97,21 @@ public class OSMRouting {
 		hierarchyHashMap.put(UNCLASSIFIED, 6);
 	}
 	
-	public static void prepareRoute() {
-		for(NodeInfo node : nodeHashMap.values()) {
+	public static void prepareRoute(HashMap<Long, NodeInfo> map) {
+		for(NodeInfo node : map.values()) {
+			node.prepareRoute();
+		}
+	}
+	
+	public static void prepareRoute(Stack<NodeInfo> stack) {
+		while(!stack.isEmpty()) {
+			NodeInfo node = stack.pop();
 			node.prepareRoute();
 		}
 	}
 	
 	public static HashMap<Long, HighwayEntrance> searchHighwayExit(long endNode) {
+		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 		HashMap<Long, HighwayEntrance> highwayExitMap = new HashMap<Long, HighwayEntrance>();
 		
 		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
@@ -113,6 +121,7 @@ public class OSMRouting {
 		});
 		
 		NodeInfo current = nodeHashMap.get(endNode);	// get start node
+		nodeStack.push(current);
 		if(current == null) {
 			System.err.println("cannot find start node, program exit!");
 			System.exit(-1);
@@ -139,6 +148,8 @@ public class OSMRouting {
 				
 				if(fromNodeInfo.isVisited())	// if the node is visited, we bypass it
 					continue;
+				
+				nodeStack.push(fromNodeInfo);
 
 				fromNodeInfo.setVisited();
 				
@@ -183,12 +194,13 @@ public class OSMRouting {
 			}
 		}
 		
-		prepareRoute();
+		prepareRoute(nodeStack);
 		
 		return highwayExitMap;
 	}
 	
 	public static HashMap<Long, HighwayEntrance> searchHighwayEntrance(long startNode) {
+		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 		HashMap<Long, HighwayEntrance> highwayEntranceMap = new HashMap<Long, HighwayEntrance>();
 		
 		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
@@ -198,6 +210,7 @@ public class OSMRouting {
 		});
 		
 		NodeInfo current = nodeHashMap.get(startNode);	// get start node
+		nodeStack.push(current);
 		if(current == null) {
 			System.err.println("cannot find start node, program exit!");
 			System.exit(-1);
@@ -224,6 +237,8 @@ public class OSMRouting {
 				
 				if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
 					continue;
+				
+				nodeStack.push(toNodeInfo);
 
 				toNodeInfo.setVisited();
 				
@@ -269,7 +284,7 @@ public class OSMRouting {
 			}
 		}
 		
-		prepareRoute();
+		prepareRoute(nodeStack);
 		
 		return highwayEntranceMap;
 	}
@@ -294,7 +309,9 @@ public class OSMRouting {
 				}
 			});
 			
+			Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 			NodeInfo current = nodeHashMap.get(entranceId);	// get start node
+			nodeStack.push(current);
 			if(current == null) {
 				System.err.println("cannot find entrance node, program exit!");
 				System.exit(-1);
@@ -329,7 +346,8 @@ public class OSMRouting {
 					
 					if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
 						continue;
-
+					nodeStack.push(toNodeInfo);
+					
 					toNodeInfo.setVisited();
 					
 					String nodeIdKey = nodeId + "," + toNodeId;
@@ -381,7 +399,7 @@ public class OSMRouting {
 			}
 			
 			// prepare for next time
-			prepareRoute();
+			prepareRoute(nodeStack);
 		}
 		
 		HighwayEntrance entrance = entranceMap.get(finalEntrance);
@@ -407,8 +425,9 @@ public class OSMRouting {
 				return n1.getCost() - n2.getCost();
 			}
 		});
-		
+		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 		NodeInfo current = nodeHashMap.get(startNode);	// get start node
+		nodeStack.push(current);
 		if(current == null) {
 			System.err.println("cannot find start node, program exit!");
 			System.exit(-1);
@@ -442,6 +461,8 @@ public class OSMRouting {
 				
 				if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
 					continue;
+				
+				nodeStack.push(toNodeInfo);
 
 				toNodeInfo.setVisited();
 				
@@ -493,7 +514,7 @@ public class OSMRouting {
 		}
 		
 		// prepare for next time
-		prepareRoute();
+		prepareRoute(nodeStack);
 		
 		System.out.println("find the path successful!");
 	}
