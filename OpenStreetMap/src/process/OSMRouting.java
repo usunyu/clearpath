@@ -406,7 +406,11 @@ public class OSMRouting {
 		HighwayEntrance exit = exitMap.get(finalExit);
 		if(entrance != null && exit != null) {
 			ArrayList<Long> entrancePath = entrance.getLocalToHighPath();
+			// remove the duplicate entrance
+			entrancePath.remove(entrancePath.size());
 			ArrayList<Long> exitPath = exit.getLocalToHighPath();
+			// remove the duplicate exit
+			pathNodeList.remove(pathNodeList.size());
 			// add entrance and exit path
 			pathNodeList.addAll(0, entrancePath);
 			pathNodeList.addAll(pathNodeList.size(), exitPath);
