@@ -407,10 +407,10 @@ public class OSMRouting {
 		if(entrance != null && exit != null) {
 			ArrayList<Long> entrancePath = entrance.getLocalToHighPath();
 			// remove the duplicate entrance
-			entrancePath.remove(entrancePath.size());
+			entrancePath.remove(entrancePath.size() - 1);
 			ArrayList<Long> exitPath = exit.getLocalToHighPath();
 			// remove the duplicate exit
-			pathNodeList.remove(pathNodeList.size());
+			pathNodeList.remove(pathNodeList.size() - 1);
 			// add entrance and exit path
 			pathNodeList.addAll(0, entrancePath);
 			pathNodeList.addAll(pathNodeList.size(), exitPath);
