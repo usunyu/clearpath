@@ -61,12 +61,8 @@ public class OSMRouting {
 
 	public static void main(String[] args) {
 		OSMInput.paramConfig(OSMMain.osm);
-<<<<<<< HEAD
-		OSMInput.buildAdjList(adjListHashMap, adjReverseListHashMap);
-=======
 		OSMOutput.paramConfig(OSMMain.osm);
-		OSMInput.buildAdjList(adjListHashMap);
->>>>>>> b86a64281f765915bcbf557153e065ea45d025b2
+		OSMInput.buildAdjList(adjListHashMap, adjReverseListHashMap);
 		OSMInput.readNodeFile(nodeHashMap);
 		OSMInput.readEdgeFile(edgeHashMap, nodesToEdge);
 		
