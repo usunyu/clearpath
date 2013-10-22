@@ -146,12 +146,12 @@ public class OSMRouting {
 				
 				NodeInfo fromNodeInfo = nodeHashMap.get(fromNodeId);
 				
-				if(fromNodeInfo.isVisited())	// if the node is visited, we bypass it
-					continue;
+				// if(fromNodeInfo.isVisited())	// if the node is visited, we bypass it
+				// 	continue;
 				
 				nodeStack.push(fromNodeInfo);
 
-				fromNodeInfo.setVisited();
+				// fromNodeInfo.setVisited();
 				
 				String nodeIdKey = fromNodeId + "," + nodeId;
 				EdgeInfo edge = nodesToEdge.get(nodeIdKey);
@@ -235,12 +235,12 @@ public class OSMRouting {
 				
 				NodeInfo toNodeInfo = nodeHashMap.get(toNodeId);
 				
-				if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
-					continue;
+				// if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
+				// 	continue;
 				
 				nodeStack.push(toNodeInfo);
 
-				toNodeInfo.setVisited();
+				// toNodeInfo.setVisited();
 				
 				String nodeIdKey = nodeId + "," + toNodeId;
 				EdgeInfo edge = nodesToEdge.get(nodeIdKey);
@@ -344,11 +344,11 @@ public class OSMRouting {
 					
 					NodeInfo toNodeInfo = nodeHashMap.get(toNodeId);
 					
-					if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
-						continue;
+					// if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
+					// 	continue;
 					nodeStack.push(toNodeInfo);
 					
-					toNodeInfo.setVisited();
+					// toNodeInfo.setVisited();
 					
 					String nodeIdKey = nodeId + "," + toNodeId;
 					EdgeInfo edge = nodesToEdge.get(nodeIdKey);
@@ -463,12 +463,12 @@ public class OSMRouting {
 				
 				NodeInfo toNodeInfo = nodeHashMap.get(toNodeId);
 				
-				if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
-					continue;
+				// if(toNodeInfo.isVisited())	// if the node is visited, we bypass it
+				// 	continue;
 				
 				nodeStack.push(toNodeInfo);
 
-				toNodeInfo.setVisited();
+				// toNodeInfo.setVisited();
 				
 				int travelTime;
 				if(toNode.isFix())	// fix time
