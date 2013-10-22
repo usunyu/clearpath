@@ -60,6 +60,7 @@ public class OSMRouting {
 
 	public static void main(String[] args) {
 		OSMInput.paramConfig(OSMMain.osm);
+		OSMOutput.paramConfig(OSMMain.osm);
 		OSMInput.buildAdjList(adjListHashMap);
 		OSMInput.readNodeFile(nodeHashMap);
 		OSMInput.readEdgeFile(edgeHashMap, nodesToEdge);
@@ -68,8 +69,6 @@ public class OSMRouting {
 		prepareRoute();
 		//tdsp(START_NODE, END_NODE, START_TIME);
 		tdspHierarchy(START_NODE, END_NODE, START_TIME);
-		
-		OSMOutput.paramConfig(OSMMain.osm);
 		OSMOutput.generatePathKML(nodeHashMap, pathNodeList);
 	}
 	
@@ -195,7 +194,7 @@ public class OSMRouting {
 		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode, true);
 		
 		// test
-		OSMOutput.generateEntranceExitKML(startNode, endNode, entranceMap, nodeHashMap, exitMap);
+		//OSMOutput.generateEntranceExitKML(startNode, endNode, entranceMap, exitMap, nodeHashMap);
 		
 		int cost = Integer.MAX_VALUE;
 		long finalEntrance = -1;
