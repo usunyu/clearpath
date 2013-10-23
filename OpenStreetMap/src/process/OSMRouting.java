@@ -68,8 +68,18 @@ public class OSMRouting {
 		
 		initialHierarchy();
 		prepareRoute(nodeHashMap);
+		
+		long begintime = System.currentTimeMillis();
+		
 		//tdsp(START_NODE, END_NODE, START_TIME);
+		
 		tdspHierarchy(START_NODE, END_NODE, START_TIME);
+		
+		long endtime = System.currentTimeMillis();
+		
+		long costTime = (endtime - begintime);
+		System.out.println("tdsp cost: " + costTime);
+		
 		OSMOutput.generatePathKML(nodeHashMap, pathNodeList);
 		OSMOutput.generatePathNodeKML(nodeHashMap, pathNodeList);
 	}
