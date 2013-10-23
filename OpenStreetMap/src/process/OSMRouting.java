@@ -60,26 +60,25 @@ public class OSMRouting {
 	static ArrayList<Long> pathNodeList = new ArrayList<Long>();
 
 	public static void main(String[] args) {
+		// config
 		OSMInput.paramConfig(OSMMain.osm);
 		OSMOutput.paramConfig(OSMMain.osm);
+		// input
 		OSMInput.buildAdjList(adjListHashMap, adjReverseListHashMap);
 		OSMInput.readNodeFile(nodeHashMap);
 		OSMInput.readEdgeFile(edgeHashMap, nodesToEdge);
-		
+		// initial hierarchy level
 		initialHierarchy();
 		prepareRoute(nodeHashMap);
-		
+		// count time
 		long begintime = System.nanoTime();
-		
 		//tdsp(START_NODE, END_NODE, START_TIME);
-		
 		tdspHierarchy(START_NODE, END_NODE, START_TIME);
-		
 		long endtime = System.nanoTime();
-		
 		long costTime = (endtime - begintime)/1000;
 		System.out.println("tdsp cost: " + costTime);
 		
+		// output
 		OSMOutput.generatePathKML(nodeHashMap, pathNodeList);
 		OSMOutput.generatePathNodeKML(nodeHashMap, pathNodeList);
 	}
