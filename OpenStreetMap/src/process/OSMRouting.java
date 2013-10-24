@@ -11,8 +11,8 @@ public class OSMRouting {
 	/**
 	 * @param param
 	 */
-	static long START_NODE 		= 186956385;
-	static long END_NODE 		= 186186475;
+	static long START_NODE 		= 1233417207;
+	static long END_NODE 		= 34382151;
 	static int START_TIME 		= 10;
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
@@ -38,6 +38,7 @@ public class OSMRouting {
 	static String ROAD			= "road";
 	static String ABANDONED		= "abandoned";
 	static String SCALE			= "scale";
+	static String TURNING_CIRCLE= "turning_circle";
 	static String UNCLASSIFIED	= "unclassified";
 	/**
 	 * @param node
@@ -68,7 +69,7 @@ public class OSMRouting {
 		OSMInput.readNodeFile(nodeHashMap);
 		OSMInput.readEdgeFile(edgeHashMap, nodesToEdge);
 		// test
-		OSMOutput.generateHighwayKML(edgeHashMap, nodeHashMap);
+		//OSMOutput.generateHighwayKML(edgeHashMap, nodeHashMap);
 		// initial hierarchy level
 		initialHierarchy();
 		prepareRoute(nodeHashMap);
@@ -98,6 +99,7 @@ public class OSMRouting {
 		hierarchyHashMap.put(TERTIARY_LINK, 4);
 		hierarchyHashMap.put(RESIDENTIAL, 5);
 		hierarchyHashMap.put(CYCLEWAY, 5);
+		hierarchyHashMap.put(TURNING_CIRCLE, 5);
 		hierarchyHashMap.put(PATH, 6);
 		hierarchyHashMap.put(TRACK, 6);
 		hierarchyHashMap.put(CONSTRUCTION, 6);
@@ -124,89 +126,95 @@ public class OSMRouting {
 	public static HashMap<Long, HighwayEntrance> searchHighwayExit(long endNode) {
 		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 		HashMap<Long, HighwayEntrance> highwayExitMap = new HashMap<Long, HighwayEntrance>();
-		
 		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
 			public int compare(NodeInfo n1, NodeInfo n2) {
 				return n1.getCost() - n2.getCost();
 			}
 		});
-		
-		NodeInfo current = nodeHashMap.get(endNode);	// get start node
-		nodeStack.push(current);
-		if(current == null) {
-			System.err.println("cannot find start node, program exit!");
-			System.exit(-1);
-		}
-		
-		current.setCost(0);	// set start cost to 0
-		
-		priorityQ.offer(current);
-		
-		// find four exit
-		while ((current = priorityQ.poll()) != null && highwayExitMap.size() < 4) {
-			long nodeId = current.getNodeId();
+		int debug = 0;
+		try {
+			NodeInfo current = nodeHashMap.get(endNode);	// get start node
+			nodeStack.push(current);
+			if(current == null) {
+				System.err.println("cannot find start node, program exit!");
+				System.exit(-1);
+			}
 			
-			ArrayList<ToNodeInfo> adjNodeList = adjReverseListHashMap.get(nodeId);
-			if(adjNodeList == null)
-				continue;
+			current.setCost(0);	// set start cost to 0
 			
-			int arrTime = current.getCost();
+			priorityQ.offer(current);
 			
-			for(ToNodeInfo fromNode : adjNodeList) {
-				long fromNodeId = fromNode.getNodeId();
-				
-				NodeInfo fromNodeInfo = nodeHashMap.get(fromNodeId);
-				
-				// if(fromNodeInfo.isVisited())	// if the node is visited, we bypass it
-				// 	continue;
-				
-				nodeStack.push(fromNodeInfo);
+			// find four exit
+			while ((current = priorityQ.poll()) != null && highwayExitMap.size() < 4) {
+				debug++;
 
-				// fromNodeInfo.setVisited();
+				long nodeId = current.getNodeId();
 				
-				String nodeIdKey = fromNodeId + "," + nodeId;
-				EdgeInfo edge = nodesToEdge.get(nodeIdKey);
-				
-				String highway = edge.getHighway();
-				int hierarchy = hierarchyHashMap.get(highway);
-				if(hierarchy == 1) {	// find one highway exit
-					ArrayList<Long> path = new ArrayList<Long>();
-					NodeInfo entrance = current;
-					path.add(entrance.getNodeId());
-					while(entrance.getParentId() != -1) {
-						entrance = nodeHashMap.get(entrance.getParentId());
-						if(entrance == null) {
-							System.err.println("cannot find intermediate node, program exit!");
-							System.exit(-1);
-						}
-						path.add(entrance.getNodeId());	// add intermediate node
-					}
-
-					HighwayEntrance highwayExit = new HighwayEntrance(nodeId);
-					highwayExit.setLocalToHighPath(path);
-					highwayExitMap.put(nodeId, highwayExit);
+				ArrayList<ToNodeInfo> adjNodeList = adjReverseListHashMap.get(nodeId);
+				if(adjNodeList == null)
 					continue;
-				}
 				
-				int travelTime;
-				if(fromNode.isFix())	// fix time
-					travelTime = fromNode.getTravelTime();
-				else	// fetch from time array
-					travelTime = fromNode.getTravelTimeArray()[30];	// use mid value
+				int arrTime = current.getCost();
 				
-				// if we find a node with updated distance, just insert it to the priority queue
-				// even we pop out another node with same id later, we know that it was visited and will ignore it
-				int totalTime = arrTime + travelTime;
-				if (totalTime < fromNodeInfo.getCost()) {
-					fromNodeInfo.setCost(totalTime);
-					fromNodeInfo.setParentId(nodeId);
-					priorityQ.offer(fromNodeInfo);
+				for(ToNodeInfo fromNode : adjNodeList) {
+					long fromNodeId = fromNode.getNodeId();
+					
+					NodeInfo fromNodeInfo = nodeHashMap.get(fromNodeId);
+					
+					// if(fromNodeInfo.isVisited())	// if the node is visited, we bypass it
+					// 	continue;
+					
+					nodeStack.push(fromNodeInfo);
+
+					// fromNodeInfo.setVisited();
+					
+					String nodeIdKey = fromNodeId + "," + nodeId;
+					EdgeInfo edge = nodesToEdge.get(nodeIdKey);
+					
+					String highway = edge.getHighway();
+					int hierarchy = hierarchyHashMap.get(highway);
+					if(hierarchy == 1) {	// find one highway exit
+						ArrayList<Long> path = new ArrayList<Long>();
+						NodeInfo entrance = current;
+						path.add(entrance.getNodeId());
+						while(entrance.getParentId() != -1) {
+							entrance = nodeHashMap.get(entrance.getParentId());
+							if(entrance == null) {
+								System.err.println("cannot find intermediate node, program exit!");
+								System.exit(-1);
+							}
+							path.add(entrance.getNodeId());	// add intermediate node
+						}
+
+						HighwayEntrance highwayExit = new HighwayEntrance(nodeId);
+						highwayExit.setLocalToHighPath(path);
+						highwayExitMap.put(nodeId, highwayExit);
+						continue;
+					}
+					
+					int travelTime;
+					if(fromNode.isFix())	// fix time
+						travelTime = fromNode.getTravelTime();
+					else	// fetch from time array
+						travelTime = fromNode.getTravelTimeArray()[30];	// use mid value
+					
+					// if we find a node with updated distance, just insert it to the priority queue
+					// even we pop out another node with same id later, we know that it was visited and will ignore it
+					int totalTime = arrTime + travelTime;
+					if (totalTime < fromNodeInfo.getCost()) {
+						fromNodeInfo.setCost(totalTime);
+						fromNodeInfo.setParentId(nodeId);
+						priorityQ.offer(fromNodeInfo);
+					}
 				}
 			}
+			
+			prepareRoute(nodeStack);
 		}
-		
-		prepareRoute(nodeStack);
-		
+		catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("searchHighwayExit: debug code " + debug);
+		}
 		return highwayExitMap;
 	}
 	

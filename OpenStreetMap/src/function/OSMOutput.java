@@ -62,6 +62,7 @@ public class OSMOutput {
 	static String CONSTRUCTION	= "construction";
 	static String ABANDONED		= "abandoned";
 	static String SCALE			= "scale";
+	static String TURNING_CIRCLE= "turning_circle";
 	static String UNCLASSIFIED	= "unclassified";
 	/**
 	 * @param const
@@ -269,7 +270,8 @@ public class OSMOutput {
 					if (edgeInfo.getHighway().equals(MOTORWAY_LINK) || edgeInfo.getHighway().equals(TRUNK_LINK) ) {
 						speed = (double) 55 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals(RESIDENTIAL) || edgeInfo.getHighway().equals(CYCLEWAY)) {
+					if (edgeInfo.getHighway().equals(RESIDENTIAL) || edgeInfo.getHighway().equals(CYCLEWAY) ||
+							edgeInfo.getHighway().equals(TURNING_CIRCLE)) {
 						speed = (double) 10 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
