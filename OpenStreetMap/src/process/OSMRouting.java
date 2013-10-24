@@ -29,7 +29,6 @@ public class OSMRouting {
 	static String TERTIARY_LINK	= "tertiary_link";
 	static String RESIDENTIAL	= "residential";
 	static String CYCLEWAY		= "cycleway";
-	static String PATH			= "path";
 	static String TRACK			= "track";
 	static String TRUNK			= "trunk";
 	static String TRUNK_LINK	= "trunk_link";
@@ -100,7 +99,6 @@ public class OSMRouting {
 		hierarchyHashMap.put(RESIDENTIAL, 5);
 		hierarchyHashMap.put(CYCLEWAY, 5);
 		hierarchyHashMap.put(TURNING_CIRCLE, 5);
-		hierarchyHashMap.put(PATH, 6);
 		hierarchyHashMap.put(TRACK, 6);
 		hierarchyHashMap.put(CONSTRUCTION, 6);
 		hierarchyHashMap.put(PROPOSED, 6);

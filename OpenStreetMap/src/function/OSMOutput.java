@@ -55,7 +55,6 @@ public class OSMOutput {
 	static String TERTIARY_LINK	= "tertiary_link";
 	static String RESIDENTIAL	= "residential";
 	static String CYCLEWAY		= "cycleway";
-	static String PATH			= "path";
 	static String TRACK			= "track";
 	static String ROAD			= "road";
 	static String PROPOSED		= "proposed";
@@ -276,10 +275,9 @@ public class OSMOutput {
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals(UNKNOWN_HIGHWAY) || edgeInfo.getHighway().equals(UNCLASSIFIED) || 
-							edgeInfo.getHighway().equals(PATH) || edgeInfo.getHighway().equals(TRACK) || 
-							edgeInfo.getHighway().equals(CONSTRUCTION) || edgeInfo.getHighway().equals(PROPOSED) ||
-							edgeInfo.getHighway().equals(ROAD) || edgeInfo.getHighway().equals(ABANDONED) ||
-							edgeInfo.getHighway().equals(SCALE)) {
+							edgeInfo.getHighway().equals(TRACK) || edgeInfo.getHighway().equals(CONSTRUCTION) || 
+							edgeInfo.getHighway().equals(PROPOSED) || edgeInfo.getHighway().equals(ROAD) || 
+							edgeInfo.getHighway().equals(ABANDONED) || edgeInfo.getHighway().equals(SCALE)) {
 						speed = (double) 5 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
