@@ -68,6 +68,7 @@ public class OSMOutput {
 	 */
 	static int FEET_PER_MILE	= 5280;
 	static int SECOND_PER_HOUR	= 3600;
+	static int MILLI_PER_SECOND	= 1000;
 	
 	public static void paramConfig(String name) {
 		osmFile 		= name + ".osm";
@@ -301,7 +302,7 @@ public class OSMOutput {
 						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 
-					travelTime = (int) Math.round(edgeInfo.getDistance() / speed);
+					travelTime = (int) Math.round(edgeInfo.getDistance() / speed * MILLI_PER_SECOND);
 					if (travelTime == 0) {
 						travelTime = 1;
 					}
