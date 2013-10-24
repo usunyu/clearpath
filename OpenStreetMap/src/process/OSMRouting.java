@@ -91,11 +91,12 @@ public class OSMRouting {
 		hierarchyHashMap.put(TRUNK, 1);
 		hierarchyHashMap.put(TRUNK_LINK, 1);
 		hierarchyHashMap.put(PRIMARY, 2);
-		hierarchyHashMap.put(PRIMARY_LINK, 2);
+		// link can be use to connect the highway
+		hierarchyHashMap.put(PRIMARY_LINK, 1);
 		hierarchyHashMap.put(SECONDARY, 3);
-		hierarchyHashMap.put(SECONDARY_LINK, 3);
+		hierarchyHashMap.put(SECONDARY_LINK, 1);
 		hierarchyHashMap.put(TERTIARY, 4);
-		hierarchyHashMap.put(TERTIARY_LINK, 4);
+		hierarchyHashMap.put(TERTIARY_LINK, 1);
 		hierarchyHashMap.put(RESIDENTIAL, 5);
 		hierarchyHashMap.put(CYCLEWAY, 5);
 		hierarchyHashMap.put(TURNING_CIRCLE, 5);
