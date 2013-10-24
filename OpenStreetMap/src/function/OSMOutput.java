@@ -24,6 +24,7 @@ public class OSMOutput {
 	// test
 	static String entranceExitFile;
 	static String pathNodeKMLFile;
+	static String highwayKMLFile;
 	/**
 	 * @param csv
 	 */
@@ -83,6 +84,7 @@ public class OSMOutput {
 		// test
 		entranceExitFile= name + "_entrance_exit.kml";
 		pathNodeKMLFile	= name + "_path_node.kml";
+		highwayKMLFile	= name + "_highway.kml";
 	}
 	
 	public static void generateEntranceExitKML(long start, long end, HashMap<Long, HighwayEntrance> entranceMap, HashMap<Long, HighwayEntrance> exitMap, HashMap<Long, NodeInfo> nodeHashMap) {
@@ -462,6 +464,67 @@ public class OSMOutput {
 			System.err.println("generateWayKML: debug code: " + debug);
 		}
 		System.out.println("generate way kml finish!");
+	}
+	
+	/**
+	 * generate highway kml
+	 * @param edgeHashMap
+	 * @param nodeHashMap
+	 */
+	public static void generateHighwayKML(HashMap<Long, EdgeInfo> edgeHashMap, HashMap<Long, NodeInfo> nodeHashMap) {
+		System.out.println("generate highway kml...");
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + highwayKMLFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+
+			for(EdgeInfo edgeInfo : edgeHashMap.values()) {
+				debug++;
+				long wayId = edgeInfo.getWayId();
+				String name = edgeInfo.getName();
+				String highway = edgeInfo.getHighway();
+				
+				if(!highway.equals(MOTORWAY) && !highway.equals(MOTORWAY_LINK)) {
+					continue;
+				}
+				
+				long start = edgeInfo.getStartNode();
+				long end = edgeInfo.getEndNode();
+				
+				String kmlStr = "<Placemark><name>Way:" + wayId + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "start:" + start + LINEEND;
+				kmlStr += "end:" + end + LINEEND;
+				if(name.contains("&"))
+					name = name.replaceAll("&", "and");
+				kmlStr += "name:" + name + LINEEND;
+				kmlStr += "highway:" + highway + LINEEND;
+				kmlStr += "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				
+				NodeInfo node1 = nodeHashMap.get(start);
+				LocationInfo location1 = node1.getLocation();
+				kmlStr += location1.getLongitude() + "," + location1.getLatitude() + ",0 ";
+				
+				NodeInfo node2 = nodeHashMap.get(end);
+				LocationInfo location2 = node2.getLocation();
+				kmlStr += location2.getLongitude() + "," + location2.getLatitude() + ",0 ";
+				
+				kmlStr += "</coordinates></LineString>";
+				kmlStr += "<Style><LineStyle>";
+				kmlStr += "<width>3</width>";
+				kmlStr += "</LineStyle></Style></Placemark>\n";
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("generateHighwayKML: debug code: " + debug);
+		}
+		System.out.println("generate highway kml finish!");
 	}
 	
 	/**
