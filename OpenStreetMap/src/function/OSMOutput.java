@@ -513,7 +513,7 @@ public class OSMOutput {
 				
 				kmlStr += "</coordinates></LineString>";
 				kmlStr += "<Style><LineStyle>";
-				kmlStr += "<width>3</width>";
+				kmlStr += "<width>1</width>";
 				kmlStr += "</LineStyle></Style></Placemark>\n";
 				out.write(kmlStr);
 			}
