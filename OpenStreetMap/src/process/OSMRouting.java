@@ -88,6 +88,8 @@ public class OSMRouting {
 	public static void initialHierarchy() {
 		hierarchyHashMap.put(MOTORWAY, 1);
 		hierarchyHashMap.put(MOTORWAY_LINK, 1);
+		hierarchyHashMap.put(TRUNK, 1);
+		hierarchyHashMap.put(TRUNK_LINK, 1);
 		hierarchyHashMap.put(PRIMARY, 2);
 		hierarchyHashMap.put(PRIMARY_LINK, 2);
 		hierarchyHashMap.put(SECONDARY, 3);
@@ -98,8 +100,6 @@ public class OSMRouting {
 		hierarchyHashMap.put(CYCLEWAY, 5);
 		hierarchyHashMap.put(PATH, 6);
 		hierarchyHashMap.put(TRACK, 6);
-		hierarchyHashMap.put(TRUNK, 6);
-		hierarchyHashMap.put(TRUNK_LINK, 6);
 		hierarchyHashMap.put(CONSTRUCTION, 6);
 		hierarchyHashMap.put(PROPOSED, 6);
 		hierarchyHashMap.put(ROAD, 6);

@@ -45,6 +45,8 @@ public class OSMOutput {
 	 */
 	static String MOTORWAY		= "motorway";
 	static String MOTORWAY_LINK	= "motorway_link";
+	static String TRUNK			= "trunk";
+	static String TRUNK_LINK	= "trunk_link";
 	static String PRIMARY		= "primary";
 	static String PRIMARY_LINK	= "primary_link";
 	static String SECONDARY		= "secondary";
@@ -55,8 +57,6 @@ public class OSMOutput {
 	static String CYCLEWAY		= "cycleway";
 	static String PATH			= "path";
 	static String TRACK			= "track";
-	static String TRUNK			= "trunk";
-	static String TRUNK_LINK	= "trunk_link";
 	static String ROAD			= "road";
 	static String PROPOSED		= "proposed";
 	static String CONSTRUCTION	= "construction";
@@ -262,10 +262,10 @@ public class OSMOutput {
 					// feet/second
 					double speed = 1;
 					boolean isFix = false;
-					if (edgeInfo.getHighway().equals(MOTORWAY)) {
+					if (edgeInfo.getHighway().equals(MOTORWAY) || edgeInfo.getHighway().equals(TRUNK)) {
 						speed = (double) 60 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals(MOTORWAY_LINK)) {
+					if (edgeInfo.getHighway().equals(MOTORWAY_LINK) || edgeInfo.getHighway().equals(TRUNK_LINK) ) {
 						speed = (double) 55 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals(RESIDENTIAL) || edgeInfo.getHighway().equals(CYCLEWAY)) {
@@ -274,8 +274,7 @@ public class OSMOutput {
 					}
 					if (edgeInfo.getHighway().equals(UNKNOWN_HIGHWAY) || edgeInfo.getHighway().equals(UNCLASSIFIED) || 
 							edgeInfo.getHighway().equals(PATH) || edgeInfo.getHighway().equals(TRACK) || 
-							edgeInfo.getHighway().equals(CONSTRUCTION) || edgeInfo.getHighway().equals(TRUNK) ||
-							edgeInfo.getHighway().equals(PROPOSED) || edgeInfo.getHighway().equals(TRUNK_LINK) ||
+							edgeInfo.getHighway().equals(CONSTRUCTION) || edgeInfo.getHighway().equals(PROPOSED) ||
 							edgeInfo.getHighway().equals(ROAD) || edgeInfo.getHighway().equals(ABANDONED) ||
 							edgeInfo.getHighway().equals(SCALE)) {
 						speed = (double) 5 * FEET_PER_MILE / (SECOND_PER_HOUR);
@@ -485,7 +484,8 @@ public class OSMOutput {
 				String name = edgeInfo.getName();
 				String highway = edgeInfo.getHighway();
 				
-				if(!highway.equals(MOTORWAY) && !highway.equals(MOTORWAY_LINK)) {
+				if(!highway.equals(MOTORWAY) && !highway.equals(MOTORWAY_LINK) && 
+						!highway.equals(TRUNK) && !highway.equals(TRUNK_LINK)) {
 					continue;
 				}
 				
