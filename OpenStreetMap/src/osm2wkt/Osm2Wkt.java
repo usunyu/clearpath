@@ -87,6 +87,8 @@ public class Osm2Wkt {
 	private final static String XML_V_SERVICE 	= "service";
 	private final static String XML_V_PEDESTRIAN = "pedestrian";
 	private final static String XML_K_BUILDING 	= "building";
+	private final static String XML_V_PATH 		= "path";
+	private final static String XML_V_BRIDLEWAY	= "bridleway";
 	private final static String XML_V_YES 		= "yes";
 	private final static String XML_K_LANDUSE 	= "landuse";
 	private final static String XML_V_GRASS 	= "grass";
@@ -249,7 +251,8 @@ public class Osm2Wkt {
 						}
 						// any kind of streets can be eliminated should be added here 
 						if(kAttr.equals(XML_K_HIGHWAY)) {
-							if(vAttr.equals(XML_V_FOOTWAY) || vAttr.equals(XML_V_STEPS) || vAttr.equals(XML_V_PEDESTRIAN)) {
+							if(vAttr.equals(XML_V_FOOTWAY) || vAttr.equals(XML_V_STEPS) || vAttr.equals(XML_V_PEDESTRIAN) ||
+									vAttr.equals(XML_V_PATH) || vAttr.equals(vAttr.equals(XML_V_BRIDLEWAY))) {
 								eliminate = true;
 							}
 							// we eliminate all the service type first for simple
