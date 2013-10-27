@@ -13,6 +13,7 @@ public class RDFI110KMLGeneration {
 	 */
 	static String root 				= "file";
 	static String I110KMLFile 		= "RDF_I110.kml";
+	static String I110NodeKMLFile 	= "RDF_I110_Node.kml";
 	/**
 	 * @param const
 	 */
@@ -29,6 +30,7 @@ public class RDFI110KMLGeneration {
 	 * @param node
 	 */
 	static HashMap<Long, RDFNodeInfo> nodeMap = new HashMap<Long, RDFNodeInfo>();
+	static HashSet<Long> I110NodeSet = new HashSet<Long>();
 	
 	public static void main(String[] args) {
 		// read node
@@ -40,6 +42,39 @@ public class RDFI110KMLGeneration {
 		RDFInput.readLinkLane(linkMap);
 		
 		generateLinkKML();
+		generateNodeKML();
+	}
+	
+	private static void generateNodeKML() {
+		System.out.println("generate node kml...");
+		try {
+			FileWriter fstream = new FileWriter(root + "/" + I110NodeKMLFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			
+			for(long nodeId : I110NodeSet) {
+				RDFNodeInfo node = nodeMap.get(nodeId);
+				LocationInfo location = node.getLocation();
+				double lati = location.getLatitude();
+				double longi = location.getLongitude();
+				int zLevel = location.getZLevel();
+				
+				String kmlStr = "<Placemark><name>" + nodeId + "</name>";
+				kmlStr += "<description>";
+				kmlStr += "ZLevel: " + zLevel;
+				kmlStr += "</description>";
+				kmlStr += "<Point><coordinates>";
+				kmlStr +=  longi + SEPARATION + lati +  SEPARATION + zLevel;
+				kmlStr += "</coordinates></Point></Placemark>";
+				
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("generate node kml finish!");
 	}
 	
 	private static void generateLinkKML() {
@@ -67,6 +102,13 @@ public class RDFI110KMLGeneration {
 				
 				if(!baseName.equals("I-110")) {
 					continue;
+				}
+				
+				if(!I110NodeSet.contains(refNodeId)) {
+					I110NodeSet.add(refNodeId);
+				}
+				if(!I110NodeSet.contains(nonRefNodeId)) {
+					I110NodeSet.add(nonRefNodeId);
 				}
 				
 				String laneStr = null;

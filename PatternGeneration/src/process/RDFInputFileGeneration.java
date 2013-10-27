@@ -1,4 +1,4 @@
-package input;
+package process;
 
 import java.util.*;
 
@@ -109,7 +109,4 @@ public class RDFInputFileGeneration {
 		RDFOutput.writeLinkLaneFile(linkMap);
 	}
 }
-
-
-
 

@@ -1,4 +1,4 @@
-package output;
+package process;
 
 import java.util.*;
 
@@ -19,6 +19,10 @@ public class RDFOutputKMLGeneration {
 	 */
 	static HashMap<Integer, SensorInfo> matchSensorMap = new HashMap<Integer, SensorInfo>();
 	static HashMap<Integer, SensorInfo> sensorMap = new HashMap<Integer, SensorInfo>();
+	/**
+	 * @param carpool
+	 */
+	static HashSet<Long> carpoolSet = new HashSet<Long>();
 	
 	public static void main(String[] args) {
 		
