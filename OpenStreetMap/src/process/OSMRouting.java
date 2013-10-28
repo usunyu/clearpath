@@ -74,8 +74,8 @@ public class OSMRouting {
 		prepareRoute(nodeHashMap);
 		// count time
 		long begintime = System.currentTimeMillis();
-		tdsp(START_NODE, END_NODE, START_TIME);
-		//tdspHierarchy(START_NODE, END_NODE, START_TIME);
+		//tdsp(START_NODE, END_NODE, START_TIME);
+		tdspHierarchy(START_NODE, END_NODE, START_TIME);
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("tdsp cost: " + costTime + " ms");
@@ -415,7 +415,8 @@ public class OSMRouting {
 			if(exitNodeList.size() > 0) {
 				for(NodeInfo exit : exitNodeList) {
 					long exitId = exit.getNodeId();
-					int newCost = exit.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
+					NodeInfo cur = exit;
+					int newCost = cur.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
 					
 					if(newCost < cost) {	// find less cost path
 						cost = newCost;
@@ -425,13 +426,13 @@ public class OSMRouting {
 						}
 						else {
 							pathNodeList.add(exitId);
-							while(current.getParentId() != -1) {
-								current = nodeHashMap.get(current.getParentId());
-								if(current == null) {
+							while(cur.getParentId() != -1) {
+								cur = nodeHashMap.get(cur.getParentId());
+								if(cur == null) {
 									System.err.println("cannot find intermediate node, program exit!");
 									System.exit(-1);
 								}
-								pathNodeList.add(current.getNodeId());	// add intermediate node
+								pathNodeList.add(cur.getNodeId());	// add intermediate node
 							}
 							Collections.reverse(pathNodeList);
 						}
