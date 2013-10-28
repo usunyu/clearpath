@@ -14,7 +14,7 @@ public class OSMRouting {
 	static long START_NODE 		= 187143552;
 	static long END_NODE 		= 699922975;
 	static int START_TIME 		= 10;
-	static int TIME_INTERVAL 	= 15;
+	static int TIME_INTERVAL 		= 15;
 	static int TIME_RANGE 		= 60;
 	/**
 	 * @param osm

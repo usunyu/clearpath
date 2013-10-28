@@ -18,5 +18,4 @@ public class RDFMain {
 		System.out.println("Step4: RDFAdjListPattern...\n");
 		RDFAdjListPattern.main(args);
 	}
-
 }

@@ -218,6 +218,8 @@ public class RDFLinkInfo {
 	public boolean isCarpool() {
 		if(manualCarpool)
 			return true;
+		if(functionalClass != 1 && functionalClass != 2)
+			return false;
 		if(laneList == null)
 			return false;
 		for(RDFLaneInfo lane : laneList) {
