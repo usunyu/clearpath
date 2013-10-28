@@ -74,8 +74,8 @@ public class OSMRouting {
 		prepareRoute(nodeHashMap);
 		// count time
 		long begintime = System.currentTimeMillis();
-		//tdsp(START_NODE, END_NODE, START_TIME);
-		tdspHierarchy(START_NODE, END_NODE, START_TIME);
+		tdsp(START_NODE, END_NODE, START_TIME);
+		//tdspHierarchy(START_NODE, END_NODE, START_TIME);
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("tdsp cost: " + costTime + " ms");
