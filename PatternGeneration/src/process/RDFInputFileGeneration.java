@@ -1,20 +1,9 @@
 package process;
 
-import java.util.*;
-
-import objects.*;
+import data.*;
 import function.*;
 
 public class RDFInputFileGeneration {
-
-	/**
-	 * @param node
-	 */
-	static HashMap<Long, RDFNodeInfo> nodeMap = new HashMap<Long, RDFNodeInfo>();
-	/**
-	 * @param link
-	 */
-	static HashMap<Long, RDFLinkInfo> linkMap = new HashMap<Long, RDFLinkInfo>();
 	
 	public static void main(String[] args) {
 		//fetchNode();
@@ -58,55 +47,60 @@ public class RDFInputFileGeneration {
 		/**
 		 * Step 1) fetch linkId and nodeId by area(lat, lon)
 		 */
-		RDFInput.fetchLinkNodeIdByArea(linkMap, nodeMap);
+		RDFInput.fetchLinkNodeIdByArea(RDFData.linkMap, RDFData.nodeMap);
 		/**
 		 * Step 2) fetch node lat, lon and zlevel
 		 */
-		RDFInput.fetchNodeInfoById(nodeMap);
+		RDFInput.fetchNodeInfoById(RDFData.nodeMap);
 		/**
 		 * Step 3) fetch link info
 		 */
-		RDFInput.fetchLinkInfoById(linkMap);
+		RDFInput.fetchLinkInfoById(RDFData.linkMap);
 		/**
 		 * Step 4) eliminate non-nav link
 		 */
-		RDFInput.eliminateNonNavLink(linkMap);
+		RDFInput.eliminateNonNavLink(RDFData.linkMap);
 		/**
 		 * Step 5) eliminate unrelated node
 		 */
-		RDFInput.eliminateUnrelatedNode(linkMap, nodeMap);
+		RDFInput.eliminateUnrelatedNode(RDFData.linkMap, RDFData.nodeMap);
 		/**
 		 * Step 6) fetch link road name
 		 */
-		RDFInput.fetchLinkRoadById(linkMap);
+		RDFInput.fetchLinkRoadById(RDFData.linkMap);
 		/**
 		 * Step 7) write node to file
 		 */
-		RDFOutput.writeNodeFile(nodeMap);
+		RDFOutput.writeNodeFile(RDFData.nodeMap);
 		/**
 		 * Step 8) write link to file
 		 */
-		RDFOutput.writeLinkFile(linkMap);
+		RDFOutput.writeLinkFile(RDFData.linkMap);
 		/**
 		 * Step 9) write street name
 		 */
-		RDFOutput.writeStreetName(linkMap);
+		RDFOutput.writeStreetName(RDFData.linkMap);
 		/**
 		 * Step 10) fetch link geometry points
 		 */
-		RDFInput.fetchLinkGeometryById(linkMap);
+		RDFInput.fetchLinkGeometryById(RDFData.linkMap);
 		/**
 		 * Step 11) write link geometry points
 		 */
-		RDFOutput.writeLinkGeometry(linkMap);
+		RDFOutput.writeLinkGeometry(RDFData.linkMap);
 		/**
 		 * Step 12) fetch lane information
 		 */
-		RDFInput.fetchLaneInfoByLink(linkMap);
+		RDFInput.fetchLaneInfoByLink(RDFData.linkMap);
 		/**
 		 * Step 13) write lane information
 		 */
-		RDFOutput.writeLinkLaneFile(linkMap);
+		RDFOutput.writeLinkLaneFile(RDFData.linkMap);
+		/**
+		 * Step 14) mark manual carpool
+		 */
+		RDFInput.addManualCarpool();
+		RDFInput.markManualCarpool(RDFData.linkMap);
 	}
 }
 

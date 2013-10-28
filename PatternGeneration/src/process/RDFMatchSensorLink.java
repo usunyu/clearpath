@@ -2,6 +2,7 @@ package process;
 
 import java.util.*;
 
+import data.*;
 import objects.*;
 import function.*;
 
@@ -19,50 +20,40 @@ public class RDFMatchSensorLink {
 	 * @param const
 	 */
 	static String SEPARATION		= ",";
-	/**
-	 * @param link
-	 */
-	static HashMap<Long, RDFLinkInfo> linkMap = new HashMap<Long, RDFLinkInfo>();
-	/**
-	 * @param node
-	 */
-	static HashMap<Long, RDFNodeInfo> nodeMap = new HashMap<Long, RDFNodeInfo>();
-	/**
-	 * @param connect
-	 */
-	static HashMap<Long, LinkedList<Long>> adjNodeList = new HashMap<Long, LinkedList<Long>>();
-	// two nodes decide one link
-	static HashMap<String, RDFLinkInfo> nodeToLink = new HashMap<String, RDFLinkInfo>();
-	/**
-	 * @param sensor
-	 */
-	static LinkedList<SensorInfo> sensorList = new LinkedList<SensorInfo>();
-	static LinkedList<SensorInfo> matchSensorList = new LinkedList<SensorInfo>();
 	
 	public static void main(String[] args) {
-		RDFInput.readNodeFile(nodeMap);
-		RDFInput.readLinkFile(linkMap, nodeMap, adjNodeList, nodeToLink);
-		RDFInput.readLinkGeometry(linkMap);
-		RDFInput.fetchSensor(sensorList);
-		matchLinkSensor();
-		RDFOutput.writeSensorMatch(linkMap);
+		//RDFInput.readNodeFile(RDFData.nodeMap);
+		//RDFInput.readLinkFile(RDFData.linkMap, RDFData.nodeMap, RDFData.adjNodeList, RDFData.nodeToLink);
+		//RDFInput.readLinkGeometry(RDFData.linkMap);
+		
+		RDFInput.buildNodeAdjList(RDFData.linkMap, RDFData.nodeAdjList);
+		RDFInput.buildNodeToLinkMap(RDFData.linkMap, RDFData.nodeToLinkMap);
+		
+		RDFInput.fetchSensor(RDFData.sensorMatchMap);
+		matchLinkSensor(RDFData.linkMap, RDFData.nodeMap, RDFData.sensorMatchMap, RDFData.nodeAdjList, RDFData.nodeToLinkMap);
+		RDFOutput.writeSensorMatch(RDFData.linkMap);
 	}
 	
-	private static void matchLinkSensor() {
-		HashSet<Integer> matchSensorDuplicate = new HashSet<Integer>();
+	private static void matchLinkSensor(HashMap<Long, RDFLinkInfo> linkMap, HashMap<Long, RDFNodeInfo> nodeMap, 
+			HashMap<Integer, SensorInfo> allSensorMap, HashMap<Long, LinkedList<Long>> nodeAdjList,
+			HashMap<String, RDFLinkInfo> nodeToLinkMap) {
+		HashMap<Integer, SensorInfo> matchSensorMap = new HashMap<Integer, SensorInfo>();
 		// 3 round match algorithm
 		System.out.println("match sensors to links...");
 		// 1) match same direction
-		firstRoundMatch(matchSensorDuplicate);
+		firstRoundMatch(matchSensorMap, linkMap, allSensorMap);
 		// 2) match direction 0 to 3, 1 to 2
-		secondRoundMatch(matchSensorDuplicate);
+		secondRoundMatch(matchSensorMap, linkMap, allSensorMap);
 		// 3) match nearest link
 		for (int i = 0; i < thirdRoundTime; i++)
-			thirdRoundMatch(matchSensorDuplicate);
+			thirdRoundMatch(matchSensorMap, linkMap, nodeMap, nodeAdjList, nodeToLinkMap);
+		// override, store in data share
+		RDFData.sensorMatchMap = matchSensorMap;
 		System.out.println("match Sensors finish!");
 	}
 	
-	private static void firstRoundMatch(HashSet<Integer> matchSensorDuplicate) {
+	private static void firstRoundMatch(HashMap<Integer, SensorInfo> matchSensorMap, HashMap<Long, RDFLinkInfo> linkMap,
+			HashMap<Integer, SensorInfo> allSensorMap) {
 		System.out.println("first round...");
 		int debug = 0;
 		for(long linkId : linkMap.keySet()) {
@@ -76,9 +67,8 @@ public class RDFMatchSensorLink {
 				ListIterator<LocationInfo> pointIterator = pointsList.listIterator();
 				while(pointIterator.hasNext()) {
 					LocationInfo nLoc = pointIterator.next();
-					ListIterator<SensorInfo> sensorIterator = sensorList.listIterator();
-					while(sensorIterator.hasNext()) {
-						SensorInfo sensor = sensorIterator.next();
+					// for every sensor
+					for(SensorInfo sensor : allSensorMap.values()) {
 						LocationInfo sLoc = sensor.getLocation();
 						// same direction
 						LinkedList<Integer> directionList = link.getDirectionList();
@@ -90,9 +80,8 @@ public class RDFMatchSensorLink {
 									// match sensor
 									if (!link.containsSensor(sensor))
 										link.addSensor(sensor);
-									if (!matchSensorDuplicate.contains(sensor.getSensorId())) {
-										matchSensorList.add(sensor);
-										matchSensorDuplicate.add(sensor.getSensorId());
+									if (!matchSensorMap.containsKey(sensor.getSensorId())) {
+										matchSensorMap.put(sensor.getSensorId(), sensor);
 									}
 								}
 							}
@@ -106,7 +95,8 @@ public class RDFMatchSensorLink {
 		System.out.println("first round finish!");
 	}
 	
-	private static void secondRoundMatch(HashSet<Integer> matchSensorDuplicate) {
+	private static void secondRoundMatch(HashMap<Integer, SensorInfo> matchSensorMap, HashMap<Long, RDFLinkInfo> linkMap,
+			HashMap<Integer, SensorInfo> allSensorMap) {
 		System.out.println("second round...");
 		int debug = 0;
 		for(long linkId : linkMap.keySet()) {
@@ -120,9 +110,8 @@ public class RDFMatchSensorLink {
 				ListIterator<LocationInfo> pointIterator = pointsList.listIterator();
 				while(pointIterator.hasNext()) {
 					LocationInfo nLoc = pointIterator.next();
-					ListIterator<SensorInfo> sensorIterator = sensorList.listIterator();
-					while(sensorIterator.hasNext()) {
-						SensorInfo sensor = sensorIterator.next();
+					// for every sensor
+					for(SensorInfo sensor : allSensorMap.values()) {
 						LocationInfo sLoc = sensor.getLocation();
 						// same direction
 						LinkedList<Integer> directionList = link.getDirectionList();
@@ -138,9 +127,8 @@ public class RDFMatchSensorLink {
 									// match sensor
 									if (!link.containsSensor(sensor))
 										link.addSensor(sensor);
-									if (!matchSensorDuplicate.contains(sensor.getSensorId())) {
-										matchSensorList.add(sensor);
-										matchSensorDuplicate.add(sensor.getSensorId());
+									if (!matchSensorMap.containsKey(sensor.getSensorId())) {
+										matchSensorMap.put(sensor.getSensorId(), sensor);
 									}
 								}
 							}
@@ -154,7 +142,8 @@ public class RDFMatchSensorLink {
 		System.out.println("second round finish!");
 	}
 	
-	private static void thirdRoundMatch(HashSet<Integer> matchSensorDuplicate) {
+	private static void thirdRoundMatch(HashMap<Integer, SensorInfo> matchSensorMap, HashMap<Long, RDFLinkInfo> linkMap,
+			HashMap<Long, RDFNodeInfo> nodeMap, HashMap<Long, LinkedList<Long>> nodeAdjList, HashMap<String, RDFLinkInfo> nodeToLinkMap) {
 		System.out.println("third round...");
 		int debug = 0;
 		for(long linkId : linkMap.keySet()) {
@@ -167,14 +156,14 @@ public class RDFMatchSensorLink {
 			if(linkSensorList == null || linkSensorList.size() == 0)
 				continue;
 			long nodeId1 = link.getRefNodeId();
-			LinkedList<Long> adjList1 = adjNodeList.get(nodeId1);
+			LinkedList<Long> adjList1 = nodeAdjList.get(nodeId1);
 			ListIterator<Long> adjIterator1 = adjList1.listIterator();
 			while(adjIterator1.hasNext()) {
 				long nodeId2 = adjIterator1.next();
 				String nodesStr = nodeId1 + SEPARATION + nodeId2;
 				RDFNodeInfo nearNode = nodeMap.get(nodeId2);
-				if (nodeToLink.containsKey(nodesStr)) {
-					RDFLinkInfo nearLink = nodeToLink.get(nodesStr);
+				if (nodeToLinkMap.containsKey(nodesStr)) {
+					RDFLinkInfo nearLink = nodeToLinkMap.get(nodesStr);
 					if (nearLink.getSensorList() == null || nearLink.getSensorList().size() == 0) {
 						// match
 						ListIterator<SensorInfo> sensorIterator = linkSensorList.listIterator();
@@ -193,14 +182,14 @@ public class RDFMatchSensorLink {
 			}
 			
 			long nodeId3 = link.getNonRefNodeId();
-			LinkedList<Long> adjList2 = adjNodeList.get(nodeId3);
+			LinkedList<Long> adjList2 = nodeAdjList.get(nodeId3);
 			ListIterator<Long> adjIterator2 = adjList2.listIterator();
 			while(adjIterator2.hasNext()) {
 				long nodeId4 = adjIterator2.next();
 				String nodesStr = nodeId3 + SEPARATION + nodeId4;
 				RDFNodeInfo nearNode = nodeMap.get(nodeId4);
-				if (nodeToLink.containsKey(nodesStr)) {
-					RDFLinkInfo nearLink = nodeToLink.get(nodesStr);
+				if (nodeToLinkMap.containsKey(nodesStr)) {
+					RDFLinkInfo nearLink = nodeToLinkMap.get(nodesStr);
 					if (nearLink.getSensorList() == null || nearLink.getSensorList().size() == 0) {
 						// match
 						ListIterator<SensorInfo> sensorIterator = linkSensorList.listIterator();

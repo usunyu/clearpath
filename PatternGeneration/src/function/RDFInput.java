@@ -7,6 +7,7 @@ import java.util.*;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
 
+import data.*;
 import objects.*;
 
 public class RDFInput {
@@ -37,9 +38,377 @@ public class RDFInput {
 	 * @param const
 	 */
 	static String SEPARATION		= ",";
-	static String UNKNOWN 			= "Unknown Street";
+	static String UNKNOWN 		= "Unknown Street";
 	static String YES				= "Y";
 	static String NO				= "N";
+	static String TO_REF			= "T";
+	static String FROM_REF		= "F";
+	static String BIDIREC			= "B";
+	
+	/**
+	 * build graph connection : node to link list
+	 * @param linkMap
+	 * @param nodeToLinkMap
+	 */
+	public static void buildNodeToLinkMap(HashMap<Long, RDFLinkInfo> linkMap, HashMap<String, RDFLinkInfo> nodeToLinkMap) {
+		System.out.println("build node to link map...");
+		for(RDFLinkInfo link : linkMap.values()) {
+			long refNode = link.getRefNodeId();
+			long nonRefNode = link.getNonRefNodeId();
+			String travelDir = link.getTravelDirection();
+			
+			// add nodeToLink
+			if(travelDir.equals(TO_REF)) {
+				nodeToLinkMap.put(nonRefNode + SEPARATION + refNode, link);
+			}
+			else if(travelDir.equals(FROM_REF)) {
+				nodeToLinkMap.put(refNode + SEPARATION + nonRefNode, link);
+			}
+			else if(travelDir.equals(BIDIREC)) {
+				nodeToLinkMap.put(nonRefNode + SEPARATION + refNode, link);
+				nodeToLinkMap.put(refNode + SEPARATION + nonRefNode, link);
+			}
+			else {
+				System.err.println("undefine travel direction!");
+			}
+		}
+		System.out.println("build node to link map finish!");
+	}
+	
+	/**
+	 * build graph connection : node adjcent list
+	 * @param linkMap
+	 * @param nodeAdjList
+	 */
+	public static void buildNodeAdjList(HashMap<Long, RDFLinkInfo> linkMap, HashMap<Long, LinkedList<Long>> nodeAdjList) {
+		System.out.println("build node adjcent list...");
+		for(RDFLinkInfo link : linkMap.values()) {
+			long refNode = link.getRefNodeId();
+			long nonRefNode = link.getNonRefNodeId();
+			String travelDir = link.getTravelDirection();
+			if(travelDir.equals(TO_REF)) {	//from nonref to ref
+				if(!nodeAdjList.containsKey(nonRefNode)) {
+					LinkedList<Long> toList = new LinkedList<Long>();
+					toList.add(refNode);
+					nodeAdjList.put(nonRefNode, toList);
+				}
+				else {
+					LinkedList<Long> toList = nodeAdjList.get(nonRefNode);
+					toList.add(refNode);
+				}
+			}
+			else if(travelDir.equals(FROM_REF)) { //from ref to nonref
+				if(!nodeAdjList.containsKey(refNode)) {
+					LinkedList<Long> toList = new LinkedList<Long>();
+					toList.add(nonRefNode);
+					nodeAdjList.put(refNode, toList);
+				}
+				else {
+					LinkedList<Long> toList = nodeAdjList.get(refNode);
+					toList.add(nonRefNode);
+				}
+			}
+			else if(travelDir.equals(BIDIREC)) { // bi-direction
+				if(!nodeAdjList.containsKey(nonRefNode)) {
+					LinkedList<Long> toList = new LinkedList<Long>();
+					toList.add(refNode);
+					nodeAdjList.put(nonRefNode, toList);
+				}
+				else {
+					LinkedList<Long> toList = nodeAdjList.get(nonRefNode);
+					toList.add(refNode);
+				}
+				if(!nodeAdjList.containsKey(refNode)) {
+					LinkedList<Long> toList = new LinkedList<Long>();
+					toList.add(nonRefNode);
+					nodeAdjList.put(refNode, toList);
+				}
+				else {
+					LinkedList<Long> toList = nodeAdjList.get(refNode);
+					toList.add(nonRefNode);
+				}
+			}
+			else {
+				System.err.println("undefine travel direction!");
+			}
+			
+		}
+		System.out.println("build node adjcent list finish!");
+	}
+	
+	/**
+	 * manual write carpool which not contained in database
+	 */
+	public static void addManualCarpool() {
+		RDFData.carpoolManualSet.add(859176689l);
+		RDFData.carpoolManualSet.add(859176688l);
+		RDFData.carpoolManualSet.add(858795235l);
+		RDFData.carpoolManualSet.add(858795234l);
+		RDFData.carpoolManualSet.add(110161947l);
+		RDFData.carpoolManualSet.add(939442621l);
+		RDFData.carpoolManualSet.add(939442620l);
+		RDFData.carpoolManualSet.add(783652297l);
+		RDFData.carpoolManualSet.add(783652296l);
+		RDFData.carpoolManualSet.add(28432663l);
+		RDFData.carpoolManualSet.add(733916910l);
+		RDFData.carpoolManualSet.add(782774872l);
+		RDFData.carpoolManualSet.add(782774871l);
+		RDFData.carpoolManualSet.add(776739442l);
+		RDFData.carpoolManualSet.add(932209462l);
+		RDFData.carpoolManualSet.add(932209461l);
+		RDFData.carpoolManualSet.add(37825166l);
+		RDFData.carpoolManualSet.add(859175347l);
+		RDFData.carpoolManualSet.add(859175346l);
+		RDFData.carpoolManualSet.add(28432674l);
+		RDFData.carpoolManualSet.add(24612549l);
+		RDFData.carpoolManualSet.add(857627783l);
+		RDFData.carpoolManualSet.add(857627782l);
+		RDFData.carpoolManualSet.add(110160325l);
+		RDFData.carpoolManualSet.add(121237589l);
+		RDFData.carpoolManualSet.add(121234936l);
+		RDFData.carpoolManualSet.add(24612504l);
+		RDFData.carpoolManualSet.add(28432725l);
+		RDFData.carpoolManualSet.add(766693715l);
+		RDFData.carpoolManualSet.add(766693714l);
+		RDFData.carpoolManualSet.add(28432747l);
+		RDFData.carpoolManualSet.add(28432746l);
+		RDFData.carpoolManualSet.add(121238550l);
+		RDFData.carpoolManualSet.add(932222662l);
+		RDFData.carpoolManualSet.add(932222661l);
+		RDFData.carpoolManualSet.add(928343450l);
+		RDFData.carpoolManualSet.add(23928234l);
+		RDFData.carpoolManualSet.add(121238464l);
+		RDFData.carpoolManualSet.add(121238462l);
+		RDFData.carpoolManualSet.add(121234999l);
+		RDFData.carpoolManualSet.add(121238440l);
+		RDFData.carpoolManualSet.add(110162068l);
+		RDFData.carpoolManualSet.add(121240472l);
+		RDFData.carpoolManualSet.add(859174498l);
+		RDFData.carpoolManualSet.add(859174497l);
+		RDFData.carpoolManualSet.add(121241061l);
+		RDFData.carpoolManualSet.add(932209460l);
+		RDFData.carpoolManualSet.add(932209459l);
+		RDFData.carpoolManualSet.add(121235021l);
+		RDFData.carpoolManualSet.add(121235045l);
+		RDFData.carpoolManualSet.add(121235048l);
+		RDFData.carpoolManualSet.add(121235036l);
+		RDFData.carpoolManualSet.add(121235024l);
+		RDFData.carpoolManualSet.add(121233715l);
+		RDFData.carpoolManualSet.add(121241020l);
+		RDFData.carpoolManualSet.add(121241019l);
+		RDFData.carpoolManualSet.add(810665747l);
+		RDFData.carpoolManualSet.add(810665746l);
+		RDFData.carpoolManualSet.add(783167929l);
+		RDFData.carpoolManualSet.add(783167928l);
+		RDFData.carpoolManualSet.add(783167927l);
+		RDFData.carpoolManualSet.add(24559194l);
+		RDFData.carpoolManualSet.add(121240993l);
+		RDFData.carpoolManualSet.add(932219289l);
+		RDFData.carpoolManualSet.add(932219288l);
+		RDFData.carpoolManualSet.add(810665759l);
+		RDFData.carpoolManualSet.add(810665758l);
+		RDFData.carpoolManualSet.add(810862652l);
+		RDFData.carpoolManualSet.add(810862651l);
+		RDFData.carpoolManualSet.add(812029169l);
+		RDFData.carpoolManualSet.add(833175656l);
+		RDFData.carpoolManualSet.add(833175655l);
+		RDFData.carpoolManualSet.add(28433679l);
+		RDFData.carpoolManualSet.add(37825151l);
+		RDFData.carpoolManualSet.add(812029177l);
+		RDFData.carpoolManualSet.add(833250425l);
+		RDFData.carpoolManualSet.add(833250424l);
+		RDFData.carpoolManualSet.add(857627771l);
+		RDFData.carpoolManualSet.add(857627770l);
+		RDFData.carpoolManualSet.add(782793132l);
+		RDFData.carpoolManualSet.add(28433683l);
+		RDFData.carpoolManualSet.add(857627769l);
+		RDFData.carpoolManualSet.add(857627768l);
+		RDFData.carpoolManualSet.add(721218884l);
+		RDFData.carpoolManualSet.add(721218883l);
+		RDFData.carpoolManualSet.add(28434272l);
+		RDFData.carpoolManualSet.add(28434273l);
+		RDFData.carpoolManualSet.add(857765113l);
+		RDFData.carpoolManualSet.add(936892455l);
+		RDFData.carpoolManualSet.add(936892454l);
+		RDFData.carpoolManualSet.add(121240556l);
+		RDFData.carpoolManualSet.add(24159548l);
+		RDFData.carpoolManualSet.add(28433700l);
+		RDFData.carpoolManualSet.add(28433701l);
+		RDFData.carpoolManualSet.add(932219309l);
+		RDFData.carpoolManualSet.add(932219308l);
+		RDFData.carpoolManualSet.add(782793146l);
+		RDFData.carpoolManualSet.add(23927685l);
+		RDFData.carpoolManualSet.add(121233667l);
+		RDFData.carpoolManualSet.add(121233668l);
+		RDFData.carpoolManualSet.add(121233635l);
+		RDFData.carpoolManualSet.add(121234214l);
+		RDFData.carpoolManualSet.add(121234215l);
+		RDFData.carpoolManualSet.add(28433706l);
+		RDFData.carpoolManualSet.add(931101801l);
+		RDFData.carpoolManualSet.add(931101800l);
+		RDFData.carpoolManualSet.add(28433708l);
+		RDFData.carpoolManualSet.add(126510246l);
+		RDFData.carpoolManualSet.add(707425893l);
+		RDFData.carpoolManualSet.add(871479750l);
+		RDFData.carpoolManualSet.add(871479749l);
+		RDFData.carpoolManualSet.add(121234212l);
+		RDFData.carpoolManualSet.add(121234211l);
+		RDFData.carpoolManualSet.add(126510430l);
+		RDFData.carpoolManualSet.add(121234227l);
+		RDFData.carpoolManualSet.add(128810192l);
+		RDFData.carpoolManualSet.add(128810191l);
+		RDFData.carpoolManualSet.add(706846087l);
+		RDFData.carpoolManualSet.add(943507091l);
+		RDFData.carpoolManualSet.add(943507090l);
+		RDFData.carpoolManualSet.add(782730636l);
+		RDFData.carpoolManualSet.add(128810198l);
+		RDFData.carpoolManualSet.add(128810200l);
+		RDFData.carpoolManualSet.add(128810199l);
+		RDFData.carpoolManualSet.add(126510842l);
+		RDFData.carpoolManualSet.add(943510086l);
+		RDFData.carpoolManualSet.add(943510085l);
+		
+		RDFData.carpoolManualSet.add(128785472l);
+		RDFData.carpoolManualSet.add(24612577l);
+		RDFData.carpoolManualSet.add(23927675l);
+		RDFData.carpoolManualSet.add(943506427l);
+		RDFData.carpoolManualSet.add(943506428l);
+		RDFData.carpoolManualSet.add(943506429l);
+		RDFData.carpoolManualSet.add(943506430l);
+		RDFData.carpoolManualSet.add(121234203l);
+		RDFData.carpoolManualSet.add(921307669l);
+		RDFData.carpoolManualSet.add(921307670l);
+		RDFData.carpoolManualSet.add(947343920l);
+		RDFData.carpoolManualSet.add(947343921l);
+		RDFData.carpoolManualSet.add(924939367l);
+		RDFData.carpoolManualSet.add(871479747l);
+		RDFData.carpoolManualSet.add(121234208l);
+		RDFData.carpoolManualSet.add(128798610l);
+		RDFData.carpoolManualSet.add(717341681l);
+		RDFData.carpoolManualSet.add(717341682l);
+		RDFData.carpoolManualSet.add(875087857l);
+		RDFData.carpoolManualSet.add(875087858l);
+		RDFData.carpoolManualSet.add(121234220l);
+		RDFData.carpoolManualSet.add(28433705l);
+		RDFData.carpoolManualSet.add(121234217l);
+		RDFData.carpoolManualSet.add(121234216l);
+		RDFData.carpoolManualSet.add(721106790l);
+		RDFData.carpoolManualSet.add(721106791l);
+		RDFData.carpoolManualSet.add(121233848l);
+		RDFData.carpoolManualSet.add(121233847l);
+		RDFData.carpoolManualSet.add(782793140l);
+		RDFData.carpoolManualSet.add(782793141l);
+		RDFData.carpoolManualSet.add(24154620l);
+		RDFData.carpoolManualSet.add(28433696l);
+		RDFData.carpoolManualSet.add(28433697l);
+		RDFData.carpoolManualSet.add(121240539l);
+		RDFData.carpoolManualSet.add(755956799l);
+		RDFData.carpoolManualSet.add(755956800l);
+		RDFData.carpoolManualSet.add(755956798l);
+		RDFData.carpoolManualSet.add(28433694l);
+		RDFData.carpoolManualSet.add(981741513l);
+		RDFData.carpoolManualSet.add(981741514l);
+		RDFData.carpoolManualSet.add(857627761l);
+		RDFData.carpoolManualSet.add(28434279l);
+		RDFData.carpoolManualSet.add(28434278l);
+		RDFData.carpoolManualSet.add(28484167l);
+		RDFData.carpoolManualSet.add(128789071l);
+		RDFData.carpoolManualSet.add(24159779l);
+		RDFData.carpoolManualSet.add(782793126l);
+		RDFData.carpoolManualSet.add(857627776l);
+		RDFData.carpoolManualSet.add(857627777l);
+		RDFData.carpoolManualSet.add(859172142l);
+		RDFData.carpoolManualSet.add(954895444l);
+		RDFData.carpoolManualSet.add(954895445l);
+		RDFData.carpoolManualSet.add(28433677l);
+		RDFData.carpoolManualSet.add(859172381l);
+		RDFData.carpoolManualSet.add(859174485l);
+		RDFData.carpoolManualSet.add(943679822l);
+		RDFData.carpoolManualSet.add(943679823l);
+		RDFData.carpoolManualSet.add(811173858l);
+		RDFData.carpoolManualSet.add(810864760l);
+		RDFData.carpoolManualSet.add(810665753l);
+		RDFData.carpoolManualSet.add(756632328l);
+		RDFData.carpoolManualSet.add(756632329l);
+		RDFData.carpoolManualSet.add(121240990l);
+		RDFData.carpoolManualSet.add(110162092l);
+		RDFData.carpoolManualSet.add(857627780l);
+		RDFData.carpoolManualSet.add(857627781l);
+		RDFData.carpoolManualSet.add(859174491l);
+		RDFData.carpoolManualSet.add(859174492l);
+		RDFData.carpoolManualSet.add(810665744l);
+		RDFData.carpoolManualSet.add(810665745l);
+		RDFData.carpoolManualSet.add(121241006l);
+		RDFData.carpoolManualSet.add(121241005l);
+		RDFData.carpoolManualSet.add(967817625l);
+		RDFData.carpoolManualSet.add(967817626l);
+		RDFData.carpoolManualSet.add(121235037l);
+		RDFData.carpoolManualSet.add(121235038l);
+		RDFData.carpoolManualSet.add(121235022l);
+		RDFData.carpoolManualSet.add(37825153l);
+		RDFData.carpoolManualSet.add(954816377l);
+		RDFData.carpoolManualSet.add(954816378l);
+		RDFData.carpoolManualSet.add(857627786l);
+		RDFData.carpoolManualSet.add(857627787l);
+		RDFData.carpoolManualSet.add(857710924l);
+		RDFData.carpoolManualSet.add(857710925l);
+		RDFData.carpoolManualSet.add(128798417l);
+		RDFData.carpoolManualSet.add(859186072l);
+		RDFData.carpoolManualSet.add(859186073l);
+		RDFData.carpoolManualSet.add(110162060l);
+		RDFData.carpoolManualSet.add(121235000l);
+		RDFData.carpoolManualSet.add(859186077l);
+		RDFData.carpoolManualSet.add(859186078l);
+		RDFData.carpoolManualSet.add(859186076l);
+		RDFData.carpoolManualSet.add(859186062l);
+		RDFData.carpoolManualSet.add(859186063l);
+		RDFData.carpoolManualSet.add(23928235l);
+		RDFData.carpoolManualSet.add(859186060l);
+		RDFData.carpoolManualSet.add(859186061l);
+		RDFData.carpoolManualSet.add(859186057l);
+		RDFData.carpoolManualSet.add(859186054l);
+		RDFData.carpoolManualSet.add(121238552l);
+		RDFData.carpoolManualSet.add(857627774l);
+		RDFData.carpoolManualSet.add(857627775l);
+		RDFData.carpoolManualSet.add(121238631l);
+		RDFData.carpoolManualSet.add(121238632l);
+		RDFData.carpoolManualSet.add(28432694l);
+		RDFData.carpoolManualSet.add(780472583l);
+		RDFData.carpoolManualSet.add(780472584l);
+		RDFData.carpoolManualSet.add(110160271l);
+		RDFData.carpoolManualSet.add(110160270l);
+		RDFData.carpoolManualSet.add(121238590l);
+		RDFData.carpoolManualSet.add(28432676l);
+		RDFData.carpoolManualSet.add(28432677l);
+		RDFData.carpoolManualSet.add(121238595l);
+		RDFData.carpoolManualSet.add(121237576l);
+		RDFData.carpoolManualSet.add(37825165l);
+		RDFData.carpoolManualSet.add(37825160l);
+		RDFData.carpoolManualSet.add(783086689l);
+		RDFData.carpoolManualSet.add(783086690l);
+		RDFData.carpoolManualSet.add(782774874l);
+		RDFData.carpoolManualSet.add(733916908l);
+		RDFData.carpoolManualSet.add(781854669l);
+		RDFData.carpoolManualSet.add(788181078l);
+		RDFData.carpoolManualSet.add(788181079l);
+		RDFData.carpoolManualSet.add(23842747l);
+		RDFData.carpoolManualSet.add(110161949l);
+		RDFData.carpoolManualSet.add(940006088l);
+		RDFData.carpoolManualSet.add(940006089l);
+	}
+	
+	/**
+	 * mark carpool for link
+	 * @param linkMap
+	 */
+	public static void markManualCarpool(HashMap<Long, RDFLinkInfo> linkMap) {
+		for(RDFLinkInfo link : linkMap.values()) {
+			long linkId = link.getLinkId();
+			if(RDFData.carpoolManualSet.contains(linkId)) {
+				link.setManualCarpool();
+			}
+		}
+	}
 	
 	/**
 	 * fetch sign element info
@@ -203,14 +572,14 @@ public class RDFInput {
 	}
 	
 	/**
-	 * read match sensor
+	 * read match sensor, override RDFData.sensorMap
 	 * @param linkMap
 	 * @param sensorMap
-	 * @param matchSensorMap
 	 */
-	public static void readMatchSensor(HashMap<Long, RDFLinkInfo> linkMap, HashMap<Integer, SensorInfo> sensorMap, HashMap<Integer, SensorInfo> matchSensorMap) {
+	public static void readMatchSensor(HashMap<Long, RDFLinkInfo> linkMap, HashMap<Integer, SensorInfo> sensorMap) {
 		System.out.println("read match sensor...");
 		int debug = 0;
+		HashMap<Integer, SensorInfo> matchSensorMap = new HashMap<Integer, SensorInfo>();
 		try {
 			FileInputStream fstream = new FileInputStream(root + "/" + sensorMatchFile);
 			DataInputStream in = new DataInputStream(fstream);
@@ -236,6 +605,8 @@ public class RDFInput {
 				if (debug % 1000 == 0)
 					System.out.println("record " + debug + " finish!");
 			}
+			// override
+			RDFData.sensorMatchMap = matchSensorMap;
 			br.close();
 			in.close();
 			fstream.close();

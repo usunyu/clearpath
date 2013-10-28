@@ -4,6 +4,7 @@ import java.io.*;
 import java.sql.*;
 import java.util.*;
 
+import data.*;
 import objects.*;
 import function.*;
 
@@ -12,7 +13,7 @@ public class RDFAdjListPattern {
 	/**
 	 * @param file
 	 */
-	static String root 				= "file";
+	static String root 			= "file";
 	static String adjListFile		= "RDF_AdjList.csv";
 	/**
 	 * @param args
@@ -24,42 +25,24 @@ public class RDFAdjListPattern {
 	static String VERTICAL		= "|";
 	static String COLON			= ":";
 	static String SEMICOLON		= ";";
-	/**
-	 * @param link
-	 */
-	static HashMap<Long, RDFLinkInfo> linkMap = new HashMap<Long, RDFLinkInfo>();
-	/**
-	 * @param node
-	 */
-	static HashMap<Long, RDFNodeInfo> nodeMap = new HashMap<Long, RDFNodeInfo>();
-	/**
-	 * @param sensor
-	 */
-	static HashMap<Integer, SensorInfo> matchSensorMap = new HashMap<Integer, SensorInfo>();
-	static HashMap<Integer, SensorInfo> sensorMap = new HashMap<Integer, SensorInfo>();
-	/**
-	 * @param pattern
-	 */
-	static HashMap<Long, ArrayList<Long>> adjList = new HashMap<Long, ArrayList<Long>>();
-	static HashMap<String, RDFLinkInfo> nodeToLink = new HashMap<String, RDFLinkInfo>();
 	
 	public static void main(String[] args) {
-		RDFInput.readNodeFile(nodeMap);
+		//RDFInput.readNodeFile(RDFData.nodeMap);
 		
-		RDFInput.readLinkFile(linkMap, nodeMap, nodeToLink);
-		RDFInput.readLinkGeometry(linkMap);
+		//RDFInput.readLinkFile(RDFData.linkMap, RDFData.nodeMap, nodeToLink);
+		//RDFInput.readLinkGeometry(RDFData.linkMap);
 		
-		RDFInput.fetchSensor(sensorMap);
-		RDFInput.readMatchSensor(linkMap, sensorMap, matchSensorMap);
-		fetchSensorPattern(8, 0);
+		//RDFInput.fetchSensor(RDFData.sensorMatchMap);
+		//RDFInput.readMatchSensor(RDFData.linkMap, RDFData.sensorMatchMap);
 		
-		buildAdjList();
+		fetchSensorPattern(8, 0, RDFData.sensorMatchMap);
 		
-		createPattern();
-		createAdjList(0);
+		createPattern(RDFData.linkMap);
+		createAdjList(0, RDFData.nodeMap, RDFData.nodeAdjList, RDFData.nodeToLinkMap);
 	}
 	
-	private static void createAdjList(int day) {
+	private static void createAdjList(int day, HashMap<Long, RDFNodeInfo> nodeMap, HashMap<Long, LinkedList<Long>> nodeAdjList,
+			HashMap<String, RDFLinkInfo> nodeToLinkMap) {
 		System.out.println("create adj list...");
 		try {
 			String[] file = adjListFile.split("\\.");
@@ -71,16 +54,15 @@ public class RDFAdjListPattern {
 				long nodeId = nodeInfo.getNodeId();
 				String strLine = "n" + nodeId + VERTICAL;
 				
-				ArrayList<Long> toList = adjList.get(nodeId);
+				LinkedList<Long> toList = nodeAdjList.get(nodeId);
 				if(toList == null || toList.isEmpty()) {
 					System.err.println("warning: " + nodeId + " does not have adj node");
 					continue;
 				}
 				
-				for(int j = 0; j < toList.size(); j++) {
-					long toNodeId = toList.get(j);
+				for(long toNodeId : toList) {
 					String nodesStr = nodeId + SEPARATION + toNodeId;
-					RDFLinkInfo link = nodeToLink.get(nodesStr);
+					RDFLinkInfo link = nodeToLinkMap.get(nodesStr);
 					if(link == null) {
 						System.err.println(nodesStr + " no associated link found");
 						continue;
@@ -107,7 +89,7 @@ public class RDFAdjListPattern {
 		System.out.println("create adj list finish!");
 	}
 	
-	private static void createPattern() {
+	private static void createPattern(HashMap<Long, RDFLinkInfo> linkMap) {
 		System.out.println("create pattern...");
 		int debug = 0;
 		try {
@@ -234,63 +216,7 @@ public class RDFAdjListPattern {
 		return dis;
 	}
 	
-	private static void buildAdjList() {
-		System.out.println("build adj list...");
-		for(RDFLinkInfo link : linkMap.values()) {
-			long refNode = link.getRefNodeId();
-			long nonRefNode = link.getNonRefNodeId();
-			String travelDir = link.getTravelDirection();
-			if(travelDir.equals("T")) {	//from nonref to ref
-				if(!adjList.containsKey(nonRefNode)) {
-					ArrayList<Long> toList = new ArrayList<Long>();
-					toList.add(refNode);
-					adjList.put(nonRefNode, toList);
-				}
-				else {
-					ArrayList<Long> toList = adjList.get(nonRefNode);
-					toList.add(refNode);
-				}
-			}
-			else if(travelDir.equals("F")) { //from ref to nonref
-				if(!adjList.containsKey(refNode)) {
-					ArrayList<Long> toList = new ArrayList<Long>();
-					toList.add(nonRefNode);
-					adjList.put(refNode, toList);
-				}
-				else {
-					ArrayList<Long> toList = adjList.get(refNode);
-					toList.add(nonRefNode);
-				}
-			}
-			else if(travelDir.equals("B")) { // bi-direction
-				if(!adjList.containsKey(nonRefNode)) {
-					ArrayList<Long> toList = new ArrayList<Long>();
-					toList.add(refNode);
-					adjList.put(nonRefNode, toList);
-				}
-				else {
-					ArrayList<Long> toList = adjList.get(nonRefNode);
-					toList.add(refNode);
-				}
-				if(!adjList.containsKey(refNode)) {
-					ArrayList<Long> toList = new ArrayList<Long>();
-					toList.add(nonRefNode);
-					adjList.put(refNode, toList);
-				}
-				else {
-					ArrayList<Long> toList = adjList.get(refNode);
-					toList.add(nonRefNode);
-				}
-			}
-			else {
-				System.err.println("undefine travel direction!");
-			}
-			
-		}
-		System.out.println("build adj list finish!");
-	}
-	
-	private static void fetchSensorByQuery(String query, int month, int day) {
+	private static void fetchSensorByQuery(String query, int month, int day, HashMap<Integer, SensorInfo> sensorMatchMap) {
 		String tableName;
 		switch(month) {
 			case 7:
@@ -316,10 +242,10 @@ public class RDFAdjListPattern {
 			res = pstatement.executeQuery();
 			while (res.next()) {
 				int sensorId = res.getInt("link_id");
-				if(!matchSensorMap.containsKey(sensorId))
+				if(!sensorMatchMap.containsKey(sensorId))
 					System.out.println("did not find sensor in the hashmap");
 				
-				SensorInfo sensor = matchSensorMap.get(sensorId);
+				SensorInfo sensor = sensorMatchMap.get(sensorId);
 				double speed = res.getDouble("speed");
 				String time = res.getString("time");
 				int index = UtilClass.getIndex(time);
@@ -334,16 +260,14 @@ public class RDFAdjListPattern {
 		}
 	}
 	
-	private static void fetchSensorPattern(int month, int day) {
+	private static void fetchSensorPattern(int month, int day, HashMap<Integer, SensorInfo> sensorMatchMap) {
 		System.out.println("fetch sensor pattern...");
-		// make sensorMap just contain matchedSenor
-		sensorMap = new HashMap<Integer, SensorInfo>();	// free old memory
 		int debug = 0;
 		try {
 			// build sql query
 			StringBuffer sensorStringBuffer = new StringBuffer();
 			int i = 0;
-			for(SensorInfo sensor : matchSensorMap.values()) {
+			for(SensorInfo sensor : sensorMatchMap.values()) {
 				debug++;
 				if(i++ == 0)
 					sensorStringBuffer.append(sensor.getSensorId());
@@ -352,17 +276,17 @@ public class RDFAdjListPattern {
 				
 				if(i % 500 == 0) {	// query will throw exception if too long
 					String nodeQuery = sensorStringBuffer.toString();
-					fetchSensorByQuery(nodeQuery, month, day);
+					fetchSensorByQuery(nodeQuery, month, day, sensorMatchMap);
 					i = 0;
 					sensorStringBuffer = new StringBuffer();
 				}
 				
 				if(debug % 1000 == 0)
-					System.out.println((double)debug / matchSensorMap.size() * 100 + "% finish!");
+					System.out.println((double)debug / sensorMatchMap.size() * 100 + "% finish!");
 			}
 			if(!sensorStringBuffer.toString().equals("")) {	// process rest
 				String nodeQuery = sensorStringBuffer.toString();
-				fetchSensorByQuery(nodeQuery, month, day);
+				fetchSensorByQuery(nodeQuery, month, day, sensorMatchMap);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

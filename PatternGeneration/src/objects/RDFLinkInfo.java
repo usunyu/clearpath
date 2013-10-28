@@ -18,6 +18,7 @@ public class RDFLinkInfo {
 	boolean exitName;
 	int speedCategory;
 	int accessId;
+	boolean manualCarpool;
 	
 	LinkedList<LocationInfo> pointList;
 	LinkedList<RDFLaneInfo> laneList;
@@ -215,6 +216,8 @@ public class RDFLinkInfo {
 	}
 	
 	public boolean isCarpool() {
+		if(manualCarpool)
+			return true;
 		if(laneList == null)
 			return false;
 		for(RDFLaneInfo lane : laneList) {
@@ -222,5 +225,9 @@ public class RDFLinkInfo {
 				return true;
 		}
 		return false;
+	}
+	
+	public void setManualCarpool() {
+		manualCarpool = true;
 	}
 }
