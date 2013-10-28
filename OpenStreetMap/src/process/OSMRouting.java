@@ -122,7 +122,7 @@ public class OSMRouting {
 		}
 	}
 	
-	public static HashMap<Long, HighwayEntrance> searchHighwayExit(long endNode) {
+	public static HashMap<Long, HighwayEntrance> searchHighwayExit(long startNode, long endNode) {
 		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 		HashMap<Long, HighwayEntrance> highwayExitMap = new HashMap<Long, HighwayEntrance>();
 		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
@@ -149,6 +149,10 @@ public class OSMRouting {
 
 				long nodeId = current.getNodeId();
 				
+				if(nodeId == startNode) {	// we already find source
+					return null;
+				}
+				
 				ArrayList<ToNodeInfo> adjNodeList = adjReverseListHashMap.get(nodeId);
 				if(adjNodeList == null)
 					continue;
@@ -162,7 +166,7 @@ public class OSMRouting {
 					
 					// if(fromNodeInfo.isVisited())	// if the node is visited, we bypass it
 					// 	continue;
-					
+
 					nodeStack.push(fromNodeInfo);
 
 					// fromNodeInfo.setVisited();
@@ -187,6 +191,7 @@ public class OSMRouting {
 
 						HighwayEntrance highwayExit = new HighwayEntrance(nodeId);
 						highwayExit.setLocalToHighPath(path);
+						highwayExit.setCost(fromNodeInfo.getCost());
 						highwayExitMap.put(nodeId, highwayExit);
 						continue;
 					}
@@ -217,7 +222,7 @@ public class OSMRouting {
 		return highwayExitMap;
 	}
 	
-	public static HashMap<Long, HighwayEntrance> searchHighwayEntrance(long startNode) {
+	public static HashMap<Long, HighwayEntrance> searchHighwayEntrance(long startNode, long endNode) {
 		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 		HashMap<Long, HighwayEntrance> highwayEntranceMap = new HashMap<Long, HighwayEntrance>();
 		
@@ -241,6 +246,10 @@ public class OSMRouting {
 		// find four entrance
 		while ((current = priorityQ.poll()) != null && highwayEntranceMap.size() < 4) {
 			long nodeId = current.getNodeId();
+			
+			if(nodeId == endNode) {	// we already find destination
+				return null;
+			}
 			
 			ArrayList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
 			if(adjNodeList == null)
@@ -280,6 +289,7 @@ public class OSMRouting {
 
 					Collections.reverse(path);
 					HighwayEntrance highwayEntrance = new HighwayEntrance(nodeId);
+					highwayEntrance.setCost(toNodeInfo.getCost());
 					highwayEntrance.setLocalToHighPath(path);
 					highwayEntranceMap.put(nodeId, highwayEntrance);
 					continue;
@@ -310,8 +320,13 @@ public class OSMRouting {
 	public static void tdspHierarchy(long startNode, long endNode, int startTime) {
 		System.out.println("start finding the path...");
 		
-		HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode);
-		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayExit(endNode);
+		HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, endNode);
+		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayExit(startNode, endNode);
+		
+		if(entranceMap == null || exitMap == null) {	// we should use normal tdsp in this situation
+			tdsp(startNode, endNode, startTime);
+			return;
+		}
 		
 		// test
 		OSMOutput.generateEntranceExitKML(startNode, endNode, entranceMap, exitMap, nodeHashMap);
@@ -320,6 +335,7 @@ public class OSMRouting {
 		long finalEntrance = -1;
 		long finalExit = -1;
 		
+		// iterate each entrance
 		for(long entranceId : entranceMap.keySet()) {
 			PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
 				public int compare(NodeInfo n1, NodeInfo n2) {
@@ -327,6 +343,7 @@ public class OSMRouting {
 				}
 			});
 			
+			long exitId = -1;
 			Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 			NodeInfo current = nodeHashMap.get(entranceId);	// get start node
 			nodeStack.push(current);
@@ -343,6 +360,7 @@ public class OSMRouting {
 				long nodeId = current.getNodeId();
 				
 				if(exitMap.get(nodeId) != null) {	// find exit
+					exitId = nodeId;
 					break;
 				}
 				
@@ -393,9 +411,13 @@ public class OSMRouting {
 				}
 			}
 			
-			if(current != null && current.getCost() < cost) {	// find less cost path
-				cost = current.getCost();
-				long exitId = current.getNodeId();
+			int newCost = Integer.MAX_VALUE;
+			if(current != null) {
+				newCost = current.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
+			}
+			
+			if(newCost < cost) {	// find less cost path
+				cost = newCost;
 				pathNodeList = new ArrayList<Long>();
 				if(entranceId == exitId) {
 					System.out.println("entrance node is the same as exit node.");
