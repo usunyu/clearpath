@@ -176,6 +176,23 @@ public class OSMRouting {
 					
 					String highway = edge.getHighway();
 					int hierarchy = hierarchyHashMap.get(highway);
+					
+					int travelTime;
+					if(fromNode.isFix())	// fix time
+						travelTime = fromNode.getTravelTime();
+					else	// fetch from time array
+						travelTime = fromNode.getTravelTimeArray()[30];	// use mid value
+					
+					// if we find a node with updated distance, just insert it to the priority queue
+					// even we pop out another node with same id later, we know that it was visited and will ignore it
+					int totalTime = arrTime + travelTime;
+					if (totalTime < fromNodeInfo.getCost()) {
+						fromNodeInfo.setCost(totalTime);
+						fromNodeInfo.setParentId(nodeId);
+						if(hierarchy != 1)
+							priorityQ.offer(fromNodeInfo);
+					}
+					
 					if(hierarchy == 1) {	// find one highway exit
 						ArrayList<Long> path = new ArrayList<Long>();
 						NodeInfo entrance = current;
@@ -193,22 +210,6 @@ public class OSMRouting {
 						highwayExit.setLocalToHighPath(path);
 						highwayExit.setCost(fromNodeInfo.getCost());
 						highwayExitMap.put(nodeId, highwayExit);
-						continue;
-					}
-					
-					int travelTime;
-					if(fromNode.isFix())	// fix time
-						travelTime = fromNode.getTravelTime();
-					else	// fetch from time array
-						travelTime = fromNode.getTravelTimeArray()[30];	// use mid value
-					
-					// if we find a node with updated distance, just insert it to the priority queue
-					// even we pop out another node with same id later, we know that it was visited and will ignore it
-					int totalTime = arrTime + travelTime;
-					if (totalTime < fromNodeInfo.getCost()) {
-						fromNodeInfo.setCost(totalTime);
-						fromNodeInfo.setParentId(nodeId);
-						priorityQ.offer(fromNodeInfo);
 					}
 				}
 			}
@@ -274,6 +275,23 @@ public class OSMRouting {
 				
 				String highway = edge.getHighway();
 				int hierarchy = hierarchyHashMap.get(highway);
+				
+				int travelTime;
+				if(toNode.isFix())	// fix time
+					travelTime = toNode.getTravelTime();
+				else	// fetch from time array
+					travelTime = toNode.getTravelTimeArray()[30];	// use mid value
+				
+				// if we find a node with updated distance, just insert it to the priority queue
+				// even we pop out another node with same id later, we know that it was visited and will ignore it
+				int totalTime = arrTime + travelTime;
+				if (totalTime < toNodeInfo.getCost()) {
+					toNodeInfo.setCost(totalTime);
+					toNodeInfo.setParentId(nodeId);
+					if(hierarchy != 1) // we don't search highway
+						priorityQ.offer(toNodeInfo);
+				}
+				
 				if(hierarchy == 1) {	// find one highway entrance
 					ArrayList<Long> path = new ArrayList<Long>();
 					NodeInfo entrance = current;
@@ -292,22 +310,6 @@ public class OSMRouting {
 					highwayEntrance.setCost(toNodeInfo.getCost());
 					highwayEntrance.setLocalToHighPath(path);
 					highwayEntranceMap.put(nodeId, highwayEntrance);
-					continue;
-				}
-				
-				int travelTime;
-				if(toNode.isFix())	// fix time
-					travelTime = toNode.getTravelTime();
-				else	// fetch from time array
-					travelTime = toNode.getTravelTimeArray()[30];	// use mid value
-				
-				// if we find a node with updated distance, just insert it to the priority queue
-				// even we pop out another node with same id later, we know that it was visited and will ignore it
-				int totalTime = arrTime + travelTime;
-				if (totalTime < toNodeInfo.getCost()) {
-					toNodeInfo.setCost(totalTime);
-					toNodeInfo.setParentId(nodeId);
-					priorityQ.offer(toNodeInfo);
 				}
 			}
 		}
@@ -416,6 +418,8 @@ public class OSMRouting {
 				for(NodeInfo exit : exitNodeList) {
 					long exitId = exit.getNodeId();
 					NodeInfo cur = exit;
+					int cost1 = entranceMap.get(entranceId).getCost();
+					int cost2 = exitMap.get(exitId).getCost();
 					int newCost = cur.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
 					
 					if(newCost < cost) {	// find less cost path
