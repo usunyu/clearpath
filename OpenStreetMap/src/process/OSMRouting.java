@@ -343,7 +343,6 @@ public class OSMRouting {
 				}
 			});
 			
-			long exitId = -1;
 			Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 			NodeInfo current = nodeHashMap.get(entranceId);	// get start node
 			nodeStack.push(current);
@@ -356,12 +355,14 @@ public class OSMRouting {
 			
 			priorityQ.offer(current);
 			
+			LinkedList<NodeInfo> exitNodeList = new LinkedList<NodeInfo>();
 			while ((current = priorityQ.poll()) != null) {
 				long nodeId = current.getNodeId();
 				
 				if(exitMap.get(nodeId) != null) {	// find exit
-					exitId = nodeId;
-					break;
+					exitNodeList.add(current);
+					if(exitNodeList.size() == 4)
+						break;
 				}
 				
 				int timeIndex = startTime + current.getCost() / 60 / TIME_INTERVAL;
@@ -411,33 +412,34 @@ public class OSMRouting {
 				}
 			}
 			
-			int newCost = Integer.MAX_VALUE;
-			if(current != null) {
-				newCost = current.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
-			}
-			
-			if(newCost < cost) {	// find less cost path
-				cost = newCost;
-				pathNodeList = new ArrayList<Long>();
-				if(entranceId == exitId) {
-					System.out.println("entrance node is the same as exit node.");
-				}
-				else {
-					pathNodeList.add(exitId);
-					while(current.getParentId() != -1) {
-						current = nodeHashMap.get(current.getParentId());
-						if(current == null) {
-							System.err.println("cannot find intermediate node, program exit!");
-							System.exit(-1);
+			if(exitNodeList.size() > 0) {
+				for(NodeInfo exit : exitNodeList) {
+					long exitId = exit.getNodeId();
+					int newCost = exit.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
+					
+					if(newCost < cost) {	// find less cost path
+						cost = newCost;
+						pathNodeList = new ArrayList<Long>();
+						if(entranceId == exitId) {
+							System.out.println("entrance node is the same as exit node.");
 						}
-						pathNodeList.add(current.getNodeId());	// add intermediate node
+						else {
+							pathNodeList.add(exitId);
+							while(current.getParentId() != -1) {
+								current = nodeHashMap.get(current.getParentId());
+								if(current == null) {
+									System.err.println("cannot find intermediate node, program exit!");
+									System.exit(-1);
+								}
+								pathNodeList.add(current.getNodeId());	// add intermediate node
+							}
+							Collections.reverse(pathNodeList);
+						}
+						finalEntrance = entranceId;
+						finalExit = exitId;
 					}
-					Collections.reverse(pathNodeList);
 				}
-				finalEntrance = entranceId;
-				finalExit = exitId;
 			}
-			
 			// prepare for next time
 			prepareRoute(nodeStack);
 		}
