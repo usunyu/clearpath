@@ -106,8 +106,8 @@ public class OSMRouting {
 			NodeInfo current = nodeHashMap.get(endNode);	// get start node
 			nodeStack.push(current);
 			if(current == null) {
-				System.err.println("cannot find start node, program exit!");
-				System.exit(-1);
+				System.err.println("cannot find start node!");
+				return null;
 			}
 			
 			current.setCost(0);	// set start cost to 0
@@ -171,8 +171,8 @@ public class OSMRouting {
 						while(entrance.getParentId() != -1) {
 							entrance = nodeHashMap.get(entrance.getParentId());
 							if(entrance == null) {
-								System.err.println("cannot find intermediate node, program exit!");
-								System.exit(-1);
+								System.err.println("cannot find intermediate node!");
+								return null;
 							}
 							path.add(entrance.getNodeId());	// add intermediate node
 						}
@@ -208,8 +208,8 @@ public class OSMRouting {
 		NodeInfo current = nodeHashMap.get(startNode);	// get start node
 		nodeStack.push(current);
 		if(current == null) {
-			System.err.println("cannot find start node, program exit!");
-			System.exit(-1);
+			System.err.println("cannot find start node!");
+			return null;
 		}
 		
 		current.setCost(0);	// set start cost to 0
@@ -271,8 +271,8 @@ public class OSMRouting {
 					while(entrance.getParentId() != -1) {
 						entrance = nodeHashMap.get(entrance.getParentId());
 						if(entrance == null) {
-							System.err.println("cannot find intermediate node, program exit!");
-							System.exit(-1);
+							System.err.println("cannot find intermediate node!");
+							return null;
 						}
 						path.add(entrance.getNodeId());	// add intermediate node
 					}
