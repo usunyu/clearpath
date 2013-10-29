@@ -18,6 +18,8 @@ public class CompareTdspTdspHTimeCost {
 		OSMInput.readNodeFile(OSMData.nodeHashMap, OSMData.nodeArrayList);
 		OSMInput.readEdgeFile(OSMData.edgeHashMap, OSMData.nodesToEdgeHashMap);
 		OSMInput.readAdjList(OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
+		OSMRouting.initialHierarchy();
+		OSMRouting.prepareRoute(OSMData.nodeHashMap);
 		int startTime = 10;
 		// test for routing
 		int size = OSMData.nodeArrayList.size();
