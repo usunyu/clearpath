@@ -373,7 +373,10 @@ public class OSMRouting {
 					EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdKey);
 					
 					String highway = edge.getHighway();
-					int hierarchy = hierarchyHashMap.get(highway);
+					int hierarchy = 6;
+					if(hierarchyHashMap.containsKey(highway)) {
+						hierarchy = hierarchyHashMap.get(highway);
+					}
 					if(hierarchy != 1)	// we keep on in highway
 						continue;
 					
