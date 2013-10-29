@@ -1,4 +1,4 @@
-package function;
+package model;
 
 import object.*;
 
@@ -14,7 +14,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import data.OSMData;
+import global.*;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -25,76 +25,15 @@ import javax.xml.stream.events.XMLEvent;
 
 public class OSMInput {
 	/**
-	 * @param file
-	 */
-	static String root = "file";
-	static String osmFile;
-	static String nodeCSVFile;
-	static String wayCSVFile;
-	static String wayInfoFile;
-	static String wktsFile;
-	static String edgeCVSFile;
-	static String adjlistFile;
-	// temp
-	static String extraNodeFile;
-	
-	/**
-	 * @param xml
-	 */
-	static final String ID 			= "id";
-	static final String NODE 		= "node";
-	static final String WAY 		= "way";
-	static final String LAT 		= "lat";
-	static final String LON 		= "lon";
-	static final String TAG			= "tag";
-	static final String K			= "k";
-	static final String V			= "v";
-	static final String NAME		= "name";
-	static final String HIGHWAY		= "highway";
-	static final String ONEWAY		= "oneway";
-	static final String YES			= "yes";
-	static final String RELATION	= "relation";
-	
-	/**
-	 * @param csv
-	 */
-	static String SEPARATION		= "|";
-	static String ESCAPE_SEPARATION	= "\\|";
-	static String SEGMENT			= "/";
-	static String COMMA				= ",";
-	static String SEMICOLON			= ";";
-	static String COLON				= ":";
-	static String ONEDIRECT			= "O";
-	static String BIDIRECT			= "B";
-	static String FIX				= "F";
-	static String VARIABLE			= "V";
-	static String LINEEND			= "\r\n";
-	static String UNKNOWN_STREET 	= "Unknown Street";
-	static String UNKNOWN_HIGHWAY 	= "Unknown Highway";
-	
-	public static void paramConfig(String name) {
-		osmFile 		= name + ".osm";
-		nodeCSVFile 	= name + "_node.csv";
-		wayCSVFile 		= name + "_way.csv";
-		wayInfoFile		= name + "_info.csv";
-		wktsFile		= name + ".osm.wkts";
-		edgeCVSFile		= name + "_edge.csv";
-		edgeCVSFile		= name + "_edge.csv";
-		adjlistFile		= name + "_adjlist.csv";
-		// temp
-		extraNodeFile	= name + "_way_extra.csv";
-	}
-	
-	/**
 	 * build adjlist
 	 * @param adjListHashMap
 	 */
 	public static void buildAdjList(HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap) {
-		System.out.println("loading adjlist file: " + adjlistFile);
+		System.out.println("loading adjlist file: " + OSMParam.adjlistFile);
 
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + adjlistFile);
+			FileInputStream fstream = new FileInputStream(OSMParam.root + "/" + OSMParam.adjlistFile);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -106,17 +45,17 @@ public class OSMInput {
 				if (debug % 100000 == 0)
 					System.out.println("completed " + debug + " lines.");
 
-				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
 				long startNode = Long.parseLong(nodes[0]);
 
 				ArrayList<ToNodeInfo> toNodeList = new ArrayList<ToNodeInfo>();
-				String[] adjlists = nodes[1].split(SEMICOLON);
+				String[] adjlists = nodes[1].split(OSMParam.SEMICOLON);
 				for (int i = 0; i < adjlists.length; i++) {
 					String adjComponent = adjlists[i];
 					long toNode = Long.parseLong(adjComponent.substring(0, adjComponent.indexOf('(')));
 					String fixStr = adjComponent.substring(adjComponent.indexOf('(') + 1, adjComponent.indexOf(')'));
-					if (fixStr.equals(FIX)) { // fixed
-						int travelTime = Integer.parseInt(adjComponent.substring(adjComponent.indexOf(COLON) + 1));
+					if (fixStr.equals(OSMParam.FIX)) { // fixed
+						int travelTime = Integer.parseInt(adjComponent.substring(adjComponent.indexOf(OSMParam.COLON) + 1));
 						ToNodeInfo toNodeInfo = new ToNodeInfo(toNode, travelTime);
 						toNodeList.add(toNodeInfo);
 						// build the reverse adjlist
@@ -131,8 +70,8 @@ public class OSMInput {
 						ToNodeInfo fromNodeInfo = new ToNodeInfo(startNode, travelTime);
 						fromNodeList.add(fromNodeInfo);
 					} else { // variable
-						String timeList = adjComponent.substring(adjComponent.indexOf(COLON) + 1);
-						String[] timeValueList = timeList.split(COMMA);
+						String timeList = adjComponent.substring(adjComponent.indexOf(OSMParam.COLON) + 1);
+						String[] timeValueList = timeList.split(OSMParam.COMMA);
 						int[] travelTimeArray = new int[timeValueList.length];
 						for (int j = 0; j < timeValueList.length; j++)
 							travelTimeArray[j] = Integer.parseInt(timeValueList[j]);
@@ -173,14 +112,14 @@ public class OSMInput {
 		System.out.println("read edge file...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + edgeCVSFile);
+			FileInputStream fstream = new FileInputStream(OSMParam.root + "/" + OSMParam.edgeCVSFile);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
 				long id = Long.parseLong(nodes[0]);
 				long wayId = Long.parseLong(nodes[0].substring(0, nodes[0].length() - 4));
 				int edgeId = Integer.parseInt(nodes[0].substring(nodes[0].length() - 4));
@@ -212,14 +151,14 @@ public class OSMInput {
 		System.out.println("read edge file...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + edgeCVSFile);
+			FileInputStream fstream = new FileInputStream(OSMParam.root + "/" + OSMParam.edgeCVSFile);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
 				long id = Long.parseLong(nodes[0]);
 				long wayId = Long.parseLong(nodes[0].substring(0, nodes[0].length() - 4));
 				int edgeId = Integer.parseInt(nodes[0].substring(nodes[0].length() - 4));
@@ -232,7 +171,7 @@ public class OSMInput {
 				EdgeInfo edgeInfo = new EdgeInfo(wayId, edgeId, name, highway, startNode, endNode, distance);
 				edgeHashMap.put(id, edgeInfo);
 				
-				String nodeId = startNode + COMMA + endNode;
+				String nodeId = startNode + OSMParam.COMMA + endNode;
 				nodesToEdge.put(nodeId, edgeInfo);
 			}
 			br.close();
@@ -257,14 +196,14 @@ public class OSMInput {
 		try {
 			HashMap<Long, WayInfo> wayNeedHashMap = new HashMap<Long, WayInfo>();
 			HashMap<Long, NodeInfo> nodeNeedHashMap = new HashMap<Long, NodeInfo>();
-			FileInputStream fstream = new FileInputStream(root + SEGMENT + wktsFile);
+			FileInputStream fstream = new FileInputStream(OSMParam.root + OSMParam.SEGMENT + OSMParam.wktsFile);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
 				long wayId = Long.parseLong(nodes[0]);
 				WayInfo wayInfo = wayHashMap.get(wayId);
 				ArrayList<Long> localNodeArrayList = new ArrayList<Long>();
@@ -306,20 +245,20 @@ public class OSMInput {
 		System.out.println("read way info...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(root + SEGMENT + wayInfoFile);
+			FileInputStream fstream = new FileInputStream(OSMParam.root + OSMParam.SEGMENT + OSMParam.wayInfoFile);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split(ESCAPE_SEPARATION + ESCAPE_SEPARATION);
+				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION + OSMParam.ESCAPE_SEPARATION);
 				long wayId = Long.parseLong(nodes[0]);
 				WayInfo wayInfo = wayHashMap.get(wayId);
 				HashMap<String, String> infoHashMap = null;
 				
 				for(int i = 1; i < nodes.length; i++) {
-					String[] keyValueSet = nodes[i].split(ESCAPE_SEPARATION);
+					String[] keyValueSet = nodes[i].split(OSMParam.ESCAPE_SEPARATION);
 					if(keyValueSet == null || keyValueSet.length <= 1)
 						continue;
 					String key = keyValueSet[0];
@@ -350,16 +289,16 @@ public class OSMInput {
 		System.out.println("read way file...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(root + SEGMENT + wayCSVFile);
+			FileInputStream fstream = new FileInputStream(OSMParam.root + OSMParam.SEGMENT + OSMParam.wayCSVFile);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
 				long wayId = Long.parseLong(nodes[0]);
-				boolean isOneway = nodes[1].equals(ONEDIRECT) ? true : false;
+				boolean isOneway = nodes[1].equals(OSMParam.ONEDIRECT) ? true : false;
 				String name = nodes[2];
 				String highway = nodes[3];
 				
@@ -385,14 +324,14 @@ public class OSMInput {
 		System.out.println("read node file...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(root + SEGMENT + nodeCSVFile);
+			FileInputStream fstream = new FileInputStream(OSMParam.root + OSMParam.SEGMENT + OSMParam.nodeCSVFile);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
 			
 			while ((strLine = br.readLine()) != null) {
 				debug++;
-				String[] nodes = strLine.split(ESCAPE_SEPARATION);
+				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
 				long nodeId = Long.parseLong(nodes[0]);
 				double latitude = Double.parseDouble(nodes[1]);
 				double longitude = Double.parseDouble(nodes[2]);
@@ -424,7 +363,7 @@ public class OSMInput {
 			// First create a new XMLInputFactory
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 			// Setup a new eventReader
-			InputStream in = new FileInputStream(root + SEGMENT + osmFile);
+			InputStream in = new FileInputStream(OSMParam.root + OSMParam.SEGMENT + OSMParam.osmFile);
 			XMLEventReader eventReader = inputFactory.createXMLEventReader(in);
 			// Read the XML document
 			// NodeInfo
@@ -449,55 +388,55 @@ public class OSMInput {
 				if (event.isStartElement()) {
 					StartElement startElement = event.asStartElement();
 					// If we have a item element we create a new item
-					if (startElement.getName().getLocalPart().equals(NODE)) {	// read node
+					if (startElement.getName().getLocalPart().equals(OSMParam.NODE)) {	// read node
 						Iterator<Attribute> attributes = startElement.getAttributes();
 						while (attributes.hasNext()) {
 							Attribute attribute = attributes.next();
-							if (attribute.getName().toString().equals(ID))
+							if (attribute.getName().toString().equals(OSMParam.ID))
 								nodeId = Long.parseLong(attribute.getValue());
-							if (attribute.getName().toString().equals(LAT))
+							if (attribute.getName().toString().equals(OSMParam.LAT))
 								latitude = Double.parseDouble(attribute.getValue());
-							if (attribute.getName().toString().equals(LON))
+							if (attribute.getName().toString().equals(OSMParam.LON))
 								longitude = Double.parseDouble(attribute.getValue());
 						}
 						location = new LocationInfo(latitude, longitude);
 					}
 					
 					// If we have a item element we create a new item
-					if (startElement.getName().getLocalPart().equals(WAY)) {	// read way
+					if (startElement.getName().getLocalPart().equals(OSMParam.WAY)) {	// read way
 						// set default
 						isOneway = false;
-						name = UNKNOWN_STREET;
-						highway = UNKNOWN_HIGHWAY;
+						name = OSMParam.UNKNOWN_STREET;
+						highway = OSMParam.UNKNOWN_HIGHWAY;
 						infoHashMap = null;
 						
 						Iterator<Attribute> attributes = startElement.getAttributes();
 						while (attributes.hasNext()) {
 							Attribute attribute = attributes.next();
-							if (attribute.getName().toString().equals(ID)) {
+							if (attribute.getName().toString().equals(OSMParam.ID)) {
 								wayId = Long.parseLong(attribute.getValue());
 								break;
 							}
 						}
 					}
 					// Read child tag element of way
-					if (startElement.getName().getLocalPart().equals(TAG)) {	// read tag
+					if (startElement.getName().getLocalPart().equals(OSMParam.TAG)) {	// read tag
 						Iterator<Attribute> attributes = startElement.getAttributes();
 						while (attributes.hasNext()) {
 							Attribute attribute = attributes.next();
-							if (attribute.getName().toString().equals(K))
+							if (attribute.getName().toString().equals(OSMParam.K))
 								kAttr = attribute.getValue();
-							if (attribute.getName().toString().equals(V))
+							if (attribute.getName().toString().equals(OSMParam.V))
 								vAttr = attribute.getValue();
 						}
-						if(kAttr.equals(NAME)) {
+						if(kAttr.equals(OSMParam.NAME)) {
 							name = vAttr;
 						}
-						else if(kAttr.equals(HIGHWAY)) {
+						else if(kAttr.equals(OSMParam.HIGHWAY)) {
 							highway = vAttr;
 						}
-						else if(kAttr.equals(ONEWAY)) {
-							if(vAttr.equals(YES))
+						else if(kAttr.equals(OSMParam.ONEWAY)) {
+							if(vAttr.equals(OSMParam.YES))
 								isOneway = true;
 						}
 						else {
@@ -509,7 +448,7 @@ public class OSMInput {
 						}
 					}
 					
-					if (startElement.getName().getLocalPart().equals(RELATION)) {	// skip relation
+					if (startElement.getName().getLocalPart().equals(OSMParam.RELATION)) {	// skip relation
 						break;
 					}
 				}
@@ -517,11 +456,11 @@ public class OSMInput {
 				// If we reach the end of an item element we add it to the list
 				if (event.isEndElement()) {
 			       	EndElement endElement = event.asEndElement();
-			       	if (endElement.getName().getLocalPart().equals(NODE)) {
+			       	if (endElement.getName().getLocalPart().equals(OSMParam.NODE)) {
 			       		nodeInfo = new NodeInfo(nodeId, location);
 			       		nodeArrayList.add(nodeInfo);
 			       	}
-			       	if (endElement.getName().getLocalPart().equals(WAY)) {
+			       	if (endElement.getName().getLocalPart().equals(OSMParam.WAY)) {
 		        		// skip nodeArrayList, we add it from wkts file
 		        		wayInfo = new WayInfo(wayId, isOneway, name, highway);
 		        		wayInfo.setInfoHashMap(infoHashMap);
@@ -545,7 +484,7 @@ public class OSMInput {
 		System.out.println("read extra file...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(root + "/" + extraNodeFile);
+			FileInputStream fstream = new FileInputStream(OSMParam.root + "/" + OSMParam.extraNodeFile);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -583,7 +522,7 @@ public class OSMInput {
 		System.out.println("read osm file...");
 		int debug = 0, loop = 0;
 		try {
-			File file = new File(root + "/" + osmFile);
+			File file = new File(OSMParam.root + "/" + OSMParam.osmFile);
 			DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			Document doc = dBuilder.parse(file);
 			doc.getDocumentElement().normalize();

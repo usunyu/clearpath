@@ -1,30 +1,12 @@
-package function;
+package model;
 
 import java.io.*;
 import java.util.*;
 
+import global.*;
 import object.*;
 
 public class OSMOutput {
-	/**
-	 * @param file
-	 */
-	static String root = "file";
-	static String osmFile;
-	static String nodeCSVFile;
-	static String wayCSVFile;
-	static String wayInfoFile;
-	static String wayKMLFile;
-	static String nodeKMLFile;
-	static String edgeCVSFile;
-	static String adjlistFile;
-	static String pathKMLFile;
-	// temp
-	static String extraNodeFile;
-	// test
-	static String entranceExitFile;
-	static String pathNodeKMLFile;
-	static String highwayKMLFile;
 	/**
 	 * @param csv
 	 */
@@ -41,58 +23,17 @@ public class OSMOutput {
 	static String UNKNOWN_STREET 	= "Unknown Street";
 	static String UNKNOWN_HIGHWAY 	= "Unknown Highway";
 	/**
-	 * @param osm
-	 */
-	static String MOTORWAY		= "motorway";
-	static String MOTORWAY_LINK	= "motorway_link";
-	static String TRUNK			= "trunk";
-	static String TRUNK_LINK	= "trunk_link";
-	static String PRIMARY		= "primary";
-	static String PRIMARY_LINK	= "primary_link";
-	static String SECONDARY		= "secondary";
-	static String SECONDARY_LINK= "secondary_link";
-	static String TERTIARY		= "tertiary";
-	static String TERTIARY_LINK	= "tertiary_link";
-	static String RESIDENTIAL	= "residential";
-	static String CYCLEWAY		= "cycleway";
-	static String TRACK			= "track";
-	static String ROAD			= "road";
-	static String PROPOSED		= "proposed";
-	static String CONSTRUCTION	= "construction";
-	static String ABANDONED		= "abandoned";
-	static String SCALE			= "scale";
-	static String TURNING_CIRCLE= "turning_circle";
-	static String UNCLASSIFIED	= "unclassified";
-	/**
 	 * @param const
 	 */
 	static int FEET_PER_MILE	= 5280;
 	static int SECOND_PER_HOUR	= 3600;
 	static int MILLI_PER_SECOND	= 1000;
 	
-	public static void paramConfig(String name) {
-		osmFile 		= name + ".osm";
-		nodeCSVFile 	= name + "_node.csv";
-		wayCSVFile 		= name + "_way.csv";
-		wayInfoFile		= name + "_info.csv";
-		wayKMLFile		= name + "_way.kml";
-		nodeKMLFile		= name + "_node.kml";
-		edgeCVSFile		= name + "_edge.csv";
-		adjlistFile		= name + "_adjlist.csv";
-		pathKMLFile		= name + "_path.kml";
-		// temp
-		extraNodeFile	= name + "_way_extra.csv";
-		// test
-		entranceExitFile= name + "_entrance_exit.kml";
-		pathNodeKMLFile	= name + "_path_node.kml";
-		highwayKMLFile	= name + "_highway.kml";
-	}
-	
 	public static void generateEntranceExitKML(long start, long end, HashMap<Long, HighwayEntrance> entranceMap, HashMap<Long, HighwayEntrance> exitMap, HashMap<Long, NodeInfo> nodeHashMap) {
 		System.out.println("generate entrance exit kml...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + entranceExitFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.entranceExitFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			ArrayList<NodeInfo> nodeList = new ArrayList<NodeInfo>();
@@ -146,7 +87,7 @@ public class OSMOutput {
 		System.out.println("generate path node kml...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + pathNodeKMLFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.pathNodeKMLFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			for(long nodeId : pathNodeList) {
@@ -185,7 +126,7 @@ public class OSMOutput {
 		
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + pathKMLFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.pathKMLFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 
@@ -241,7 +182,7 @@ public class OSMOutput {
 		System.out.println("generate adjlist file...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + adjlistFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.adjlistFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			for(NodeInfo nodeInfo : nodeHashMap.values()) {
 				debug++;
@@ -263,46 +204,48 @@ public class OSMOutput {
 					// feet/second
 					double speed = 1;
 					boolean isFix = false;
-					if (edgeInfo.getHighway().equals(MOTORWAY) || edgeInfo.getHighway().equals(TRUNK)) {
+					// define all kinds of highway type link's speed
+					if (edgeInfo.getHighway().equals(OSMParam.MOTORWAY) || edgeInfo.getHighway().equals(OSMParam.TRUNK)) {
 						speed = (double) 60 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals(MOTORWAY_LINK) || edgeInfo.getHighway().equals(TRUNK_LINK) ) {
+					if (edgeInfo.getHighway().equals(OSMParam.MOTORWAY_LINK) || edgeInfo.getHighway().equals(OSMParam.TRUNK_LINK) ) {
 						speed = (double) 55 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals(RESIDENTIAL) || edgeInfo.getHighway().equals(CYCLEWAY) ||
-							edgeInfo.getHighway().equals(TURNING_CIRCLE)) {
+					if (edgeInfo.getHighway().equals(OSMParam.RESIDENTIAL) || edgeInfo.getHighway().equals(OSMParam.CYCLEWAY) ||
+							edgeInfo.getHighway().equals(OSMParam.TURNING_CIRCLE)) {
 						speed = (double) 10 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
-					if (edgeInfo.getHighway().equals(UNKNOWN_HIGHWAY) || edgeInfo.getHighway().equals(UNCLASSIFIED) || 
-							edgeInfo.getHighway().equals(TRACK) || edgeInfo.getHighway().equals(CONSTRUCTION) || 
-							edgeInfo.getHighway().equals(PROPOSED) || edgeInfo.getHighway().equals(ROAD) || 
-							edgeInfo.getHighway().equals(ABANDONED) || edgeInfo.getHighway().equals(SCALE)) {
+					if (edgeInfo.getHighway().equals(UNKNOWN_HIGHWAY) || edgeInfo.getHighway().equals(OSMParam.UNCLASSIFIED) || 
+							edgeInfo.getHighway().equals(OSMParam.TRACK) || edgeInfo.getHighway().equals(OSMParam.CONSTRUCTION) || 
+							edgeInfo.getHighway().equals(OSMParam.PROPOSED) || edgeInfo.getHighway().equals(OSMParam.ROAD) || 
+							edgeInfo.getHighway().equals(OSMParam.ABANDONED) || edgeInfo.getHighway().equals(OSMParam.SCALE)) {
 						speed = (double) 5 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
-					if (edgeInfo.getHighway().equals(TERTIARY)) {
+					if (edgeInfo.getHighway().equals(OSMParam.TERTIARY)) {
 						speed = (double) 20 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
-					if (edgeInfo.getHighway().equals(TERTIARY_LINK)) {
+					if (edgeInfo.getHighway().equals(OSMParam.TERTIARY_LINK)) {
 						speed = (double) 15 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
-					if (edgeInfo.getHighway().equals(SECONDARY)) {
+					if (edgeInfo.getHighway().equals(OSMParam.SECONDARY)) {
 						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals(SECONDARY_LINK)) {
+					if (edgeInfo.getHighway().equals(OSMParam.SECONDARY_LINK)) {
 						speed = (double) 25 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals(PRIMARY)) {
+					if (edgeInfo.getHighway().equals(OSMParam.PRIMARY)) {
 						speed = (double) 35 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
-					if (edgeInfo.getHighway().equals(PRIMARY_LINK)) {
+					if (edgeInfo.getHighway().equals(OSMParam.PRIMARY_LINK)) {
 						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
 					}
 
 					travelTime = (int) Math.round(edgeInfo.getDistance() / speed * MILLI_PER_SECOND);
+					// travelTime cannot be zero
 					if (travelTime == 0) {
 						travelTime = 1;
 					}
@@ -348,7 +291,7 @@ public class OSMOutput {
 		System.out.println("write edge file...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + edgeCVSFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.edgeCVSFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			for (EdgeInfo edgeInfo : edgeHashMap.values()) {
 				debug++;
@@ -381,7 +324,7 @@ public class OSMOutput {
 		System.out.println("generate node kml...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + nodeKMLFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.nodeKMLFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			for(NodeInfo nodeInfo : nodeHashMap.values()) {
@@ -418,7 +361,7 @@ public class OSMOutput {
 		System.out.println("generate kml...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + wayKMLFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.wayKMLFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 
@@ -475,7 +418,7 @@ public class OSMOutput {
 		System.out.println("generate highway kml...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + highwayKMLFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.highwayKMLFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 
@@ -485,8 +428,8 @@ public class OSMOutput {
 				String name = edgeInfo.getName();
 				String highway = edgeInfo.getHighway();
 				
-				if(!highway.equals(MOTORWAY) && !highway.equals(MOTORWAY_LINK) && 
-						!highway.equals(TRUNK) && !highway.equals(TRUNK_LINK)) {
+				if(!highway.equals(OSMParam.MOTORWAY) && !highway.equals(OSMParam.MOTORWAY_LINK) && 
+						!highway.equals(OSMParam.TRUNK) && !highway.equals(OSMParam.TRUNK_LINK)) {
 					continue;
 				}
 				
@@ -536,7 +479,7 @@ public class OSMOutput {
 		System.out.println("write way info file...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + wayInfoFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.wayInfoFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			for(Long wayId : wayHashMap.keySet()) {
 				debug++;
@@ -571,7 +514,7 @@ public class OSMOutput {
 		System.out.println("write way file...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + wayCSVFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.wayCSVFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			for(Long wayId : wayHashMap.keySet()) {
 				debug++;
@@ -601,7 +544,7 @@ public class OSMOutput {
 		System.out.println("write node file...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(root + "/" + nodeCSVFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.nodeCSVFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			for(Long nodeId : nodeHashMap.keySet()) {
 				debug++;
@@ -632,7 +575,7 @@ public class OSMOutput {
 		int debug = 0, loop = 0;
 		try {
 			// write node
-			FileWriter fstream = new FileWriter(root + "/" + nodeCSVFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.nodeCSVFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			loop++;
 			for (int i = 0; i < nodeArrayList.size(); i++) {
@@ -651,7 +594,7 @@ public class OSMOutput {
 			fstream.close();
 			
 			// write way
-			fstream = new FileWriter(root + "/" + wayCSVFile);
+			fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.wayCSVFile);
 			out = new BufferedWriter(fstream);
 			loop++;
 			for (int i = 0; i < wayArrayList.size(); i++) {
@@ -670,7 +613,7 @@ public class OSMOutput {
 			fstream.close();
 			
 			// write way info
-			fstream = new FileWriter(root + "/" + wayInfoFile);
+			fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.wayInfoFile);
 			out = new BufferedWriter(fstream);
 			loop++;
 			for(WayInfo wayInfo : wayArrayList) {

@@ -1,7 +1,7 @@
-package process;
+package controller;
 
-import data.*;
-import function.*;
+import model.*;
+import global.*;
 
 /*
  * 2nd step for OSM Project
@@ -26,9 +26,9 @@ public class OSMInputFileGeneration {
 	}
 	
 	public static void main(String[] args) {
-		OSMInput.paramConfig(args[0]);
+		OSMParam.paramConfig(args[0]);
+		
 		OSMInput.readOsmFileStax(OSMData.wayArrayList, OSMData.nodeArrayList);
-		OSMOutput.paramConfig(args[0]);
 		OSMOutput.writeCSVFile(OSMData.wayArrayList, OSMData.nodeArrayList);
 		// free memory
 		OSMData.wayArrayList = null;

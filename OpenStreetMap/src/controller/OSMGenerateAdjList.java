@@ -1,10 +1,11 @@
-package process;
+package controller;
 
 import java.util.*;
 
-import data.*;
+import model.*;
+
+import global.*;
 import object.*;
-import function.*;
 
 public class OSMGenerateAdjList {
 
@@ -14,7 +15,7 @@ public class OSMGenerateAdjList {
 
 	public static void main(String[] args) {
 		buildAdjList(OSMData.nodeHashMap, OSMData.edgeHashMap, OSMData.adjList, OSMData.nodesToEdge);
-		OSMOutput.paramConfig(args[0]);
+		OSMParam.paramConfig(args[0]);
 		OSMOutput.generateAdjList(OSMData.nodeHashMap, OSMData.adjList, OSMData.nodesToEdge);
 	}
 

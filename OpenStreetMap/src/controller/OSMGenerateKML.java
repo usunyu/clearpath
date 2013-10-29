@@ -1,7 +1,7 @@
-package process;
+package controller;
 
-import data.*;
-import function.*;
+import model.*;
+import global.*;
 
 public class OSMGenerateKML {
 	
@@ -10,7 +10,7 @@ public class OSMGenerateKML {
 	}
 	
 	public static void main(String[] args) {
-		OSMOutput.paramConfig(args[0]);
+		OSMParam.paramConfig(args[0]);
 		OSMOutput.generateWayKML(OSMData.wayHashMap, OSMData.nodeHashMap);
 		OSMOutput.generateNodeKML(OSMData.nodeHashMap);
 	}

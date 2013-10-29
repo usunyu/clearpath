@@ -1,10 +1,11 @@
-package process;
+package controller;
 
 import java.util.*;
 
-import data.*;
+import model.*;
+
+import global.*;
 import object.*;
-import function.*;
 
 public class OSMDivideWayToEdge {
 	
@@ -14,7 +15,7 @@ public class OSMDivideWayToEdge {
 	
 	public static void main(String[] args) {
 		divideWayToEdge(OSMData.wayHashMap, OSMData.nodeHashMap, OSMData.edgeHashMap);
-		OSMOutput.paramConfig(args[0]);
+		OSMParam.paramConfig(args[0]);
 		OSMOutput.writeEdgeFile(OSMData.edgeHashMap);
 	}
 	

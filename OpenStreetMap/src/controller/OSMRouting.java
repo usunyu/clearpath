@@ -1,10 +1,11 @@
-package process;
+package controller;
 
 import java.util.*;
 
-import function.*;
+import global.OSMParam;
 import object.*;
 import main.*;
+import model.*;
 
 public class OSMRouting {
 
@@ -14,7 +15,7 @@ public class OSMRouting {
 	static long START_NODE 		= 187143552;
 	static long END_NODE 		= 699922975;
 	static int START_TIME 		= 10;
-	static int TIME_INTERVAL 		= 15;
+	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
 	/**
 	 * @param osm
@@ -56,13 +57,13 @@ public class OSMRouting {
 	/**
 	 * @param path
 	 */
+	// highway type : level
 	static HashMap<String, Integer> hierarchyHashMap = new HashMap<String, Integer>();
 	static ArrayList<Long> pathNodeList = new ArrayList<Long>();
 
 	public static void main(String[] args) {
 		// config
-		OSMInput.paramConfig(OSMMain.osm);
-		OSMOutput.paramConfig(OSMMain.osm);
+		OSMParam.paramConfig(OSMMain.osm);
 		// input
 		OSMInput.buildAdjList(adjListHashMap, adjReverseListHashMap);
 		OSMInput.readNodeFile(nodeHashMap);
@@ -72,6 +73,15 @@ public class OSMRouting {
 		// initial hierarchy level
 		initialHierarchy();
 		prepareRoute(nodeHashMap);
+		
+		tdsp();
+		
+		// output
+		OSMOutput.generatePathKML(nodeHashMap, pathNodeList);
+		OSMOutput.generatePathNodeKML(nodeHashMap, pathNodeList);
+	}
+	
+	public static void tdsp() {
 		// count time
 		long begintime = System.currentTimeMillis();
 		//tdsp(START_NODE, END_NODE, START_TIME);
@@ -79,10 +89,6 @@ public class OSMRouting {
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("tdsp cost: " + costTime + " ms");
-		
-		// output
-		OSMOutput.generatePathKML(nodeHashMap, pathNodeList);
-		OSMOutput.generatePathNodeKML(nodeHashMap, pathNodeList);
 	}
 	
 	public static void initialHierarchy() {

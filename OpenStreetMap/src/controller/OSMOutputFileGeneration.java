@@ -1,7 +1,7 @@
-package process;
+package controller;
 
-import data.*;
-import function.*;
+import model.*;
+import global.*;
 import object.*;
 
 public class OSMOutputFileGeneration {
@@ -11,13 +11,13 @@ public class OSMOutputFileGeneration {
 	}
 	
 	public static void main(String[] args) {
-		OSMInput.paramConfig(args[0]);
+		OSMParam.paramConfig(args[0]);
+		
 		OSMInput.readNodeFile(OSMData.nodeHashMap);
 		OSMInput.readWayFile(OSMData.wayHashMap);
 		OSMInput.readWayInfo(OSMData.wayHashMap);
 		OSMInput.readWktsFile(OSMData.wayHashMap, OSMData.nodeHashMap);
 		
-		OSMOutput.paramConfig(args[0]);
 		// over write the cvs file
 		OSMOutput.writeNodeFile(OSMData.nodeHashMap);
 		OSMOutput.writeWayFile(OSMData.wayHashMap);
