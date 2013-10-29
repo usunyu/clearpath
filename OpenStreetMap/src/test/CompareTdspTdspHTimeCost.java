@@ -21,6 +21,7 @@ public class CompareTdspTdspHTimeCost {
 		int startTime = 10;
 		// test for routing
 		int size = OSMData.nodeArrayList.size();
+		System.out.println("Test for tdsp and tdsph...");
 		for(int i = 0; i < 1000; i++) {
 			long startNode = OSMData.nodeArrayList.get((int)(Math.random() * size)).getNodeId();
 			long endNode = OSMData.nodeArrayList.get((int)(Math.random() * size)).getNodeId();

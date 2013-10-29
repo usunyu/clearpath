@@ -15,7 +15,7 @@ public class OSMMain {
 	 * put your *.osm file name here (not include suffix)
 	 * the *.osm file should be in you file folder
 	 */
-	public static String osm = "los_angeles";
+	public static String osm = "minnesota";
 	
 	public static void main(String[] args) {
 		try {
