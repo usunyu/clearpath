@@ -1,10 +1,11 @@
 package main;
 
-import global.OSMParam;
+import global.*;
 
 import java.io.*;
 
 import controller.*;
+import model.*;
 import osm2wkt.*;
 
 public class OSMMain {
@@ -16,16 +17,6 @@ public class OSMMain {
 	 */
 	public static String osm = "los_angeles";
 	
-	public static void checkFileExist(String file) {
-		String path = OSMParam.root + OSMParam.SEGMENT + file + ".osm";
-		File f = new File(path);
-		
-		if(!f.exists()) {
-			System.err.println("Can not find " + path + ", program exit!");
-			System.exit(-1);
-		}
-	}
-	
 	public static void main(String[] args) {
 		try {
 			if(args.length > 0) {
@@ -35,7 +26,8 @@ public class OSMMain {
 				args = new String[1];
 				args[0] = osm;
 			}
-			checkFileExist(osm);
+			OSMInput.checkFileExist(OSMParam.root + OSMParam.SEGMENT + osm + ".osm");
+			
 			System.out.println("Step1: osm2wkt...\n");
 			Osm2Wkt.run(args);
 			System.out.println("Step2: input file generation...\n");

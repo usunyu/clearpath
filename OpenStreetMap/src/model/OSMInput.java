@@ -24,6 +24,19 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 public class OSMInput {
+	
+	/**
+	 * check whether file exist
+	 * @param file
+	 */
+	public static void checkFileExist(String file) {
+		File f = new File(file);
+		
+		if(!f.exists()) {
+			System.err.println("Can not find " + file + ", program exit!");
+			System.exit(-1);
+		}
+	}
 	/**
 	 * build adjlist
 	 * @param adjListHashMap
@@ -33,7 +46,9 @@ public class OSMInput {
 
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(OSMParam.root + "/" + OSMParam.adjlistFile);
+			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.adjlistFile;
+			checkFileExist(file);
+			FileInputStream fstream = new FileInputStream(file);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -112,7 +127,9 @@ public class OSMInput {
 		System.out.println("read edge file...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(OSMParam.root + "/" + OSMParam.edgeCVSFile);
+			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.edgeCVSFile;
+			checkFileExist(file);
+			FileInputStream fstream = new FileInputStream(file);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -151,7 +168,9 @@ public class OSMInput {
 		System.out.println("read edge file...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(OSMParam.root + "/" + OSMParam.edgeCVSFile);
+			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.edgeCVSFile;
+			checkFileExist(file);
+			FileInputStream fstream = new FileInputStream(file);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -196,7 +215,9 @@ public class OSMInput {
 		try {
 			HashMap<Long, WayInfo> wayNeedHashMap = new HashMap<Long, WayInfo>();
 			HashMap<Long, NodeInfo> nodeNeedHashMap = new HashMap<Long, NodeInfo>();
-			FileInputStream fstream = new FileInputStream(OSMParam.root + OSMParam.SEGMENT + OSMParam.wktsFile);
+			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.wktsFile;
+			checkFileExist(file);
+			FileInputStream fstream = new FileInputStream(file);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -245,7 +266,9 @@ public class OSMInput {
 		System.out.println("read way info...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(OSMParam.root + OSMParam.SEGMENT + OSMParam.wayInfoFile);
+			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.wayInfoFile;
+			checkFileExist(file);
+			FileInputStream fstream = new FileInputStream(file);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -289,7 +312,9 @@ public class OSMInput {
 		System.out.println("read way file...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(OSMParam.root + OSMParam.SEGMENT + OSMParam.wayCSVFile);
+			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.wayCSVFile;
+			checkFileExist(file);
+			FileInputStream fstream = new FileInputStream(file);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -324,7 +349,9 @@ public class OSMInput {
 		System.out.println("read node file...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(OSMParam.root + OSMParam.SEGMENT + OSMParam.nodeCSVFile);
+			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.nodeCSVFile;
+			checkFileExist(file);
+			FileInputStream fstream = new FileInputStream(file);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -362,8 +389,10 @@ public class OSMInput {
 		try {
 			// First create a new XMLInputFactory
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.osmFile;
+			checkFileExist(file);
 			// Setup a new eventReader
-			InputStream in = new FileInputStream(OSMParam.root + OSMParam.SEGMENT + OSMParam.osmFile);
+			InputStream in = new FileInputStream(file);
 			XMLEventReader eventReader = inputFactory.createXMLEventReader(in);
 			// Read the XML document
 			// NodeInfo
@@ -484,7 +513,9 @@ public class OSMInput {
 		System.out.println("read extra file...");
 		int debug = 0;
 		try {
-			FileInputStream fstream = new FileInputStream(OSMParam.root + "/" + OSMParam.extraNodeFile);
+			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.extraNodeFile;
+			checkFileExist(file);
+			FileInputStream fstream = new FileInputStream(file);
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String strLine;
@@ -522,7 +553,9 @@ public class OSMInput {
 		System.out.println("read osm file...");
 		int debug = 0, loop = 0;
 		try {
-			File file = new File(OSMParam.root + "/" + OSMParam.osmFile);
+			String fileName = OSMParam.root + OSMParam.SEGMENT + OSMParam.osmFile;
+			checkFileExist(fileName);
+			File file = new File(fileName);
 			DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			Document doc = dBuilder.parse(file);
 			doc.getDocumentElement().normalize();

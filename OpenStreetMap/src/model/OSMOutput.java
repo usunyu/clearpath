@@ -8,21 +8,6 @@ import object.*;
 
 public class OSMOutput {
 	/**
-	 * @param csv
-	 */
-	static String SEPARATION	= "|";
-	static String COMMA			= ",";
-	static String SEMICOLON		= ";";
-	static String COLON			= ":";
-	static String ONEDIRECT		= "O";
-	static String BIDIRECT		= "B";
-	static String FIX			= "F";
-	static String VARIABLE		= "V";
-	static String LINEEND		= "\r\n";
-	
-	static String UNKNOWN_STREET 	= "Unknown Street";
-	static String UNKNOWN_HIGHWAY 	= "Unknown Highway";
-	/**
 	 * @param const
 	 */
 	static int FEET_PER_MILE	= 5280;
@@ -61,7 +46,7 @@ public class OSMOutput {
 				strLine += "Id:" + nodeInfo.getNodeId();
 				strLine += "</description>";
 				strLine += "<Point><coordinates>";
-				strLine += nodeInfo.getLocation().getLongitude() + "," + nodeInfo.getLocation().getLatitude();
+				strLine += nodeInfo.getLocation().getLongitude() + OSMParam.COMMA + nodeInfo.getLocation().getLatitude();
 				strLine += ",0</coordinates></Point>";
 				strLine += "</Placemark>";
 				
@@ -99,8 +84,8 @@ public class OSMOutput {
 				strLine += "Id:" + nodeInfo.getNodeId();
 				strLine += "</description>";
 				strLine += "<Point><coordinates>";
-				strLine += nodeInfo.getLocation().getLongitude() + "," + nodeInfo.getLocation().getLatitude();
-				strLine += ",0</coordinates></Point>";
+				strLine += nodeInfo.getLocation().getLongitude() + OSMParam.COMMA + nodeInfo.getLocation().getLatitude() + OSMParam.COMMA + "0 ";
+				strLine += "</coordinates></Point>";
 				strLine += "</Placemark>";
 				
 				out.write(strLine);
@@ -146,12 +131,12 @@ public class OSMOutput {
 				
 				String kmlStr = "<Placemark>";
 				kmlStr += "<description>";
-				kmlStr += "start:" + lastNodeId + LINEEND;
-				kmlStr += "end:" + nodeId + LINEEND;
+				kmlStr += "start:" + lastNodeId + OSMParam.LINEEND;
+				kmlStr += "end:" + nodeId + OSMParam.LINEEND;
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
-				kmlStr += lastNode.getLocation().getLongitude() + "," + lastNode.getLocation().getLatitude() + ",0 ";
-				kmlStr += currentNode.getLocation().getLongitude() + "," + currentNode.getLocation().getLatitude() + ",0 ";
+				kmlStr += lastNode.getLocation().getLongitude() + OSMParam.COMMA + lastNode.getLocation().getLatitude() + OSMParam.COMMA + "0 ";
+				kmlStr += currentNode.getLocation().getLongitude() + OSMParam.COMMA + currentNode.getLocation().getLatitude() + OSMParam.COMMA + "0 ";
 				kmlStr += "</coordinates></LineString>";
 				kmlStr += "<Style><LineStyle>";
 				kmlStr += "<color>#FF00FF14</color>";
@@ -187,7 +172,7 @@ public class OSMOutput {
 			for(NodeInfo nodeInfo : nodeHashMap.values()) {
 				debug++;
 				String strLine;
-				strLine = nodeInfo.getNodeId() + SEPARATION;
+				strLine = nodeInfo.getNodeId() + OSMParam.SEPARATION;
 
 				ArrayList<Long> localNodeArrayList = adjList.get(nodeInfo.getNodeId());
 
@@ -197,7 +182,7 @@ public class OSMOutput {
 
 				for (int j = 0; j < localNodeArrayList.size(); j++) {
 
-					String nodeIdString = nodeInfo.getNodeId() + "," + localNodeArrayList.get(j);
+					String nodeIdString = nodeInfo.getNodeId() + OSMParam.COMMA + localNodeArrayList.get(j);
 
 					EdgeInfo edgeInfo = nodesToEdge.get(nodeIdString);
 					int travelTime = 1;
@@ -216,7 +201,7 @@ public class OSMOutput {
 						speed = (double) 10 * FEET_PER_MILE / (SECOND_PER_HOUR);
 						isFix = true;
 					}
-					if (edgeInfo.getHighway().equals(UNKNOWN_HIGHWAY) || edgeInfo.getHighway().equals(OSMParam.UNCLASSIFIED) || 
+					if (edgeInfo.getHighway().equals(OSMParam.UNKNOWN_HIGHWAY) || edgeInfo.getHighway().equals(OSMParam.UNCLASSIFIED) || 
 							edgeInfo.getHighway().equals(OSMParam.TRACK) || edgeInfo.getHighway().equals(OSMParam.CONSTRUCTION) || 
 							edgeInfo.getHighway().equals(OSMParam.PROPOSED) || edgeInfo.getHighway().equals(OSMParam.ROAD) || 
 							edgeInfo.getHighway().equals(OSMParam.ABANDONED) || edgeInfo.getHighway().equals(OSMParam.SCALE)) {
@@ -257,21 +242,21 @@ public class OSMOutput {
 							timeList[k] = travelTime;
 						}
 						
-						strLine += localNodeArrayList.get(j) + "(" + VARIABLE + ")" + COLON;
+						strLine += localNodeArrayList.get(j) + "(" + OSMParam.VARIABLE + ")" + OSMParam.COLON;
 						for (int k = 0; k < timeList.length; k++) {
 							strLine += timeList[k];
 							if (k < timeList.length - 1)
-								strLine += COMMA;
+								strLine += OSMParam.COMMA;
 							else
-								strLine += SEMICOLON;
+								strLine += OSMParam.SEMICOLON;
 						}
 					} else {
-						strLine += localNodeArrayList.get(j) + "(" + FIX + ")" + COLON;
-						strLine += travelTime + SEMICOLON;
+						strLine += localNodeArrayList.get(j) + "(" + OSMParam.FIX + ")" + OSMParam.COLON;
+						strLine += travelTime + OSMParam.SEMICOLON;
 					}
 				}
 
-				strLine += LINEEND;
+				strLine += OSMParam.LINEEND;
 				out.write(strLine);
 			}
 			out.close();
@@ -303,8 +288,8 @@ public class OSMOutput {
 				long endNode = edgeInfo.getEndNode();
 				int distance = edgeInfo.getDistance();
 				long id = wayId * 1000 + edgeId;
-				String strLine = id + SEPARATION + name + SEPARATION  + highway + SEPARATION 
-				+ startNode + SEPARATION + endNode + SEPARATION + distance + LINEEND;
+				String strLine = id + OSMParam.SEPARATION + name + OSMParam.SEPARATION  + highway + OSMParam.SEPARATION 
+				+ startNode + OSMParam.SEPARATION + endNode + OSMParam.SEPARATION + distance + OSMParam.LINEEND;
 				out.write(strLine);
 			}
 			out.close();
@@ -335,8 +320,8 @@ public class OSMOutput {
 				strLine += "Id:" + nodeInfo.getNodeId();
 				strLine += "</description>";
 				strLine += "<Point><coordinates>";
-				strLine += nodeInfo.getLocation().getLongitude() + "," + nodeInfo.getLocation().getLatitude();
-				strLine += ",0</coordinates></Point>";
+				strLine += nodeInfo.getLocation().getLongitude() + OSMParam.COMMA + nodeInfo.getLocation().getLatitude() + OSMParam.COMMA + "0 ";
+				strLine += "</coordinates></Point>";
 				strLine += "</Placemark>";
 				
 				out.write(strLine);
@@ -375,23 +360,23 @@ public class OSMOutput {
 				
 				String kmlStr = "<Placemark><name>Way:" + wayId + "</name>";
 				kmlStr += "<description>";
-				kmlStr += "oneway:" + isOneway + LINEEND;
+				kmlStr += "oneway:" + isOneway + OSMParam.LINEEND;
 				if(name.contains("&"))
 					name = name.replaceAll("&", "and");
-				kmlStr += "name:" + name + LINEEND;
-				kmlStr += "highway:" + highway + LINEEND;
+				kmlStr += "name:" + name + OSMParam.LINEEND;
+				kmlStr += "highway:" + highway + OSMParam.LINEEND;
 				kmlStr += "ref:\r\n";
 				for(int j = 0; j < localNodeArrayList.size(); j++) {
 					long NodeId = localNodeArrayList.get(j);
-					kmlStr += NodeId + LINEEND;
+					kmlStr += NodeId + OSMParam.LINEEND;
 				}
-				kmlStr += LINEEND;
+				kmlStr += OSMParam.LINEEND;
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
 				for(int j = 0; j < localNodeArrayList.size(); j++) {
 					NodeInfo nodeInfo = nodeHashMap.get(localNodeArrayList.get(j));
 					LocationInfo location = nodeInfo.getLocation();
-					kmlStr += location.getLongitude() + "," + location.getLatitude() + ",0 ";
+					kmlStr += location.getLongitude() + OSMParam.COMMA + location.getLatitude() + OSMParam.COMMA + "0 ";
 				}
 				kmlStr += "</coordinates></LineString>";
 				kmlStr += "<Style><LineStyle>";
@@ -438,22 +423,22 @@ public class OSMOutput {
 				
 				String kmlStr = "<Placemark><name>Way:" + wayId + "</name>";
 				kmlStr += "<description>";
-				kmlStr += "start:" + start + LINEEND;
-				kmlStr += "end:" + end + LINEEND;
+				kmlStr += "start:" + start + OSMParam.LINEEND;
+				kmlStr += "end:" + end + OSMParam.LINEEND;
 				if(name.contains("&"))
 					name = name.replaceAll("&", "and");
-				kmlStr += "name:" + name + LINEEND;
-				kmlStr += "highway:" + highway + LINEEND;
+				kmlStr += "name:" + name + OSMParam.LINEEND;
+				kmlStr += "highway:" + highway + OSMParam.LINEEND;
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
 				
 				NodeInfo node1 = nodeHashMap.get(start);
 				LocationInfo location1 = node1.getLocation();
-				kmlStr += location1.getLongitude() + "," + location1.getLatitude() + ",0 ";
+				kmlStr += location1.getLongitude() + OSMParam.COMMA + location1.getLatitude() + OSMParam.COMMA + "0 ";
 				
 				NodeInfo node2 = nodeHashMap.get(end);
 				LocationInfo location2 = node2.getLocation();
-				kmlStr += location2.getLongitude() + "," + location2.getLatitude() + ",0 ";
+				kmlStr += location2.getLongitude() + OSMParam.COMMA + location2.getLatitude() + OSMParam.COMMA + "0 ";
 				
 				kmlStr += "</coordinates></LineString>";
 				kmlStr += "<Style><LineStyle>";
@@ -489,9 +474,9 @@ public class OSMOutput {
 					String strLine = String.valueOf(wayId);
 					for(String key : infoHashMap.keySet()) {
 						String value = infoHashMap.get(key);
-						strLine += SEPARATION + SEPARATION + key + SEPARATION + value;
+						strLine += OSMParam.SEPARATION + OSMParam.SEPARATION + key + OSMParam.SEPARATION + value;
 					}
-					strLine += LINEEND;
+					strLine += OSMParam.LINEEND;
 					out.write(strLine);
 				}
 			}
@@ -519,10 +504,10 @@ public class OSMOutput {
 			for(Long wayId : wayHashMap.keySet()) {
 				debug++;
 				WayInfo wayInfo = wayHashMap.get(wayId);
-				String oneway = wayInfo.isOneway() ? ONEDIRECT : BIDIRECT;
+				String oneway = wayInfo.isOneway() ? OSMParam.ONEDIRECT : OSMParam.BIDIRECT;
 				String name = wayInfo.getName();
 				String highway = wayInfo.getHighway();
-				String strLine = wayId + SEPARATION + oneway + SEPARATION + name + SEPARATION + highway + LINEEND;
+				String strLine = wayId + OSMParam.SEPARATION + oneway + OSMParam.SEPARATION + name + OSMParam.SEPARATION + highway + OSMParam.LINEEND;
 				out.write(strLine);
 			}
 			
@@ -552,7 +537,7 @@ public class OSMOutput {
 				LocationInfo location = nodeInfo.getLocation();
 				double latitude = location.getLatitude();
 				double longitude = location.getLongitude();
-				String strLine = nodeId + SEPARATION + latitude + SEPARATION + longitude + LINEEND;
+				String strLine = nodeId + OSMParam.SEPARATION + latitude + OSMParam.SEPARATION + longitude + OSMParam.LINEEND;
 				
 				out.write(strLine);
 			}
@@ -569,6 +554,8 @@ public class OSMOutput {
 
 	/**
 	 * write to CSV file from the data read from XML file 
+	 * @param wayArrayList
+	 * @param nodeArrayList
 	 */
 	public static void writeCSVFile(ArrayList<WayInfo> wayArrayList, ArrayList<NodeInfo> nodeArrayList) {
 		System.out.println("write csv file...");
@@ -586,7 +573,7 @@ public class OSMOutput {
 				double latitude = location.getLatitude();
 				double longitude = location.getLongitude();
 				
-				String strLine = nodeId + SEPARATION + latitude + SEPARATION + longitude + LINEEND;
+				String strLine = nodeId + OSMParam.SEPARATION + latitude + OSMParam.SEPARATION + longitude + OSMParam.LINEEND;
 				
 				out.write(strLine);
 			}
@@ -601,12 +588,12 @@ public class OSMOutput {
 				debug++;
 				WayInfo wayInfo = wayArrayList.get(i);
 				long wayId = wayInfo.getWayId();
-				String isOneway = wayInfo.isOneway() ? ONEDIRECT : BIDIRECT;
+				String isOneway = wayInfo.isOneway() ? OSMParam.ONEDIRECT : OSMParam.BIDIRECT;
 				String name = wayInfo.getName();
 				String highway = wayInfo.getHighway();
-				String strLine = wayId + SEPARATION + isOneway + SEPARATION + name + SEPARATION + highway;
+				String strLine = wayId + OSMParam.SEPARATION + isOneway + OSMParam.SEPARATION + name + OSMParam.SEPARATION + highway;
 				
-				strLine += LINEEND;
+				strLine += OSMParam.LINEEND;
 				out.write(strLine);
 			}
 			out.close();
@@ -624,9 +611,9 @@ public class OSMOutput {
 					String strLine = String.valueOf(wayId);
 					for(String key : wayInfoMap.keySet()) {
 						String value = wayInfoMap.get(key);
-						strLine += SEPARATION + SEPARATION + key + SEPARATION + value;
+						strLine += OSMParam.SEPARATION + OSMParam.SEPARATION + key + OSMParam.SEPARATION + value;
 					}
-					strLine += LINEEND;
+					strLine += OSMParam.LINEEND;
 					out.write(strLine);
 				}
 			}
