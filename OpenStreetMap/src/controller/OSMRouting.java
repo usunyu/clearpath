@@ -146,7 +146,10 @@ public class OSMRouting {
 					EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdKey);
 					
 					String highway = edge.getHighway();
-					int hierarchy = hierarchyHashMap.get(highway);
+					int hierarchy = 6;
+					if(hierarchyHashMap.containsKey(highway)) {
+						hierarchy = hierarchyHashMap.get(highway);
+					}
 					
 					int travelTime;
 					if(fromNode.isFix())	// fix time
@@ -246,7 +249,10 @@ public class OSMRouting {
 				EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdKey);
 				
 				String highway = edge.getHighway();
-				int hierarchy = hierarchyHashMap.get(highway);
+				int hierarchy = 6;
+				if(hierarchyHashMap.containsKey(highway)) {
+					hierarchy = hierarchyHashMap.get(highway);
+				}
 				
 				int travelTime;
 				if(toNode.isFix())	// fix time
@@ -543,8 +549,9 @@ public class OSMRouting {
 			}
 			
 			if(current.getParentId() == -1) {
-				System.err.println("cannot find the path, program exit!");
-				System.exit(-1);
+				System.err.println("cannot find the path!");
+				prepareRoute(nodeStack);
+				return -1;
 			}
 			
 			if(current.getParentId() == startNode)
