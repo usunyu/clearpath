@@ -300,8 +300,7 @@ public class OSMRouting {
 		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayExit(startNode, endNode, nodeHashMap, nodesToEdgeHashMap, adjReverseListHashMap);
 		
 		if(entranceMap == null || exitMap == null) {	// we should use normal tdsp in this situation
-			tdsp(startNode, endNode, startTime, nodeHashMap, adjListHashMap);
-			return -1;
+			return tdsp(startNode, endNode, startTime, nodeHashMap, adjListHashMap);
 		}
 		
 		// test
@@ -323,8 +322,9 @@ public class OSMRouting {
 			NodeInfo current = nodeHashMap.get(entranceId);	// get start node
 			nodeStack.push(current);
 			if(current == null) {
-				System.err.println("cannot find entrance node, program exit!");
-				System.exit(-1);
+				System.err.println("cannot find entrance node!");
+				prepareRoute(nodeStack);
+				return -1;
 			}
 			
 			current.setCost(0);	// set start cost to 0
@@ -401,14 +401,17 @@ public class OSMRouting {
 						pathNodeList = new ArrayList<Long>();
 						if(entranceId == exitId) {
 							System.out.println("entrance node is the same as exit node.");
+							prepareRoute(nodeStack);
+							return 0;
 						}
 						else {
 							pathNodeList.add(exitId);
 							while(cur.getParentId() != -1) {
 								cur = nodeHashMap.get(cur.getParentId());
 								if(cur == null) {
-									System.err.println("cannot find intermediate node, program exit!");
-									System.exit(-1);
+									System.err.println("cannot find intermediate node!");
+									prepareRoute(nodeStack);
+									return -1;
 								}
 								pathNodeList.add(cur.getNodeId());	// add intermediate node
 							}
@@ -438,8 +441,8 @@ public class OSMRouting {
 			System.out.println("find the path successful!");
 		}
 		else {
-			System.err.println("cannot find the entrance, program exit!");
-			System.exit(-1);
+			System.err.println("cannot find the entrance!");
+			return -1;
 		}
 		return totalCost;
 	}
