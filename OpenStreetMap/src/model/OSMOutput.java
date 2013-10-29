@@ -7,12 +7,6 @@ import global.*;
 import object.*;
 
 public class OSMOutput {
-	/**
-	 * @param const
-	 */
-	static int FEET_PER_MILE	= 5280;
-	static int SECOND_PER_HOUR	= 3600;
-	static int MILLI_PER_SECOND	= 1000;
 	
 	public static void generateEntranceExitKML(long start, long end, HashMap<Long, HighwayEntrance> entranceMap, HashMap<Long, HighwayEntrance> exitMap, HashMap<Long, NodeInfo> nodeHashMap) {
 		System.out.println("generate entrance exit kml...");
@@ -161,9 +155,9 @@ public class OSMOutput {
 	 * generate adjlist
 	 * @param nodeHashMap
 	 * @param adjList
-	 * @param nodesToEdge
+	 * @param nodesToEdgeHashMap
 	 */
-	public static void generateAdjList(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, ArrayList<Long>> adjList, HashMap<String, EdgeInfo> nodesToEdge) {
+	public static void generateAdjList(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
 		System.out.println("generate adjlist file...");
 		int debug = 0;
 		try {
@@ -174,7 +168,7 @@ public class OSMOutput {
 				String strLine;
 				strLine = nodeInfo.getNodeId() + OSMParam.SEPARATION;
 
-				ArrayList<Long> localNodeArrayList = adjList.get(nodeInfo.getNodeId());
+				ArrayList<ToNodeInfo> localNodeArrayList = adjListHashMap.get(nodeInfo.getNodeId());
 
 				// this node cannot go to any other node
 				if (localNodeArrayList == null)
@@ -182,54 +176,54 @@ public class OSMOutput {
 
 				for (int j = 0; j < localNodeArrayList.size(); j++) {
 
-					String nodeIdString = nodeInfo.getNodeId() + OSMParam.COMMA + localNodeArrayList.get(j);
+					String nodeIdString = nodeInfo.getNodeId() + OSMParam.COMMA + localNodeArrayList.get(j).getNodeId();
 
-					EdgeInfo edgeInfo = nodesToEdge.get(nodeIdString);
+					EdgeInfo edgeInfo = nodesToEdgeHashMap.get(nodeIdString);
 					int travelTime = 1;
 					// feet/second
 					double speed = 1;
 					boolean isFix = false;
 					// define all kinds of highway type link's speed
 					if (edgeInfo.getHighway().equals(OSMParam.MOTORWAY) || edgeInfo.getHighway().equals(OSMParam.TRUNK)) {
-						speed = (double) 60 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 60 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals(OSMParam.MOTORWAY_LINK) || edgeInfo.getHighway().equals(OSMParam.TRUNK_LINK) ) {
-						speed = (double) 55 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 55 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals(OSMParam.RESIDENTIAL) || edgeInfo.getHighway().equals(OSMParam.CYCLEWAY) ||
 							edgeInfo.getHighway().equals(OSMParam.TURNING_CIRCLE)) {
-						speed = (double) 10 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 10 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals(OSMParam.UNKNOWN_HIGHWAY) || edgeInfo.getHighway().equals(OSMParam.UNCLASSIFIED) || 
 							edgeInfo.getHighway().equals(OSMParam.TRACK) || edgeInfo.getHighway().equals(OSMParam.CONSTRUCTION) || 
 							edgeInfo.getHighway().equals(OSMParam.PROPOSED) || edgeInfo.getHighway().equals(OSMParam.ROAD) || 
 							edgeInfo.getHighway().equals(OSMParam.ABANDONED) || edgeInfo.getHighway().equals(OSMParam.SCALE)) {
-						speed = (double) 5 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 5 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals(OSMParam.TERTIARY)) {
-						speed = (double) 20 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 20 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals(OSMParam.TERTIARY_LINK)) {
-						speed = (double) 15 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 15 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 						isFix = true;
 					}
 					if (edgeInfo.getHighway().equals(OSMParam.SECONDARY)) {
-						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 30 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals(OSMParam.SECONDARY_LINK)) {
-						speed = (double) 25 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 25 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals(OSMParam.PRIMARY)) {
-						speed = (double) 35 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 35 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 					}
 					if (edgeInfo.getHighway().equals(OSMParam.PRIMARY_LINK)) {
-						speed = (double) 30 * FEET_PER_MILE / (SECOND_PER_HOUR);
+						speed = (double) 30 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 					}
 
-					travelTime = (int) Math.round(edgeInfo.getDistance() / speed * MILLI_PER_SECOND);
+					travelTime = (int) Math.round(edgeInfo.getDistance() / speed * OSMParam.MILLI_PER_SECOND);
 					// travelTime cannot be zero
 					if (travelTime == 0) {
 						travelTime = 1;
@@ -242,7 +236,7 @@ public class OSMOutput {
 							timeList[k] = travelTime;
 						}
 						
-						strLine += localNodeArrayList.get(j) + "(" + OSMParam.VARIABLE + ")" + OSMParam.COLON;
+						strLine += localNodeArrayList.get(j).getNodeId() + "(" + OSMParam.VARIABLE + ")" + OSMParam.COLON;
 						for (int k = 0; k < timeList.length; k++) {
 							strLine += timeList[k];
 							if (k < timeList.length - 1)
@@ -251,7 +245,7 @@ public class OSMOutput {
 								strLine += OSMParam.SEMICOLON;
 						}
 					} else {
-						strLine += localNodeArrayList.get(j) + "(" + OSMParam.FIX + ")" + OSMParam.COLON;
+						strLine += localNodeArrayList.get(j).getNodeId() + "(" + OSMParam.FIX + ")" + OSMParam.COLON;
 						strLine += travelTime + OSMParam.SEMICOLON;
 					}
 				}

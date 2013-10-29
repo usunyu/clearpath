@@ -2,7 +2,7 @@ package controller;
 
 import java.util.*;
 
-import global.OSMParam;
+import global.*;
 import object.*;
 import main.*;
 import model.*;
@@ -18,43 +18,6 @@ public class OSMRouting {
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
 	/**
-	 * @param osm
-	 */
-	static String MOTORWAY		= "motorway";
-	static String MOTORWAY_LINK	= "motorway_link";
-	static String PRIMARY		= "primary";
-	static String PRIMARY_LINK	= "primary_link";
-	static String SECONDARY		= "secondary";
-	static String SECONDARY_LINK= "secondary_link";
-	static String TERTIARY		= "tertiary";
-	static String TERTIARY_LINK	= "tertiary_link";
-	static String RESIDENTIAL	= "residential";
-	static String CYCLEWAY		= "cycleway";
-	static String TRACK			= "track";
-	static String TRUNK			= "trunk";
-	static String TRUNK_LINK	= "trunk_link";
-	static String CONSTRUCTION	= "construction";
-	static String PROPOSED		= "proposed";
-	static String ROAD			= "road";
-	static String ABANDONED		= "abandoned";
-	static String SCALE			= "scale";
-	static String TURNING_CIRCLE= "turning_circle";
-	static String UNCLASSIFIED	= "unclassified";
-	/**
-	 * @param node
-	 */
-	static HashMap<Long, NodeInfo> nodeHashMap = new HashMap<Long, NodeInfo>();
-	/**
-	 * @param edge
-	 */
-	static HashMap<Long, EdgeInfo> edgeHashMap = new HashMap<Long, EdgeInfo>();
-	/**
-	 * @param graph
-	 */
-	static HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap = new HashMap<Long, ArrayList<ToNodeInfo>>();
-	static HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap = new HashMap<Long, ArrayList<ToNodeInfo>>();
-	static HashMap<String, EdgeInfo> nodesToEdge = new HashMap<String, EdgeInfo>();
-	/**
 	 * @param path
 	 */
 	// highway type : level
@@ -65,54 +28,55 @@ public class OSMRouting {
 		// config
 		OSMParam.paramConfig(OSMMain.osm);
 		// input
-		OSMInput.buildAdjList(adjListHashMap, adjReverseListHashMap);
-		OSMInput.readNodeFile(nodeHashMap);
-		OSMInput.readEdgeFile(edgeHashMap, nodesToEdge);
+		OSMInput.readNodeFile(OSMData.nodeHashMap);
+		OSMInput.readEdgeFile(OSMData.edgeHashMap, OSMData.nodesToEdgeHashMap);
+		OSMInput.readAdjList(OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
 		// test
 		//OSMOutput.generateHighwayKML(edgeHashMap, nodeHashMap);
 		// initial hierarchy level
 		initialHierarchy();
-		prepareRoute(nodeHashMap);
+		prepareRoute(OSMData.nodeHashMap);
 		
-		tdsp();
+		tdsp(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
 		
 		// output
-		OSMOutput.generatePathKML(nodeHashMap, pathNodeList);
-		OSMOutput.generatePathNodeKML(nodeHashMap, pathNodeList);
+		OSMOutput.generatePathKML(OSMData.nodeHashMap, pathNodeList);
+		OSMOutput.generatePathNodeKML(OSMData.nodeHashMap, pathNodeList);
 	}
 	
-	public static void tdsp() {
+	public static void tdsp(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap,
+			HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap) {
 		// count time
 		long begintime = System.currentTimeMillis();
-		//tdsp(START_NODE, END_NODE, START_TIME);
-		tdspHierarchy(START_NODE, END_NODE, START_TIME);
+		//tdsp(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		tdspHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, nodesToEdgeHashMap, adjListHashMap, adjReverseListHashMap);
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("tdsp cost: " + costTime + " ms");
 	}
 	
 	public static void initialHierarchy() {
-		hierarchyHashMap.put(MOTORWAY, 1);
-		hierarchyHashMap.put(MOTORWAY_LINK, 1);
-		hierarchyHashMap.put(TRUNK, 1);
-		hierarchyHashMap.put(TRUNK_LINK, 1);
-		hierarchyHashMap.put(PRIMARY, 2);
+		hierarchyHashMap.put(OSMParam.MOTORWAY, 1);
+		hierarchyHashMap.put(OSMParam.MOTORWAY_LINK, 1);
+		hierarchyHashMap.put(OSMParam.TRUNK, 1);
+		hierarchyHashMap.put(OSMParam.TRUNK_LINK, 1);
+		hierarchyHashMap.put(OSMParam.PRIMARY, 2);
 		// link can be use to connect the highway
-		hierarchyHashMap.put(PRIMARY_LINK, 1);
-		hierarchyHashMap.put(SECONDARY, 3);
-		hierarchyHashMap.put(SECONDARY_LINK, 1);
-		hierarchyHashMap.put(TERTIARY, 4);
-		hierarchyHashMap.put(TERTIARY_LINK, 1);
-		hierarchyHashMap.put(RESIDENTIAL, 5);
-		hierarchyHashMap.put(CYCLEWAY, 5);
-		hierarchyHashMap.put(TURNING_CIRCLE, 5);
-		hierarchyHashMap.put(TRACK, 6);
-		hierarchyHashMap.put(CONSTRUCTION, 6);
-		hierarchyHashMap.put(PROPOSED, 6);
-		hierarchyHashMap.put(ROAD, 6);
-		hierarchyHashMap.put(ABANDONED, 6);
-		hierarchyHashMap.put(SCALE, 6);
-		hierarchyHashMap.put(UNCLASSIFIED, 6);
+		hierarchyHashMap.put(OSMParam.PRIMARY_LINK, 1);
+		hierarchyHashMap.put(OSMParam.SECONDARY, 3);
+		hierarchyHashMap.put(OSMParam.SECONDARY_LINK, 1);
+		hierarchyHashMap.put(OSMParam.TERTIARY, 4);
+		hierarchyHashMap.put(OSMParam.TERTIARY_LINK, 1);
+		hierarchyHashMap.put(OSMParam.RESIDENTIAL, 5);
+		hierarchyHashMap.put(OSMParam.CYCLEWAY, 5);
+		hierarchyHashMap.put(OSMParam.TURNING_CIRCLE, 5);
+		hierarchyHashMap.put(OSMParam.TRACK, 6);
+		hierarchyHashMap.put(OSMParam.CONSTRUCTION, 6);
+		hierarchyHashMap.put(OSMParam.PROPOSED, 6);
+		hierarchyHashMap.put(OSMParam.ROAD, 6);
+		hierarchyHashMap.put(OSMParam.ABANDONED, 6);
+		hierarchyHashMap.put(OSMParam.SCALE, 6);
+		hierarchyHashMap.put(OSMParam.UNCLASSIFIED, 6);
 	}
 	
 	public static void prepareRoute(HashMap<Long, NodeInfo> map) {
@@ -128,7 +92,8 @@ public class OSMRouting {
 		}
 	}
 	
-	public static HashMap<Long, HighwayEntrance> searchHighwayExit(long startNode, long endNode) {
+	public static HashMap<Long, HighwayEntrance> searchHighwayExit(long startNode, long endNode, HashMap<Long, NodeInfo> nodeHashMap, 
+			HashMap<String, EdgeInfo> nodesToEdgeHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap) {
 		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 		HashMap<Long, HighwayEntrance> highwayExitMap = new HashMap<Long, HighwayEntrance>();
 		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
@@ -177,8 +142,8 @@ public class OSMRouting {
 
 					// fromNodeInfo.setVisited();
 					
-					String nodeIdKey = fromNodeId + "," + nodeId;
-					EdgeInfo edge = nodesToEdge.get(nodeIdKey);
+					String nodeIdKey = fromNodeId + OSMParam.COMMA + nodeId;
+					EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdKey);
 					
 					String highway = edge.getHighway();
 					int hierarchy = hierarchyHashMap.get(highway);
@@ -229,7 +194,8 @@ public class OSMRouting {
 		return highwayExitMap;
 	}
 	
-	public static HashMap<Long, HighwayEntrance> searchHighwayEntrance(long startNode, long endNode) {
+	public static HashMap<Long, HighwayEntrance> searchHighwayEntrance(long startNode, long endNode, HashMap<Long, NodeInfo> nodeHashMap, 
+			HashMap<String, EdgeInfo> nodesToEdgeHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap) {
 		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 		HashMap<Long, HighwayEntrance> highwayEntranceMap = new HashMap<Long, HighwayEntrance>();
 		
@@ -276,8 +242,8 @@ public class OSMRouting {
 
 				// toNodeInfo.setVisited();
 				
-				String nodeIdKey = nodeId + "," + toNodeId;
-				EdgeInfo edge = nodesToEdge.get(nodeIdKey);
+				String nodeIdKey = nodeId + OSMParam.COMMA + toNodeId;
+				EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdKey);
 				
 				String highway = edge.getHighway();
 				int hierarchy = hierarchyHashMap.get(highway);
@@ -325,21 +291,23 @@ public class OSMRouting {
 		return highwayEntranceMap;
 	}
 	
-	public static void tdspHierarchy(long startNode, long endNode, int startTime) {
+	public static int tdspHierarchy(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap, 
+			HashMap<String, EdgeInfo> nodesToEdgeHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap,
+			HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap) {
 		System.out.println("start finding the path...");
 		
-		HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, endNode);
-		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayExit(startNode, endNode);
+		HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, endNode, nodeHashMap, nodesToEdgeHashMap, adjListHashMap);
+		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayExit(startNode, endNode, nodeHashMap, nodesToEdgeHashMap, adjReverseListHashMap);
 		
 		if(entranceMap == null || exitMap == null) {	// we should use normal tdsp in this situation
-			tdsp(startNode, endNode, startTime);
-			return;
+			tdsp(startNode, endNode, startTime, nodeHashMap, adjListHashMap);
+			return -1;
 		}
 		
 		// test
 		OSMOutput.generateEntranceExitKML(startNode, endNode, entranceMap, exitMap, nodeHashMap);
 		
-		int cost = Integer.MAX_VALUE;
+		int totalCost = Integer.MAX_VALUE;
 		long finalEntrance = -1;
 		long finalExit = -1;
 		
@@ -395,8 +363,8 @@ public class OSMRouting {
 					
 					// toNodeInfo.setVisited();
 					
-					String nodeIdKey = nodeId + "," + toNodeId;
-					EdgeInfo edge = nodesToEdge.get(nodeIdKey);
+					String nodeIdKey = nodeId + OSMParam.COMMA + toNodeId;
+					EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdKey);
 					
 					String highway = edge.getHighway();
 					int hierarchy = hierarchyHashMap.get(highway);
@@ -428,8 +396,8 @@ public class OSMRouting {
 					int cost2 = exitMap.get(exitId).getCost();
 					int newCost = cur.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
 					
-					if(newCost < cost) {	// find less cost path
-						cost = newCost;
+					if(newCost < totalCost) {	// find less cost path
+						totalCost = newCost;
 						pathNodeList = new ArrayList<Long>();
 						if(entranceId == exitId) {
 							System.out.println("entrance node is the same as exit node.");
@@ -473,9 +441,11 @@ public class OSMRouting {
 			System.err.println("cannot find the entrance, program exit!");
 			System.exit(-1);
 		}
+		return totalCost;
 	}
 
-	public static void tdsp(long startNode, long endNode, int startTime) {
+	public static int tdsp(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap,
+			HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap) {
 		System.out.println("start finding the path...");
 		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
 			public int compare(NodeInfo n1, NodeInfo n2) {
@@ -494,11 +464,15 @@ public class OSMRouting {
 		
 		priorityQ.offer(current);
 		
+		int totalCost = -1;
+		
 		while ((current = priorityQ.poll()) != null) {
 			long nodeId = current.getNodeId();
 			
-			if(nodeId == endNode)	// find the end
+			if(nodeId == endNode) {	// find the end
+				totalCost = current.getCost();
 				break;
+			}
 			
 			int timeIndex = startTime + current.getCost() / 60 / TIME_INTERVAL;
 			
@@ -574,5 +548,6 @@ public class OSMRouting {
 		prepareRoute(nodeStack);
 		
 		System.out.println("find the path successful!");
+		return totalCost;
 	}
 }

@@ -22,6 +22,10 @@ public class OSMData {
 	/**
 	 * @param adjlist
 	 */
-	public static HashMap<Long, ArrayList<Long>> adjList = new HashMap<Long, ArrayList<Long>>();
-	public static HashMap<String, EdgeInfo> nodesToEdge = new HashMap<String, EdgeInfo>();
+	public static HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap = new HashMap<Long, ArrayList<ToNodeInfo>>();
+	public static HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap = new HashMap<Long, ArrayList<ToNodeInfo>>();
+	/**
+	 * connect
+	 */
+	public static HashMap<String, EdgeInfo> nodesToEdgeHashMap = new HashMap<String, EdgeInfo>();
 }

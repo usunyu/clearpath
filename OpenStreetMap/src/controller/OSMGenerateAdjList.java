@@ -14,26 +14,28 @@ public class OSMGenerateAdjList {
 	}
 
 	public static void main(String[] args) {
-		buildAdjList(OSMData.nodeHashMap, OSMData.edgeHashMap, OSMData.adjList, OSMData.nodesToEdge);
+		buildAdjList(OSMData.nodeHashMap, OSMData.edgeHashMap, OSMData.adjListHashMap, OSMData.nodesToEdgeHashMap);
 		OSMParam.paramConfig(args[0]);
-		OSMOutput.generateAdjList(OSMData.nodeHashMap, OSMData.adjList, OSMData.nodesToEdge);
+		OSMOutput.generateAdjList(OSMData.nodeHashMap, OSMData.adjListHashMap, OSMData.nodesToEdgeHashMap);
 	}
 
-	public static void buildAdjList(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, EdgeInfo> edgeHashMap, HashMap<Long, ArrayList<Long>> adjList, HashMap<String, EdgeInfo> nodesToEdge) {
+	public static void buildAdjList(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, EdgeInfo> edgeHashMap, 
+			HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
 		System.out.println("build adjlist file...");
 		/* build adjlist using edge */
 		for(EdgeInfo edgeInfo : edgeHashMap.values()) {
 			long startNode = edgeInfo.getStartNode();
 			long endNode = edgeInfo.getEndNode();
-			String nodeIdString = startNode + "," + endNode;
-			nodesToEdge.put(nodeIdString, edgeInfo);
-			if (!adjList.containsKey(startNode)) {
-				ArrayList<Long> adjNodeArrayList = new ArrayList<Long>();
-				adjNodeArrayList.add(endNode);
-				adjList.put(startNode, adjNodeArrayList);
+			String nodeIdString = startNode + OSMParam.COMMA + endNode;
+			nodesToEdgeHashMap.put(nodeIdString, edgeInfo);
+			ToNodeInfo node = new ToNodeInfo(endNode);
+			if (!adjListHashMap.containsKey(startNode)) {
+				ArrayList<ToNodeInfo> adjNodeArrayList = new ArrayList<ToNodeInfo>();
+				adjNodeArrayList.add(node);
+				adjListHashMap.put(startNode, adjNodeArrayList);
 			} else {
-				ArrayList<Long> adjNodeArrayList = adjList.get(startNode);
-				adjNodeArrayList.add(endNode);
+				ArrayList<ToNodeInfo> adjNodeArrayList = adjListHashMap.get(startNode);
+				adjNodeArrayList.add(node);
 			}
 		}
 

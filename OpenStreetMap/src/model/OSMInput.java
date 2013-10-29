@@ -1,27 +1,18 @@
 package model;
 
-import object.*;
-
 import java.util.*;
 
 import java.io.*;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
+import object.*;
 import global.*;
 
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
+import javax.xml.parsers.*;
+
+import org.w3c.dom.*;
+
+import javax.xml.stream.*;
+import javax.xml.stream.events.*;
 
 public class OSMInput {
 	
@@ -37,11 +28,13 @@ public class OSMInput {
 			System.exit(-1);
 		}
 	}
+
 	/**
-	 * build adjlist
+	 * build adjList and adjReverseList from adjlist.csv
 	 * @param adjListHashMap
+	 * @param adjReverseListHashMap
 	 */
-	public static void buildAdjList(HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap) {
+	public static void readAdjList(HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap) {
 		System.out.println("loading adjlist file: " + OSMParam.adjlistFile);
 
 		int debug = 0;
@@ -103,6 +96,66 @@ public class OSMInput {
 						}
 						ToNodeInfo fromNodeInfo = new ToNodeInfo(startNode, travelTimeArray);
 						fromNodeList.add(fromNodeInfo);
+					}
+				}
+				adjListHashMap.put(startNode, toNodeList);
+			}
+
+			br.close();
+			in.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("buildList: debug code: " + debug);
+		}
+		System.out.println("building list finish!");
+	}
+	
+	/**
+	 * build adjList from adjlist.csv
+	 * @param adjListHashMap
+	 */
+	public static void readAdjList(HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap) {
+		System.out.println("loading adjlist file: " + OSMParam.adjlistFile);
+
+		int debug = 0;
+		try {
+			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.adjlistFile;
+			checkFileExist(file);
+			FileInputStream fstream = new FileInputStream(file);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+
+			System.out.println("building graph...");
+
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				if (debug % 100000 == 0)
+					System.out.println("completed " + debug + " lines.");
+
+				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
+				long startNode = Long.parseLong(nodes[0]);
+
+				ArrayList<ToNodeInfo> toNodeList = new ArrayList<ToNodeInfo>();
+				String[] adjlists = nodes[1].split(OSMParam.SEMICOLON);
+				for (int i = 0; i < adjlists.length; i++) {
+					String adjComponent = adjlists[i];
+					long toNode = Long.parseLong(adjComponent.substring(0, adjComponent.indexOf('(')));
+					String fixStr = adjComponent.substring(adjComponent.indexOf('(') + 1, adjComponent.indexOf(')'));
+					if (fixStr.equals(OSMParam.FIX)) { // fixed
+						int travelTime = Integer.parseInt(adjComponent.substring(adjComponent.indexOf(OSMParam.COLON) + 1));
+						ToNodeInfo toNodeInfo = new ToNodeInfo(toNode, travelTime);
+						toNodeList.add(toNodeInfo);
+					} else { // variable
+						String timeList = adjComponent.substring(adjComponent.indexOf(OSMParam.COLON) + 1);
+						String[] timeValueList = timeList.split(OSMParam.COMMA);
+						int[] travelTimeArray = new int[timeValueList.length];
+						for (int j = 0; j < timeValueList.length; j++)
+							travelTimeArray[j] = Integer.parseInt(timeValueList[j]);
+						ToNodeInfo toNodeInfo = new ToNodeInfo(toNode, travelTimeArray);
+						toNodeList.add(toNodeInfo);
 					}
 				}
 				adjListHashMap.put(startNode, toNodeList);
@@ -365,6 +418,44 @@ public class OSMInput {
 				LocationInfo locationInfo = new LocationInfo(latitude, longitude);
 				NodeInfo nodeInfo = new NodeInfo(nodeId, locationInfo);
 				nodeHashMap.put(nodeId, nodeInfo);
+			}
+			br.close();
+			in.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("readNodeFile: debug code: " + debug);
+		}
+		System.out.println("read node file finish!");
+	}
+	
+	/**
+	 * read the node file
+	 * @param nodeHashMap
+	 * @param nodeArrayList
+	 */
+	public static void readNodeFile(HashMap<Long, NodeInfo> nodeHashMap, ArrayList<NodeInfo> nodeArrayList) {
+		System.out.println("read node file...");
+		int debug = 0;
+		try {
+			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.nodeCSVFile;
+			checkFileExist(file);
+			FileInputStream fstream = new FileInputStream(file);
+			DataInputStream in = new DataInputStream(fstream);
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			String strLine;
+			
+			while ((strLine = br.readLine()) != null) {
+				debug++;
+				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
+				long nodeId = Long.parseLong(nodes[0]);
+				double latitude = Double.parseDouble(nodes[1]);
+				double longitude = Double.parseDouble(nodes[2]);
+				LocationInfo locationInfo = new LocationInfo(latitude, longitude);
+				NodeInfo nodeInfo = new NodeInfo(nodeId, locationInfo);
+				nodeHashMap.put(nodeId, nodeInfo);
+				nodeArrayList.add(nodeInfo);
 			}
 			br.close();
 			in.close();

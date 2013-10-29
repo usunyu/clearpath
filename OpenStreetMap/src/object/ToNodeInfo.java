@@ -17,6 +17,10 @@ public class ToNodeInfo {
 		this.travelTime = travelTime;
 		fix = true;
 	}
+
+	public ToNodeInfo(Long nodeId) {
+		this.nodeId = nodeId;
+	}
 	
 	public long getNodeId() {
 		return nodeId;
