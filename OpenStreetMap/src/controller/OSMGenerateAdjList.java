@@ -20,7 +20,7 @@ public class OSMGenerateAdjList {
 	}
 
 	public static void buildAdjList(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, EdgeInfo> edgeHashMap, 
-			HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
+			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
 		System.out.println("build adjlist file...");
 		/* build adjlist using edge */
 		for(EdgeInfo edgeInfo : edgeHashMap.values()) {
@@ -30,12 +30,12 @@ public class OSMGenerateAdjList {
 			nodesToEdgeHashMap.put(nodeIdString, edgeInfo);
 			ToNodeInfo node = new ToNodeInfo(endNode);
 			if (!adjListHashMap.containsKey(startNode)) {
-				ArrayList<ToNodeInfo> adjNodeArrayList = new ArrayList<ToNodeInfo>();
-				adjNodeArrayList.add(node);
-				adjListHashMap.put(startNode, adjNodeArrayList);
+				LinkedList<ToNodeInfo> adjNodeList = new LinkedList<ToNodeInfo>();
+				adjNodeList.add(node);
+				adjListHashMap.put(startNode, adjNodeList);
 			} else {
-				ArrayList<ToNodeInfo> adjNodeArrayList = adjListHashMap.get(startNode);
-				adjNodeArrayList.add(node);
+				LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(startNode);
+				adjNodeList.add(node);
 			}
 		}
 

@@ -34,7 +34,7 @@ public class OSMInput {
 	 * @param adjListHashMap
 	 * @param adjReverseListHashMap
 	 */
-	public static void readAdjList(HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap) {
+	public static void readAdjList(HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
 		System.out.println("loading adjlist file: " + OSMParam.adjlistFile);
 
 		int debug = 0;
@@ -56,7 +56,7 @@ public class OSMInput {
 				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
 				long startNode = Long.parseLong(nodes[0]);
 
-				ArrayList<ToNodeInfo> toNodeList = new ArrayList<ToNodeInfo>();
+				LinkedList<ToNodeInfo> toNodeList = new LinkedList<ToNodeInfo>();
 				String[] adjlists = nodes[1].split(OSMParam.SEMICOLON);
 				for (int i = 0; i < adjlists.length; i++) {
 					String adjComponent = adjlists[i];
@@ -67,12 +67,12 @@ public class OSMInput {
 						ToNodeInfo toNodeInfo = new ToNodeInfo(toNode, travelTime);
 						toNodeList.add(toNodeInfo);
 						// build the reverse adjlist
-						ArrayList<ToNodeInfo> fromNodeList;
+						LinkedList<ToNodeInfo> fromNodeList;
 						if(adjReverseListHashMap.containsKey(toNode)) {
 							fromNodeList = adjReverseListHashMap.get(toNode);
 						}
 						else {
-							fromNodeList = new ArrayList<ToNodeInfo>();
+							fromNodeList = new LinkedList<ToNodeInfo>();
 							adjReverseListHashMap.put(toNode, fromNodeList);
 						}
 						ToNodeInfo fromNodeInfo = new ToNodeInfo(startNode, travelTime);
@@ -86,12 +86,12 @@ public class OSMInput {
 						ToNodeInfo toNodeInfo = new ToNodeInfo(toNode, travelTimeArray);
 						toNodeList.add(toNodeInfo);
 						// build the reverse adjlist
-						ArrayList<ToNodeInfo> fromNodeList;
+						LinkedList<ToNodeInfo> fromNodeList;
 						if(adjReverseListHashMap.containsKey(toNode)) {
 							fromNodeList = adjReverseListHashMap.get(toNode);
 						}
 						else {
-							fromNodeList = new ArrayList<ToNodeInfo>();
+							fromNodeList = new LinkedList<ToNodeInfo>();
 							adjReverseListHashMap.put(toNode, fromNodeList);
 						}
 						ToNodeInfo fromNodeInfo = new ToNodeInfo(startNode, travelTimeArray);
@@ -116,7 +116,7 @@ public class OSMInput {
 	 * build adjList from adjlist.csv
 	 * @param adjListHashMap
 	 */
-	public static void readAdjList(HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap) {
+	public static void readAdjList(HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap) {
 		System.out.println("loading adjlist file: " + OSMParam.adjlistFile);
 
 		int debug = 0;
@@ -138,7 +138,7 @@ public class OSMInput {
 				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
 				long startNode = Long.parseLong(nodes[0]);
 
-				ArrayList<ToNodeInfo> toNodeList = new ArrayList<ToNodeInfo>();
+				LinkedList<ToNodeInfo> toNodeList = new LinkedList<ToNodeInfo>();
 				String[] adjlists = nodes[1].split(OSMParam.SEMICOLON);
 				for (int i = 0; i < adjlists.length; i++) {
 					String adjComponent = adjlists[i];
@@ -190,17 +190,20 @@ public class OSMInput {
 			while ((strLine = br.readLine()) != null) {
 				debug++;
 				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
-				long id = Long.parseLong(nodes[0]);
-				long wayId = Long.parseLong(nodes[0].substring(0, nodes[0].length() - 4));
-				int edgeId = Integer.parseInt(nodes[0].substring(nodes[0].length() - 4));
-				String name = nodes[1];
-				String highway = nodes[2];
-				long startNode = Long.parseLong(nodes[3]);
-				long endNode = Long.parseLong(nodes[4]);
+				long wayId = Long.parseLong(nodes[0]);
+				int edgeId = Integer.parseInt(nodes[1]);
+				String name = nodes[2];
+				String highway = nodes[3];
+				String nodeListStr = nodes[4];
 				int distance = Integer.parseInt(nodes[5]);
-
-				EdgeInfo edgeInfo = new EdgeInfo(wayId, edgeId, name, highway, startNode, endNode, distance);
-				edgeHashMap.put(id, edgeInfo);
+				
+				String[] nodeIds = nodeListStr.split(OSMParam.COMMA);
+				LinkedList<Long> nodeList = new LinkedList<Long>();
+				for(String nodeStr : nodeIds) {
+					nodeList.add(Long.parseLong(nodeStr));
+				}
+				EdgeInfo edge = new EdgeInfo(wayId, edgeId, name, highway, nodeList, distance);
+				edgeHashMap.put(edge.getId(), edge);
 			}
 			br.close();
 			in.close();
@@ -231,20 +234,23 @@ public class OSMInput {
 			while ((strLine = br.readLine()) != null) {
 				debug++;
 				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
-				long id = Long.parseLong(nodes[0]);
-				long wayId = Long.parseLong(nodes[0].substring(0, nodes[0].length() - 4));
-				int edgeId = Integer.parseInt(nodes[0].substring(nodes[0].length() - 4));
-				String name = nodes[1];
-				String highway = nodes[2];
-				long startNode = Long.parseLong(nodes[3]);
-				long endNode = Long.parseLong(nodes[4]);
+				long wayId = Long.parseLong(nodes[0]);
+				int edgeId = Integer.parseInt(nodes[1]);
+				String name = nodes[2];
+				String highway = nodes[3];
+				String nodeListStr = nodes[4];
 				int distance = Integer.parseInt(nodes[5]);
-
-				EdgeInfo edgeInfo = new EdgeInfo(wayId, edgeId, name, highway, startNode, endNode, distance);
-				edgeHashMap.put(id, edgeInfo);
 				
-				String nodeId = startNode + OSMParam.COMMA + endNode;
-				nodesToEdge.put(nodeId, edgeInfo);
+				String[] nodeIds = nodeListStr.split(OSMParam.COMMA);
+				LinkedList<Long> nodeList = new LinkedList<Long>();
+				for(String nodeStr : nodeIds) {
+					nodeList.add(Long.parseLong(nodeStr));
+				}
+				EdgeInfo edge = new EdgeInfo(wayId, edgeId, name, highway, nodeList, distance);
+				edgeHashMap.put(edge.getId(), edge);
+				
+				String nodesId = edge.getStartNode() + OSMParam.COMMA + edge.getEndNode();
+				nodesToEdge.put(nodesId, edge);
 			}
 			br.close();
 			in.close();

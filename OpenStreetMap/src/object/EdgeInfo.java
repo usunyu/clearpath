@@ -1,23 +1,21 @@
 package object;
 
+import java.util.*;
+
 public class EdgeInfo {
 	long wayId;
 	int edgeId;
-	//boolean isOneway;
 	String name;
 	String highway;
-	Long startNode;
-	Long endNode;
+	LinkedList<Long> nodeList;
 	int distance;
 	
-	public EdgeInfo(long wayId, int edgeId, /*boolean isOneway,*/ String name, String highway, Long startNode, Long endNode, int distance) {
+	public EdgeInfo(long wayId, int edgeId, String name, String highway, LinkedList<Long> nodeList, int distance) {
 		this.wayId = wayId;
 		this.edgeId = edgeId;
-		//this.isOneway = isOneway;
 		this.name = name;
 		this.highway = highway;
-		this.startNode = startNode;
-		this.endNode = endNode;
+		this.nodeList = nodeList;
 		this.distance = distance;
 	}
 	
@@ -29,9 +27,9 @@ public class EdgeInfo {
 		return edgeId;
 	}
 
-	// public boolean isOneway() {
-	// 	return isOneway;
-	// }
+	public long getId() {
+		return wayId * 1000 + edgeId;
+	}
 	
 	public String getName() {
 		return name;
@@ -42,14 +40,18 @@ public class EdgeInfo {
 	}
 
 	public Long getStartNode() {
-		return startNode;
+		return nodeList.getFirst();
 	}
 
 	public Long getEndNode() {
-		return endNode;
+		return nodeList.getLast();
 	}
 	
 	public int getDistance() {
 		return distance;
+	}
+
+	public LinkedList<Long> getNodeList() {
+		return nodeList;
 	}
 }

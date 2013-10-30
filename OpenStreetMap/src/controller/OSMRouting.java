@@ -45,7 +45,7 @@ public class OSMRouting {
 	}
 	
 	public static void tdsp(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap,
-			HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap) {
+			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
 		// count time
 		long begintime = System.currentTimeMillis();
 		//tdsp(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
@@ -93,7 +93,7 @@ public class OSMRouting {
 	}
 	
 	public static HashMap<Long, HighwayEntrance> searchHighwayExit(long startNode, long endNode, HashMap<Long, NodeInfo> nodeHashMap, 
-			HashMap<String, EdgeInfo> nodesToEdgeHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap) {
+			HashMap<String, EdgeInfo> nodesToEdgeHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
 		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 		HashMap<Long, HighwayEntrance> highwayExitMap = new HashMap<Long, HighwayEntrance>();
 		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
@@ -124,7 +124,7 @@ public class OSMRouting {
 					return null;
 				}
 				
-				ArrayList<ToNodeInfo> adjNodeList = adjReverseListHashMap.get(nodeId);
+				LinkedList<ToNodeInfo> adjNodeList = adjReverseListHashMap.get(nodeId);
 				if(adjNodeList == null)
 					continue;
 				
@@ -198,7 +198,7 @@ public class OSMRouting {
 	}
 	
 	public static HashMap<Long, HighwayEntrance> searchHighwayEntrance(long startNode, long endNode, HashMap<Long, NodeInfo> nodeHashMap, 
-			HashMap<String, EdgeInfo> nodesToEdgeHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap) {
+			HashMap<String, EdgeInfo> nodesToEdgeHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap) {
 		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
 		HashMap<Long, HighwayEntrance> highwayEntranceMap = new HashMap<Long, HighwayEntrance>();
 		
@@ -227,7 +227,7 @@ public class OSMRouting {
 				return null;
 			}
 			
-			ArrayList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
+			LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
 			if(adjNodeList == null)
 				continue;
 			
@@ -298,8 +298,8 @@ public class OSMRouting {
 	}
 	
 	public static int tdspHierarchy(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap, 
-			HashMap<String, EdgeInfo> nodesToEdgeHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap,
-			HashMap<Long, ArrayList<ToNodeInfo>> adjReverseListHashMap) {
+			HashMap<String, EdgeInfo> nodesToEdgeHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap,
+			HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
 		System.out.println("start finding the path...");
 		
 		HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, endNode, nodeHashMap, nodesToEdgeHashMap, adjListHashMap);
@@ -352,7 +352,7 @@ public class OSMRouting {
 				if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
 					timeIndex = TIME_RANGE - 1;
 				
-				ArrayList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
+				LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
 				if(adjNodeList == null)
 					continue;
 				
@@ -457,7 +457,7 @@ public class OSMRouting {
 	}
 
 	public static int tdsp(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap,
-			HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap) {
+			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap) {
 		System.out.println("start finding the path...");
 		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
 			public int compare(NodeInfo n1, NodeInfo n2) {
@@ -492,7 +492,7 @@ public class OSMRouting {
 			if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
 				timeIndex = TIME_RANGE - 1;
 			
-			ArrayList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
+			LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
 			if(adjNodeList == null)
 				continue;
 			

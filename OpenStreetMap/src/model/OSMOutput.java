@@ -157,26 +157,25 @@ public class OSMOutput {
 	 * @param adjList
 	 * @param nodesToEdgeHashMap
 	 */
-	public static void generateAdjList(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, ArrayList<ToNodeInfo>> adjListHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
+	public static void generateAdjList(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
 		System.out.println("generate adjlist file...");
 		int debug = 0;
 		try {
 			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.adjlistFile);
 			BufferedWriter out = new BufferedWriter(fstream);
-			for(NodeInfo nodeInfo : nodeHashMap.values()) {
+			for(NodeInfo node : nodeHashMap.values()) {
 				debug++;
 				String strLine;
-				strLine = nodeInfo.getNodeId() + OSMParam.SEPARATION;
+				strLine = node.getNodeId() + OSMParam.SEPARATION;
 
-				ArrayList<ToNodeInfo> localNodeArrayList = adjListHashMap.get(nodeInfo.getNodeId());
+				LinkedList<ToNodeInfo> localNodeList = adjListHashMap.get(node.getNodeId());
 
 				// this node cannot go to any other node
-				if (localNodeArrayList == null)
+				if (localNodeList == null)
 					continue;
 
-				for (int j = 0; j < localNodeArrayList.size(); j++) {
-
-					String nodeIdString = nodeInfo.getNodeId() + OSMParam.COMMA + localNodeArrayList.get(j).getNodeId();
+				for(ToNodeInfo toNode : localNodeList) {
+					String nodeIdString = node.getNodeId() + OSMParam.COMMA + toNode.getNodeId();
 
 					EdgeInfo edgeInfo = nodesToEdgeHashMap.get(nodeIdString);
 					int travelTime = 1;
@@ -236,7 +235,7 @@ public class OSMOutput {
 							timeList[k] = travelTime;
 						}
 						
-						strLine += localNodeArrayList.get(j).getNodeId() + "(" + OSMParam.VARIABLE + ")" + OSMParam.COLON;
+						strLine += toNode.getNodeId() + "(" + OSMParam.VARIABLE + ")" + OSMParam.COLON;
 						for (int k = 0; k < timeList.length; k++) {
 							strLine += timeList[k];
 							if (k < timeList.length - 1)
@@ -245,7 +244,7 @@ public class OSMOutput {
 								strLine += OSMParam.SEMICOLON;
 						}
 					} else {
-						strLine += localNodeArrayList.get(j).getNodeId() + "(" + OSMParam.FIX + ")" + OSMParam.COLON;
+						strLine += toNode.getNodeId() + "(" + OSMParam.FIX + ")" + OSMParam.COLON;
 						strLine += travelTime + OSMParam.SEMICOLON;
 					}
 				}
@@ -272,18 +271,25 @@ public class OSMOutput {
 		try {
 			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.edgeCVSFile);
 			BufferedWriter out = new BufferedWriter(fstream);
-			for (EdgeInfo edgeInfo : edgeHashMap.values()) {
+			for (EdgeInfo edge : edgeHashMap.values()) {
 				debug++;
-				long wayId = edgeInfo.getWayId();
-				int edgeId = edgeInfo.getEdgeId();
-				String name = edgeInfo.getName();
-				String highway = edgeInfo.getHighway();
-				long startNode = edgeInfo.getStartNode();
-				long endNode = edgeInfo.getEndNode();
-				int distance = edgeInfo.getDistance();
-				long id = wayId * 1000 + edgeId;
-				String strLine = id + OSMParam.SEPARATION + name + OSMParam.SEPARATION  + highway + OSMParam.SEPARATION 
-				+ startNode + OSMParam.SEPARATION + endNode + OSMParam.SEPARATION + distance + OSMParam.LINEEND;
+				long wayId = edge.getWayId();
+				int edgeId = edge.getEdgeId();
+				String name = edge.getName();
+				String highway = edge.getHighway();
+				LinkedList<Long> nodeList = edge.getNodeList();
+				String nodeListStr = null;
+				for(long nodeId : nodeList) {
+					if(nodeListStr == null) {
+						nodeListStr = String.valueOf(nodeId);
+					}
+					else {
+						nodeListStr += OSMParam.COMMA + nodeId;
+					}
+				}
+				int distance = edge.getDistance();
+				String strLine = wayId + OSMParam.SEPARATION + edgeId + OSMParam.SEPARATION + name + OSMParam.SEPARATION  + 
+						highway + OSMParam.SEPARATION + nodeListStr + OSMParam.SEPARATION + distance;
 				out.write(strLine);
 			}
 			out.close();
