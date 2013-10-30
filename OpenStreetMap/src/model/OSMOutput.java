@@ -289,7 +289,7 @@ public class OSMOutput {
 				}
 				int distance = edge.getDistance();
 				String strLine = wayId + OSMParam.SEPARATION + edgeId + OSMParam.SEPARATION + name + OSMParam.SEPARATION  + 
-						highway + OSMParam.SEPARATION + nodeListStr + OSMParam.SEPARATION + distance;
+						highway + OSMParam.SEPARATION + nodeListStr + OSMParam.SEPARATION + distance + OSMParam.LINEEND;
 				out.write(strLine);
 			}
 			out.close();

@@ -104,8 +104,9 @@ public class OSMDivideWayToEdge {
 						int distance = getDistance(currentList, nodeHashMap);
 						addEdgeToEdgeHashMap(wayId, edgeId++, name, highway, currentList, distance, edgeHashMap);
 						if(!isOneway) { // bidirection
-							Collections.reverse(currentList);
-							addEdgeToEdgeHashMap(wayId, edgeId++, name, highway, currentList, distance, edgeHashMap);
+							LinkedList<Long> reverseList = new LinkedList<Long>(currentList);
+							Collections.reverse(reverseList);
+							addEdgeToEdgeHashMap(wayId, edgeId++, name, highway, reverseList, distance, edgeHashMap);
 						}
 						// prepare for next
 						currentList = new LinkedList<Long>();
