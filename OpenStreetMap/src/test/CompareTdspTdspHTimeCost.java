@@ -43,7 +43,7 @@ public class CompareTdspTdspHTimeCost {
 		int size = OSMData.nodeArrayList.size();
 		ArrayList<Report> reportList = new ArrayList<Report>();
 		System.out.println("Test for tdsp and tdsph...");
-		for(int i = 0; i < 10; i++) {
+		for(int i = 0; i < 100; i++) {
 			long startNode = OSMData.nodeArrayList.get((int)(Math.random() * size)).getNodeId();
 			long endNode = OSMData.nodeArrayList.get((int)(Math.random() * size)).getNodeId();
 			
@@ -72,7 +72,7 @@ public class CompareTdspTdspHTimeCost {
 				Report r = reportList.get(i);
 				String strLine = r.start + "\t" + r.end + "\t" + r.cost/1000 + "\t" + r.costH/1000 + OSMParam.LINEEND;
 				totalCost += r.cost/1000;
-				totalCost += r.costH/1000;
+				totalCostH += r.costH/1000;
 				out.write(strLine);
 			}
 			out.write("Tdsp Total Cost:\tTdspH Total Cost:" + OSMParam.LINEEND);
