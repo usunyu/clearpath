@@ -28,8 +28,7 @@ public class OSMRouting {
 		// config
 		OSMParam.paramConfig(OSMMain.osm);
 		// input
-		//OSMInput.readNodeFile(OSMData.nodeHashMap);
-		OSMInput.readNodeFile(OSMData.nodeArrayList);
+		OSMInput.readNodeFile(OSMData.nodeHashMap);
 		OSMInput.readEdgeFile(OSMData.edgeHashMap, OSMData.nodesToEdgeHashMap);
 		OSMInput.readAdjList(OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
 		// test
