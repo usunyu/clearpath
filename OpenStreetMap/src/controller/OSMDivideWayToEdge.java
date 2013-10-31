@@ -40,10 +40,10 @@ public class OSMDivideWayToEdge {
 		adjList.add(node2);
 	}
 	
-	public static void addEdgeToEdgeHashMap(long wayId, int edgeId, String name, String highway, 
+	public static void addEdgeToEdgeHashMap(long wayId, int edgeId, String name, String highway, boolean isOneway,
 			LinkedList<Long> nodeList, int distance, HashMap<Long, EdgeInfo> edgeHashMap) {
 		long id = wayId * 1000 + edgeId;
-		EdgeInfo edge = new EdgeInfo(wayId, edgeId, name, highway, nodeList, distance);
+		EdgeInfo edge = new EdgeInfo(wayId, edgeId, name, highway, isOneway, nodeList, distance);
 		edgeHashMap.put(id, edge);
 	}
 	
@@ -102,12 +102,7 @@ public class OSMDivideWayToEdge {
 					else {
 						currentList.add(nodeId);
 						int distance = getDistance(currentList, nodeHashMap);
-						addEdgeToEdgeHashMap(wayId, edgeId++, name, highway, currentList, distance, edgeHashMap);
-						if(!isOneway) { // bidirection
-							LinkedList<Long> reverseList = new LinkedList<Long>(currentList);
-							Collections.reverse(reverseList);
-							addEdgeToEdgeHashMap(wayId, edgeId++, name, highway, reverseList, distance, edgeHashMap);
-						}
+						addEdgeToEdgeHashMap(wayId, edgeId++, name, highway, isOneway, currentList, distance, edgeHashMap);
 						// prepare for next
 						currentList = new LinkedList<Long>();
 						currentList.add(nodeId);

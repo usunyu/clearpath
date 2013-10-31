@@ -7,14 +7,16 @@ public class EdgeInfo {
 	int edgeId;
 	String name;
 	String highway;
+	boolean isOneway;
 	LinkedList<Long> nodeList;
 	int distance;
 	
-	public EdgeInfo(long wayId, int edgeId, String name, String highway, LinkedList<Long> nodeList, int distance) {
+	public EdgeInfo(long wayId, int edgeId, String name, String highway, boolean isOneway, LinkedList<Long> nodeList, int distance) {
 		this.wayId = wayId;
 		this.edgeId = edgeId;
 		this.name = name;
 		this.highway = highway;
+		this.isOneway = isOneway;
 		this.nodeList = nodeList;
 		this.distance = distance;
 	}
@@ -53,5 +55,9 @@ public class EdgeInfo {
 
 	public LinkedList<Long> getNodeList() {
 		return nodeList;
+	}
+
+	public boolean isOneway() {
+		return isOneway;
 	}
 }

@@ -277,6 +277,7 @@ public class OSMOutput {
 				int edgeId = edge.getEdgeId();
 				String name = edge.getName();
 				String highway = edge.getHighway();
+				boolean isOneway = edge.isOneway();
 				LinkedList<Long> nodeList = edge.getNodeList();
 				String nodeListStr = null;
 				for(long nodeId : nodeList) {
@@ -289,7 +290,8 @@ public class OSMOutput {
 				}
 				int distance = edge.getDistance();
 				String strLine = wayId + OSMParam.SEPARATION + edgeId + OSMParam.SEPARATION + name + OSMParam.SEPARATION  + 
-						highway + OSMParam.SEPARATION + nodeListStr + OSMParam.SEPARATION + distance + OSMParam.LINEEND;
+						highway + OSMParam.SEPARATION + (isOneway ? OSMParam.ONEDIRECT : OSMParam.BIDIRECT) + 
+						OSMParam.SEPARATION + nodeListStr + OSMParam.SEPARATION +  distance + OSMParam.LINEEND;
 				out.write(strLine);
 			}
 			out.close();

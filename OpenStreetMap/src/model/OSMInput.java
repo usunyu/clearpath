@@ -194,15 +194,16 @@ public class OSMInput {
 				int edgeId = Integer.parseInt(nodes[1]);
 				String name = nodes[2];
 				String highway = nodes[3];
-				String nodeListStr = nodes[4];
-				int distance = Integer.parseInt(nodes[5]);
+				boolean isOneway = nodes[4].equals(OSMParam.ONEDIRECT);
+				String nodeListStr = nodes[5];
+				int distance = Integer.parseInt(nodes[6]);
 				
 				String[] nodeIds = nodeListStr.split(OSMParam.COMMA);
 				LinkedList<Long> nodeList = new LinkedList<Long>();
 				for(String nodeStr : nodeIds) {
 					nodeList.add(Long.parseLong(nodeStr));
 				}
-				EdgeInfo edge = new EdgeInfo(wayId, edgeId, name, highway, nodeList, distance);
+				EdgeInfo edge = new EdgeInfo(wayId, edgeId, name, highway, isOneway, nodeList, distance);
 				edgeHashMap.put(edge.getId(), edge);
 			}
 			br.close();
@@ -238,19 +239,24 @@ public class OSMInput {
 				int edgeId = Integer.parseInt(nodes[1]);
 				String name = nodes[2];
 				String highway = nodes[3];
-				String nodeListStr = nodes[4];
-				int distance = Integer.parseInt(nodes[5]);
+				boolean isOneway = nodes[4].equals(OSMParam.ONEDIRECT);
+				String nodeListStr = nodes[5];
+				int distance = Integer.parseInt(nodes[6]);
 				
 				String[] nodeIds = nodeListStr.split(OSMParam.COMMA);
 				LinkedList<Long> nodeList = new LinkedList<Long>();
 				for(String nodeStr : nodeIds) {
 					nodeList.add(Long.parseLong(nodeStr));
 				}
-				EdgeInfo edge = new EdgeInfo(wayId, edgeId, name, highway, nodeList, distance);
+				EdgeInfo edge = new EdgeInfo(wayId, edgeId, name, highway, isOneway, nodeList, distance);
 				edgeHashMap.put(edge.getId(), edge);
 				
 				String nodesId = edge.getStartNode() + OSMParam.COMMA + edge.getEndNode();
 				nodesToEdge.put(nodesId, edge);
+				if(!isOneway) {
+					nodesId = edge.getEndNode() + OSMParam.COMMA + edge.getStartNode();
+					nodesToEdge.put(nodesId, edge);
+				}
 			}
 			br.close();
 			in.close();
