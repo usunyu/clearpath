@@ -343,7 +343,7 @@ public class OSMOutput {
 	 * @param nodeHashMap
 	 */
 	public static void generateWayKML(HashMap<Long, WayInfo> wayHashMap, HashMap<Long, NodeInfo> nodeHashMap) {
-		System.out.println("generate kml...");
+		System.out.println("generate way kml...");
 		int debug = 0;
 		try {
 			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.wayKMLFile);
@@ -394,8 +394,13 @@ public class OSMOutput {
 		System.out.println("generate way kml finish!");
 	}
 	
+	/**
+	 * generate edge kml
+	 * @param edgeHashMap
+	 * @param nodeHashMap
+	 */
 	public static void generateEdgeKML(HashMap<Long, EdgeInfo> edgeHashMap, HashMap<Long, NodeInfo> nodeHashMap) {
-		System.out.println("generate kml...");
+		System.out.println("generate edge kml...");
 		int debug = 0;
 		try {
 			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.edgeKMLFile);
@@ -438,9 +443,9 @@ public class OSMOutput {
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			System.err.println("generateWayKML: debug code: " + debug);
+			System.err.println("generateEdgeKML: debug code: " + debug);
 		}
-		System.out.println("generate way kml finish!");
+		System.out.println("generate edge kml finish!");
 	}
 	
 	/**

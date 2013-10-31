@@ -9,6 +9,7 @@ public class OSMData {
 	 * @param node
 	 */
 	public static ArrayList<NodeInfo> nodeArrayList = new ArrayList<NodeInfo>();
+	public static HashMap<Long, Integer> nodeInterfaceHashMap = new HashMap<Long, Integer>();
 	public static HashMap<Long, NodeInfo> nodeHashMap = new HashMap<Long, NodeInfo>();
 	/**
 	 * @param way
