@@ -401,8 +401,6 @@ public class OSMRouting {
 				for(NodeInfo exit : exitNodeList) {
 					long exitId = exit.getNodeId();
 					NodeInfo cur = exit;
-					int cost1 = entranceMap.get(entranceId).getCost();
-					int cost2 = exitMap.get(exitId).getCost();
 					int newCost = cur.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
 					
 					if(newCost < totalCost) {	// find less cost path
@@ -455,25 +453,35 @@ public class OSMRouting {
 		}
 		return totalCost;
 	}
+	
+	public static int calHeuristic(long curNode, long endNode, HashMap<Long, NodeInfo> nodeHashMap) {
+		NodeInfo cur = nodeHashMap.get(curNode);
+		NodeInfo end = nodeHashMap.get(endNode);
+		double distance = Distance.calculateDistance(cur.getLocation(), end.getLocation());
+		return (int) (distance / 80) * OSMParam.SECOND_PER_HOUR;
+	}
 
 	public static int tdsp(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap,
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap) {
 		System.out.println("start finding the path...");
-		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
-			public int compare(NodeInfo n1, NodeInfo n2) {
-				return n1.getCost() - n2.getCost();
-			}
-		});
-		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
-		NodeInfo current = nodeHashMap.get(startNode);	// get start node
-		nodeStack.push(current);
-		if(current == null) {
-			System.err.println("cannot find start node!");
-			prepareRoute(nodeStack);
+		
+		if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
+			System.err.println("cannot find start or end node!");
 			return -1;
 		}
 		
+		PriorityQueue<NodeInfo> priorityQ = new PriorityQueue<NodeInfo>( 20, new Comparator<NodeInfo>() {
+			public int compare(NodeInfo n1, NodeInfo n2) {
+				return n1.getTotalCost() - n2.getTotalCost();
+			}
+		});
+		
+		Stack<NodeInfo> nodeStack = new Stack<NodeInfo>();
+		NodeInfo current = nodeHashMap.get(startNode);	// get start node
+		nodeStack.push(current);
+		
 		current.setCost(0);	// set start cost to 0
+		current.setHeuristic(calHeuristic(startNode, endNode, nodeHashMap));
 		
 		priorityQ.offer(current);
 		

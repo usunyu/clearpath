@@ -157,7 +157,7 @@ public class OSMOutput {
 	 * @param adjList
 	 * @param nodesToEdgeHashMap
 	 */
-	public static void generateAdjList(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
+	public static void writeAdjList(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap) {
 		System.out.println("generate adjlist file...");
 		int debug = 0;
 		try {
@@ -175,65 +175,10 @@ public class OSMOutput {
 					continue;
 
 				for(ToNodeInfo toNode : localNodeList) {
-					String nodeIdString = node.getNodeId() + OSMParam.COMMA + toNode.getNodeId();
-
-					EdgeInfo edgeInfo = nodesToEdgeHashMap.get(nodeIdString);
-					int travelTime = 1;
-					// feet/second
-					double speed = 1;
-					boolean isFix = false;
-					// define all kinds of highway type link's speed
-					if (edgeInfo.getHighway().equals(OSMParam.MOTORWAY) || edgeInfo.getHighway().equals(OSMParam.TRUNK)) {
-						speed = (double) 60 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
-					}
-					if (edgeInfo.getHighway().equals(OSMParam.MOTORWAY_LINK) || edgeInfo.getHighway().equals(OSMParam.TRUNK_LINK) ) {
-						speed = (double) 55 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
-					}
-					if (edgeInfo.getHighway().equals(OSMParam.RESIDENTIAL) || edgeInfo.getHighway().equals(OSMParam.CYCLEWAY) ||
-							edgeInfo.getHighway().equals(OSMParam.TURNING_CIRCLE)) {
-						speed = (double) 10 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
-						isFix = true;
-					}
-					if (edgeInfo.getHighway().equals(OSMParam.UNKNOWN_HIGHWAY) || edgeInfo.getHighway().equals(OSMParam.UNCLASSIFIED) || 
-							edgeInfo.getHighway().equals(OSMParam.TRACK) || edgeInfo.getHighway().equals(OSMParam.CONSTRUCTION) || 
-							edgeInfo.getHighway().equals(OSMParam.PROPOSED) || edgeInfo.getHighway().equals(OSMParam.ROAD) || 
-							edgeInfo.getHighway().equals(OSMParam.ABANDONED) || edgeInfo.getHighway().equals(OSMParam.SCALE)) {
-						speed = (double) 5 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
-						isFix = true;
-					}
-					if (edgeInfo.getHighway().equals(OSMParam.TERTIARY)) {
-						speed = (double) 20 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
-						isFix = true;
-					}
-					if (edgeInfo.getHighway().equals(OSMParam.TERTIARY_LINK)) {
-						speed = (double) 15 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
-						isFix = true;
-					}
-					if (edgeInfo.getHighway().equals(OSMParam.SECONDARY)) {
-						speed = (double) 30 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
-					}
-					if (edgeInfo.getHighway().equals(OSMParam.SECONDARY_LINK)) {
-						speed = (double) 25 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
-					}
-					if (edgeInfo.getHighway().equals(OSMParam.PRIMARY)) {
-						speed = (double) 35 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
-					}
-					if (edgeInfo.getHighway().equals(OSMParam.PRIMARY_LINK)) {
-						speed = (double) 30 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
-					}
-
-					travelTime = (int) Math.round(edgeInfo.getDistance() / speed * OSMParam.MILLI_PER_SECOND);
-					// travelTime cannot be zero
-					if (travelTime == 0) {
-						travelTime = 1;
-					}
-
+					boolean isFix = toNode.isFix();
 					if (!isFix) {
 						// assign travel time
-						int[] timeList = new int[60];
-						for (int k = 0; k < timeList.length; k++) {
-							timeList[k] = travelTime;
-						}
+						int[] timeList = toNode.getTravelTimeArray();
 						
 						strLine += toNode.getNodeId() + "(" + OSMParam.VARIABLE + ")" + OSMParam.COLON;
 						for (int k = 0; k < timeList.length; k++) {
@@ -244,6 +189,7 @@ public class OSMOutput {
 								strLine += OSMParam.SEMICOLON;
 						}
 					} else {
+						int travelTime = toNode.getTravelTime();
 						strLine += toNode.getNodeId() + "(" + OSMParam.FIX + ")" + OSMParam.COLON;
 						strLine += travelTime + OSMParam.SEMICOLON;
 					}
@@ -414,6 +360,7 @@ public class OSMOutput {
 				long id = edgeInfo.getId();
 				String name = edgeInfo.getName();
 				String highway = edgeInfo.getHighway();
+				boolean isOneway = edgeInfo.isOneway();
 				LinkedList<Long> nodeList = edgeInfo.getNodeList();
 				
 				String kmlStr = "<Placemark><name>Edge:" + id + "</name>";
@@ -422,6 +369,7 @@ public class OSMOutput {
 					name = name.replaceAll("&", "and");
 				kmlStr += "name:" + name + OSMParam.LINEEND;
 				kmlStr += "highway:" + highway + OSMParam.LINEEND;
+				kmlStr += "isOneway:" + isOneway + OSMParam.LINEEND;
 				kmlStr += "ref:" + OSMParam.LINEEND;
 				for(long nodeId : nodeList) {
 					kmlStr += nodeId + OSMParam.LINEEND;

@@ -29,9 +29,17 @@ public class ToNodeInfo {
 	public boolean isFix() {
 		return fix;
 	}
+
+	public void setTravelTimeArray(int[] travelTimeArray) {
+		this.travelTimeArray = travelTimeArray;
+	}
 	
 	public int[] getTravelTimeArray() {
 		return travelTimeArray;
+	}
+
+	public void setTravelTime(int travelTime) {
+		this.travelTime = travelTime;
 	}
 	
 	public int getTravelTime() {

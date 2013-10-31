@@ -5,6 +5,7 @@ public class NodeInfo {
 	LocationInfo location;
 
 	int cost;
+	int heuristic;
 	boolean visited;
 	long parentId;
 	
@@ -27,6 +28,18 @@ public class NodeInfo {
 	
 	public int getCost() {
 		return cost;
+	}
+
+	public void setHeuristic(int heuristic) {
+		this.heuristic = heuristic;
+	}
+
+	public int getHeuristic() {
+		return heuristic;
+	}
+
+	public int getTotalCost() {
+		return cost + heuristic;
 	}
 
 	public boolean isVisited() {
