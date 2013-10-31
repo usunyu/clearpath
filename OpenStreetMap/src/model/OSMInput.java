@@ -436,39 +436,6 @@ public class OSMInput {
 		System.out.println("read node file finish!");
 	}
 	
-	public static void readNodeFile(ArrayList<NodeInfo> nodeArrayList, HashMap<Long, Integer> nodeInterfaceHashMap) {
-		System.out.println("read node file...");
-		int debug = 0;
-		try {
-			String file = OSMParam.root + OSMParam.SEGMENT + OSMParam.nodeCSVFile;
-			checkFileExist(file);
-			FileInputStream fstream = new FileInputStream(file);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			String strLine;
-			
-			while ((strLine = br.readLine()) != null) {
-				debug++;
-				String[] nodes = strLine.split(OSMParam.ESCAPE_SEPARATION);
-				long nodeId = Long.parseLong(nodes[0]);
-				double latitude = Double.parseDouble(nodes[1]);
-				double longitude = Double.parseDouble(nodes[2]);
-				LocationInfo locationInfo = new LocationInfo(latitude, longitude);
-				NodeInfo nodeInfo = new NodeInfo(nodeId, locationInfo);
-				nodeArrayList.add(nodeInfo);
-				nodeInterfaceHashMap.put(nodeId, nodeArrayList.size() - 1);
-			}
-			br.close();
-			in.close();
-			fstream.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("readNodeFile: debug code: " + debug);
-		}
-		System.out.println("read node file finish!");
-	}
-	
 	/**
 	 * read the node file
 	 * @param nodeHashMap
