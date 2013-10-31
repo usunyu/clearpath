@@ -11,7 +11,8 @@ public class OSMGenerateKML {
 	
 	public static void main(String[] args) {
 		OSMParam.paramConfig(args[0]);
-		OSMOutput.generateWayKML(OSMData.wayHashMap, OSMData.nodeHashMap);
+		// OSMOutput.generateWayKML(OSMData.wayHashMap, OSMData.nodeHashMap);
+		OSMOutput.generateEdgeKML(OSMData.edgeHashMap, OSMData.nodeHashMap);
 		OSMOutput.generateNodeKML(OSMData.nodeHashMap);
 	}
 }

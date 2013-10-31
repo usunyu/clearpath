@@ -34,10 +34,10 @@ public class OSMMain {
 			OSMInputFileGeneration.run(args);
 			System.out.println("Step3: output file generation...\n");
 			OSMOutputFileGeneration.run(args);
-			System.out.println("Step4(optional): generate kml...\n");
-			OSMGenerateKML.run(args);
-			System.out.println("Step5: divide way to edge...\n");
+			System.out.println("Step4: divide way to edge...\n");
 			OSMDivideWayToEdge.run(args);
+			System.out.println("Step5(optional): generate kml...\n");
+			OSMGenerateKML.run(args);
 			System.out.println("Step6: generate adj list...\n");
 			OSMGenerateAdjList.run(args);
 			System.out.println("All done!\n");

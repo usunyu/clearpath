@@ -17,6 +17,7 @@ public class OSMParam {
 	public static String adjlistFile;
 	// kml
 	public static String wayKMLFile;
+	public static String edgeKMLFile;
 	public static String nodeKMLFile;
 	public static String pathKMLFile;
 	// test
@@ -101,6 +102,7 @@ public class OSMParam {
 		adjlistFile							= name + "_adjlist.csv";
 		// kml
 		wayKMLFile							= name + "_way.kml";
+		edgeKMLFile 						= name + "_edge.kml";
 		nodeKMLFile							= name + "_node.kml";
 		pathKMLFile							= name + "_path.kml";
 		// test

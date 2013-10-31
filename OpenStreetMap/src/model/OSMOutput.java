@@ -394,6 +394,55 @@ public class OSMOutput {
 		System.out.println("generate way kml finish!");
 	}
 	
+	public static void generateEdgeKML(HashMap<Long, EdgeInfo> edgeHashMap, HashMap<Long, NodeInfo> nodeHashMap) {
+		System.out.println("generate kml...");
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.edgeKMLFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+
+			for(EdgeInfo edgeInfo : edgeHashMap.values()) {
+				debug++;
+				long id = edgeInfo.getId();
+				String name = edgeInfo.getName();
+				String highway = edgeInfo.getHighway();
+				LinkedList<Long> nodeList = edgeInfo.getNodeList();
+				
+				String kmlStr = "<Placemark><name>Edge:" + id + "</name>";
+				kmlStr += "<description>";
+				if(name.contains("&"))
+					name = name.replaceAll("&", "and");
+				kmlStr += "name:" + name + OSMParam.LINEEND;
+				kmlStr += "highway:" + highway + OSMParam.LINEEND;
+				kmlStr += "ref:" + OSMParam.LINEEND;
+				for(long nodeId : nodeList) {
+					kmlStr += nodeId + OSMParam.LINEEND;
+				}
+				kmlStr += OSMParam.LINEEND;
+				kmlStr += "</description>";
+				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
+				for(long nodeId : nodeList) {
+					NodeInfo nodeInfo = nodeHashMap.get(nodeId);
+					LocationInfo location = nodeInfo.getLocation();
+					kmlStr += location.getLongitude() + OSMParam.COMMA + location.getLatitude() + OSMParam.COMMA + "0 ";
+				}
+				kmlStr += "</coordinates></LineString>";
+				kmlStr += "<Style><LineStyle>";
+				kmlStr += "<width>1</width>";
+				kmlStr += "</LineStyle></Style></Placemark>\n";
+				out.write(kmlStr);
+			}
+			out.write("</Document></kml>");
+			out.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("generateWayKML: debug code: " + debug);
+		}
+		System.out.println("generate way kml finish!");
+	}
+	
 	/**
 	 * generate highway kml
 	 * @param edgeHashMap
