@@ -12,8 +12,8 @@ public class OSMRouting {
 	/**
 	 * @param param
 	 */
-	static long START_NODE 		= 187143552;
-	static long END_NODE 		= 699922975;
+	static long START_NODE 		= 33525194;
+	static long END_NODE 		= 187954876;
 	static int START_TIME 		= 10;
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
@@ -48,8 +48,8 @@ public class OSMRouting {
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
 		// count time
 		long begintime = System.currentTimeMillis();
-		//tdsp(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
-		tdspHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, nodesToEdgeHashMap, adjListHashMap, adjReverseListHashMap);
+		tdsp(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		//tdspHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, nodesToEdgeHashMap, adjListHashMap, adjReverseListHashMap);
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("tdsp cost: " + costTime + " ms");
