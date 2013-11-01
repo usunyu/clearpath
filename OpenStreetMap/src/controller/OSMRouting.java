@@ -523,6 +523,7 @@ public class OSMRouting {
 		current.setCost(0);
 		current.setHeuristic(estimateHeuristic(startNode, endNode, nodeHashMap));
 		openSet.offer(current);	// push the start node
+		nodeHelperCache.put(current.getNodeId(), current);	// add cache
 		
 		int totalCost = -1;
 		
@@ -567,6 +568,7 @@ public class OSMRouting {
 					node = new NodeInfoHelper(toNodeId);
 					// add neighbor to openset
 					openSet.offer(node);
+					nodeHelperCache.put(current.getNodeId(), current);
 				}
 				else if (nodeHelperCache.get(toNodeId).getTotalCost() > totalCostTime) {	// neighbor in openset
 					node = nodeHelperCache.get(toNodeId);
