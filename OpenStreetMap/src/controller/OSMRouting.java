@@ -501,7 +501,7 @@ public class OSMRouting {
 		System.out.println("start finding the path...");
 		
 		// test store transversal nodes
-		LinkedList<Long> transversalList = new LinkedList<Long>();
+		HashSet<Long> transversalSet = new HashSet<Long>();
 		
 		if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
 			System.err.println("cannot find start or end node!");
@@ -534,8 +534,8 @@ public class OSMRouting {
 			// remove current from openset
 			current = openSet.poll();
 			
-			if(!transversalList.contains(current.getNodeId()))
-				transversalList.add(current.getNodeId());
+			if(!transversalSet.contains(current.getNodeId()))
+				transversalSet.add(current.getNodeId());
 			
 			long nodeId = current.getNodeId();
 			// add current to closedset
@@ -596,7 +596,7 @@ public class OSMRouting {
 		}
 		Collections.reverse(pathNodeList);	// reverse the path list
 		
-		OSMOutput.generateTransversalNodeKML(transversalList, nodeHashMap);
+		OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
 		
 		System.out.println("find the path successful!");
 		return totalCost;

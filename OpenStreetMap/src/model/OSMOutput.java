@@ -262,14 +262,14 @@ public class OSMOutput {
 	 * @param transversalList
 	 * @param nodeHashMap
 	 */
-	public static void generateTransversalNodeKML(LinkedList<Long> transversalList, HashMap<Long, NodeInfo> nodeHashMap) {
+	public static void generateTransversalNodeKML(HashSet<Long> transversalSet, HashMap<Long, NodeInfo> nodeHashMap) {
 		System.out.println("generate transversal node kml...");
 		int debug = 0;
 		try {
 			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.transversalNodeKMLFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
-			for(long nodeId : transversalList) {
+			for(long nodeId : transversalSet) {
 				debug++;
 				NodeInfo nodeInfo = nodeHashMap.get(nodeId);
 				String strLine = "<Placemark>";
