@@ -68,7 +68,7 @@ public class OSMRouting {
 	 * @param path
 	 */
 	// highway type : level
-	static HashMap<String, Integer> hierarchyHashMap = new HashMap<String, Integer>();
+	public static HashMap<String, Integer> hierarchyHashMap = new HashMap<String, Integer>();
 	static ArrayList<Long> pathNodeList = new ArrayList<Long>();
 
 	public static void main(String[] args) {

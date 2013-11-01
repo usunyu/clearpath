@@ -36,8 +36,8 @@ public class CompareTdspTdspHTimeCost {
 		OSMInput.readNodeFile(OSMData.nodeHashMap, OSMData.nodeArrayList);
 		OSMInput.readEdgeFile(OSMData.edgeHashMap, OSMData.nodesToEdgeHashMap);
 		OSMInput.readAdjList(OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
-		OSMRouting.initialHierarchy();
-		OSMRouting.prepareRoute(OSMData.nodeHashMap);
+		OSMRouting.initialHierarchy(OSMRouting.hierarchyHashMap);
+		
 		int startTime = 10;
 		// test for routing
 		int size = OSMData.nodeArrayList.size();
@@ -48,17 +48,17 @@ public class CompareTdspTdspHTimeCost {
 			long endNode = OSMData.nodeArrayList.get((int)(Math.random() * size)).getNodeId();
 			
 			int cost = OSMRouting.tdsp(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.adjListHashMap);
-			int costH = OSMRouting.tdspHierarchy(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
+			//int costH = OSMRouting.tdspHierarchy(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
 
-			if(cost == -1 || costH == -1) {
-				i--;
-				// start over
-				continue;
-			}
+//			if(cost == -1 || costH == -1) {
+//				i--;
+//				// start over
+//				continue;
+//			}
 			
-			Report r = new Report(cost, costH, startNode, endNode);
+			//Report r = new Report(cost, costH, startNode, endNode);
 
-			reportList.add(r);
+			//reportList.add(r);
 		}
 		// write report
 		int debug = 0;
