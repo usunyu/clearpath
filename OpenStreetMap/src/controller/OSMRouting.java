@@ -515,7 +515,8 @@ public class OSMRouting {
 				return n1.getTotalCost() - n2.getTotalCost();
 			}
 		});
-		HashMap<Long, NodeInfoHelper> closedSet = new HashMap<Long, NodeInfoHelper>();
+		HashSet<Long> closedSet = new HashSet<Long>();
+		HashMap<Long, NodeInfoHelper> nodeHelperCache = new HashMap<Long, NodeInfoHelper>();
 		
 		// initial
 		NodeInfoHelper current = new NodeInfoHelper(startNode);
@@ -530,7 +531,7 @@ public class OSMRouting {
 			current = openSet.poll();
 			long nodeId = current.getNodeId();
 			// add current to closedset
-			closedSet.put(nodeId, current);
+			closedSet.add(nodeId);
 			if(nodeId == endNode) {	// find the destination
 				totalCost = current.getCost();
 				break;
@@ -557,37 +558,32 @@ public class OSMRouting {
 				int heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
 				int totalCostTime = costTime + heuristicTime;
 				// if neighbor in closedset and tentative_f_score >= f_score[neighbor]
-				if(closedSet.containsKey(toNodeId) && closedSet.get(toNodeId).getTotalCost() <= totalCostTime) {
+				if(closedSet.contains(toNodeId) && nodeHelperCache.get(toNodeId).getTotalCost() <= totalCostTime) {
 					continue;
 				}
 				NodeInfoHelper node = null;
-				// tentative_f_score < f_score[neighbor]
-				if(closedSet.containsKey(toNodeId) && closedSet.get(toNodeId).getTotalCost() > totalCostTime) {	// neighbor in closeset
-					node = closedSet.get(toNodeId);
+				// if neighbor not in openset or tentative_f_score < f_score[neighbor]
+				if(!nodeHelperCache.containsKey(toNodeId)) {	// neighbor not in openset
+					node = new NodeInfoHelper(toNodeId);
+					// add neighbor to openset
+					openSet.offer(node);
 				}
-				else  {
-					for(NodeInfoHelper search : openSet) {
-						if(search.getNodeId() == toNodeId) {	// neighbor in openset
-							node = search;
-							break;
-						}
-					}
-					if(node == null) {	// neighbor not in openset
-						node = new NodeInfoHelper(toNodeId);
-						// add neighbor to openset
-						openSet.offer(node);
-					}
+				else if (nodeHelperCache.get(toNodeId).getTotalCost() > totalCostTime) {	// neighbor in openset
+					node = nodeHelperCache.get(toNodeId);
 				}
-				node.setCost(costTime);
-				node.setHeuristic(heuristicTime);
-				node.setParentId(nodeId);
+				// neighbor need update
+				if(node != null) {
+					node.setCost(costTime);
+					node.setHeuristic(heuristicTime);
+					node.setParentId(nodeId);
+				}
 			}
 		}
 		
-		current = closedSet.get(endNode);
+		current = nodeHelperCache.get(endNode);
 		while(current.getParentId() != 0) {
 			pathNodeList.add(current.getNodeId());	// add end node
-			current = closedSet.get(current.getParentId());
+			current = nodeHelperCache.get(current.getParentId());
 		}
 		Collections.reverse(pathNodeList);	// reverse the path list
 		
