@@ -100,7 +100,7 @@ public class OSMOutput {
 	 * @param nodeHashMap
 	 * @param pathNodeList
 	 */
-	public static void generatePathKML(HashMap<Long, NodeInfo> nodeHashMap, ArrayList<Long> pathNodeList) {
+	public static void generatePathKML(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap, ArrayList<Long> pathNodeList) {
 		System.out.println("generate path kml...");
 		
 		int debug = 0;
@@ -120,17 +120,25 @@ public class OSMOutput {
 				
 				long nodeId = pathNodeList.get(i);
 				
-				NodeInfo lastNode = nodeHashMap.get(lastNodeId);
-				NodeInfo currentNode = nodeHashMap.get(nodeId);
+				String nodeIdStr = lastNodeId + OSMParam.COMMA + nodeId;
+				
+				EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdStr);
 				
 				String kmlStr = "<Placemark>";
+				kmlStr += "<name>Edge:" + edge.getId() + "</name>";
 				kmlStr += "<description>";
+				kmlStr += "name:" + edge.getName() + OSMParam.LINEEND;
+				kmlStr += "highway:" + edge.getHighway() + OSMParam.LINEEND;
+				kmlStr += "distance:" + edge.getDistance() + OSMParam.LINEEND;
+				kmlStr += "oneway:" + edge.isOneway() + OSMParam.LINEEND;
 				kmlStr += "start:" + lastNodeId + OSMParam.LINEEND;
 				kmlStr += "end:" + nodeId + OSMParam.LINEEND;
 				kmlStr += "</description>";
 				kmlStr += "<LineString><tessellate>1</tessellate><coordinates>";
-				kmlStr += lastNode.getLocation().getLongitude() + OSMParam.COMMA + lastNode.getLocation().getLatitude() + OSMParam.COMMA + "0 ";
-				kmlStr += currentNode.getLocation().getLongitude() + OSMParam.COMMA + currentNode.getLocation().getLatitude() + OSMParam.COMMA + "0 ";
+				for(long n : edge.getNodeList()) {
+					NodeInfo node = nodeHashMap.get(n);
+					kmlStr += node.getLocation().getLongitude() + OSMParam.COMMA + node.getLocation().getLatitude() + OSMParam.COMMA + "0 ";
+				}
 				kmlStr += "</coordinates></LineString>";
 				kmlStr += "<Style><LineStyle>";
 				kmlStr += "<color>#FF00FF14</color>";

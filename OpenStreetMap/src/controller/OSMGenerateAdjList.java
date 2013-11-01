@@ -59,7 +59,7 @@ public class OSMGenerateAdjList {
 			speed = (double) 30 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 		}
 		
-		travelTime = (int) Math.round(edgeInfo.getDistance() / speed);
+		travelTime = (int) Math.round(edgeInfo.getDistance() / speed * OSMParam.MILLI_PER_SECOND);
 		// travelTime cannot be zero
 		if (travelTime <= 0) {
 			travelTime = 1;

@@ -86,7 +86,7 @@ public class OSMRouting {
 		tdsp(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
 		
 		// output
-		OSMOutput.generatePathKML(OSMData.nodeHashMap, pathNodeList);
+		OSMOutput.generatePathKML(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, pathNodeList);
 		OSMOutput.generatePathNodeKML(OSMData.nodeHashMap, pathNodeList);
 	}
 	
