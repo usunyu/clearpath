@@ -59,8 +59,8 @@ public class OSMRouting {
 	/**
 	 * @param param
 	 */
-	static long START_NODE 		= 33525194;
-	static long END_NODE 		= 187954876;
+	static long START_NODE 		= 123107930;
+	static long END_NODE 		= 122965216;
 	static int START_TIME 		= 10;
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
@@ -568,7 +568,7 @@ public class OSMRouting {
 					node = new NodeInfoHelper(toNodeId);
 					// add neighbor to openset
 					openSet.offer(node);
-					nodeHelperCache.put(current.getNodeId(), current);
+					nodeHelperCache.put(node.getNodeId(), node);
 				}
 				else if (nodeHelperCache.get(toNodeId).getTotalCost() > totalCostTime) {	// neighbor in openset
 					node = nodeHelperCache.get(toNodeId);
