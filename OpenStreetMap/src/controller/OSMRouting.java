@@ -577,7 +577,7 @@ public class OSMRouting {
 					openSet.offer(node);
 					nodeHelperCache.put(node.getNodeId(), node);
 				}
-				else if (nodeHelperCache.get(toNodeId).getTotalCost() > totalCostTime && !closedSet.contains(toNodeId)) {	// neighbor in openset
+				else if (nodeHelperCache.get(toNodeId).getTotalCost() > totalCostTime) {	// neighbor in openset
 					node = nodeHelperCache.get(toNodeId);
 					if(closedSet.contains(toNodeId)) {	// neighbor in closeset
 						closedSet.remove(toNodeId);	// remove neighbor form colseset
