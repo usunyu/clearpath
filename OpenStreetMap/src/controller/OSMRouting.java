@@ -491,7 +491,7 @@ public class OSMRouting {
 		NodeInfo cur = nodeHashMap.get(curNode);
 		NodeInfo end = nodeHashMap.get(endNode);
 		double distance = Distance.calculateDistance(cur.getLocation(), end.getLocation());
-		return (int) (distance / 80) * OSMParam.SECOND_PER_HOUR;
+		return (int) (distance / 80 * OSMParam.SECOND_PER_HOUR);
 	}
 	
 	// using A* algorithm
