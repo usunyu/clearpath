@@ -491,7 +491,7 @@ public class OSMRouting {
 		NodeInfo cur = nodeHashMap.get(curNode);
 		NodeInfo end = nodeHashMap.get(endNode);
 		double distance = Distance.calculateDistance(cur.getLocation(), end.getLocation());
-		return (int) (distance / 80 * OSMParam.SECOND_PER_HOUR);
+		return (int) (distance / 100 * OSMParam.SECOND_PER_HOUR);
 	}
 	
 	// using A* algorithm
@@ -499,6 +499,9 @@ public class OSMRouting {
 	public static int tdsp(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap,
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap) {
 		System.out.println("start finding the path...");
+		
+		// test store transversal nodes
+		HashMap<Long, NodeInfo> transversalHashMap = new HashMap<Long, NodeInfo>();
 		
 		if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
 			System.err.println("cannot find start or end node!");
@@ -527,6 +530,8 @@ public class OSMRouting {
 		
 		int totalCost = -1;
 		
+		transversalHashMap.put(current.getNodeId(), nodeHashMap.get(current.getNodeId()));
+		
 		while(!openSet.isEmpty()) {
 			// remove current from openset
 			current = openSet.poll();
@@ -548,6 +553,9 @@ public class OSMRouting {
 			// for each neighbor in neighbor_nodes(current)
 			for(ToNodeInfo toNode : adjNodeList) {
 				long toNodeId = toNode.getNodeId();
+				
+				transversalHashMap.put(toNodeId, nodeHashMap.get(toNodeId));
+				
 				int travelTime;
 				if(toNode.isFix())	// fix time
 					travelTime = toNode.getTravelTime();
