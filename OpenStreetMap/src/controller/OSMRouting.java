@@ -530,11 +530,13 @@ public class OSMRouting {
 		
 		int totalCost = -1;
 		
-		transversalList.add(current.getNodeId());
-		
 		while(!openSet.isEmpty()) {
 			// remove current from openset
 			current = openSet.poll();
+			
+			if(!transversalList.contains(current.getNodeId()))
+				transversalList.add(current.getNodeId());
+			
 			long nodeId = current.getNodeId();
 			// add current to closedset
 			closedSet.add(nodeId);
@@ -553,9 +555,6 @@ public class OSMRouting {
 			// for each neighbor in neighbor_nodes(current)
 			for(ToNodeInfo toNode : adjNodeList) {
 				long toNodeId = toNode.getNodeId();
-				
-				transversalList.add(toNodeId);
-				
 				int travelTime;
 				if(toNode.isFix())	// fix time
 					travelTime = toNode.getTravelTime();
