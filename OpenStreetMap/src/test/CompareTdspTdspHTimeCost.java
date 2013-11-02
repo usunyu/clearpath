@@ -81,7 +81,7 @@ public class CompareTdspTdspHTimeCost {
 			out.write("Start Node:\tEnd Node:\tTdsp Response(ms):\tTdspH Response(ms):\tTdsp Cost(m):\tTdspH Cost(m):" + OSMParam.LINEEND);
 			for(int i = 0; i < reportList.size(); i++) {
 				Report r = reportList.get(i);
-				String strLine = r.start + "\t\t" + r.end + "\t\t" + r.responseTime + "\t\t" + r.responseTimeH + "\t\t" + r.cost/60 + "\t\t" + r.costH/60 + OSMParam.LINEEND;
+				String strLine = r.start + "\t" + r.end + "\t" + r.responseTime + "\t\t\t\t\t" + r.responseTimeH + "\t\t\t\t\t" + r.cost/60 + "\t\t\t\t\t" + r.costH/60 + OSMParam.LINEEND;
 				totalCost += r.cost/60;
 				totalCostH += r.costH/60;
 				totalResponse += r.responseTime;
@@ -89,7 +89,7 @@ public class CompareTdspTdspHTimeCost {
 				out.write(strLine);
 			}
 			out.write("Tdsp Total Response(ms):\tTdspH Total Response(ms):\tTdsp Total Cost:\tTdspH Total Cost:" + OSMParam.LINEEND);
-			out.write(totalResponse + "\t\t\t" + totalResponseH + "\t\t\t" + totalCost + "\t\t\t" + totalCostH + OSMParam.LINEEND);
+			out.write(totalResponse + "\t\t\t\t\t" + totalResponseH + "\t\t\t\t\t" + totalCost + "\t\t\t\t" + totalCostH + OSMParam.LINEEND);
 			out.close();
 		} catch (Exception e) {
 			// TODO: handle exception
