@@ -8,55 +8,6 @@ import object.*;
 
 public class OSMOutput {
 	
-	public static void generateEntranceExitKML(long start, long end, HashMap<Long, HighwayEntrance> entranceMap, HashMap<Long, HighwayEntrance> exitMap, HashMap<Long, NodeInfo> nodeHashMap) {
-		System.out.println("generate entrance exit kml...");
-		int debug = 0;
-		try {
-			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.entranceExitFile);
-			BufferedWriter out = new BufferedWriter(fstream);
-			out.write("<kml><Document>");
-			ArrayList<NodeInfo> nodeList = new ArrayList<NodeInfo>();
-			NodeInfo startNode = nodeHashMap.get(start);
-			NodeInfo endNode = nodeHashMap.get(end);
-			
-			nodeList.add(startNode);
-			nodeList.add(endNode);
-			
-			for(long nodeId : entranceMap.keySet()) {
-				NodeInfo node = nodeHashMap.get(nodeId);
-				nodeList.add(node);
-			}
-			
-			for(long nodeId : exitMap.keySet()) {
-				NodeInfo node = nodeHashMap.get(nodeId);
-				nodeList.add(node);
-			}
-			
-			for(NodeInfo nodeInfo : nodeList) {
-				debug++;
-				String strLine = "<Placemark>";
-				strLine += "<name>" + nodeInfo.getNodeId() + "</name>";
-				strLine += "<description>";
-				strLine += "Id:" + nodeInfo.getNodeId();
-				strLine += "</description>";
-				strLine += "<Point><coordinates>";
-				strLine += nodeInfo.getLocation().getLongitude() + OSMParam.COMMA + nodeInfo.getLocation().getLatitude();
-				strLine += ",0</coordinates></Point>";
-				strLine += "</Placemark>";
-				
-				out.write(strLine);
-			}
-			out.write("</Document></kml>");
-			out.close();
-			fstream.close();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			System.err.println("generateKMLNode: debug code: " + debug);
-		}
-		System.out.println("generate entrance exit kml finish!");
-	}
-	
 	/**
 	 * generate path node kml
 	 * @param nodeHashMap
