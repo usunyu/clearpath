@@ -104,8 +104,8 @@ public class OSMRouting {
 	/**
 	 * @param param
 	 */
-	static long START_NODE 		= 33640102;
-	static long END_NODE 		= 187857501;
+	static long START_NODE 		= 188324333;
+	static long END_NODE 		= 186409912;
 	static int START_TIME 		= 10;
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
@@ -134,20 +134,20 @@ public class OSMRouting {
 		
 		// output
 		OSMOutput.generatePathKML(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, pathNodeList);
-		OSMOutput.generatePathNodeKML(OSMData.nodeHashMap, pathNodeList);
+		// OSMOutput.generatePathNodeKML(OSMData.nodeHashMap, pathNodeList);
 	}
 	
 	public static void routing(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap,
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
 		// test start end node
-		// OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
+		OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
 		// test count time
 		long begintime = System.currentTimeMillis();
 		//routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
 		routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
-		System.out.println("tdsp cost: " + costTime + " ms");
+		System.out.println("routing cost: " + costTime + " ms");
 	}
 	
 	public static void initialHierarchy(HashMap<String, Integer> hierarchyHashMap) {
