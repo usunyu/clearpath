@@ -332,7 +332,7 @@ public class OSMRouting {
 			}
 			
 			// test
-			generateEntranceExitKML(startNode, endNode, entranceMap, exitMap, nodeHashMap);
+			generateEntranceExitKML(entranceMap, exitMap, nodeHashMap);
 			
 			long finalEntrance = 0;
 			long finalExit = 0;
@@ -357,9 +357,6 @@ public class OSMRouting {
 				LinkedList<NodeInfoHelper> exitNodeList = new LinkedList<NodeInfoHelper>();
 				while (!openSet.isEmpty()) {
 					debug++;
-					if(debug == 7484) {
-						System.out.println();
-					}
 					// remove current from openset
 					current = openSet.poll();
 					long nodeId = current.getNodeId();
@@ -472,7 +469,7 @@ public class OSMRouting {
 		return totalCost;
 	}
 	
-	public static void generateEntranceExitKML(long start, long end, HashMap<Long, HighwayEntrance> entranceMap, 
+	public static void generateEntranceExitKML(HashMap<Long, HighwayEntrance> entranceMap, 
 			HashMap<Long, HighwayEntrance> exitMap, HashMap<Long, NodeInfo> nodeHashMap) {
 		System.out.println("generate entrance exit kml...");
 		int debug = 0;
@@ -481,11 +478,6 @@ public class OSMRouting {
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			ArrayList<NodeInfo> nodeList = new ArrayList<NodeInfo>();
-			NodeInfo startNode = nodeHashMap.get(start);
-			NodeInfo endNode = nodeHashMap.get(end);
-			
-			nodeList.add(startNode);
-			nodeList.add(endNode);
 			
 			for(long nodeId : entranceMap.keySet()) {
 				NodeInfo node = nodeHashMap.get(nodeId);
