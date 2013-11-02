@@ -332,7 +332,7 @@ public class OSMRouting {
 			}
 			
 			// test
-			generateEntranceExitKML(entranceMap, exitMap, nodeHashMap);
+			//generateEntranceExitKML(entranceMap, exitMap, nodeHashMap);
 			
 			long finalEntrance = 0;
 			long finalExit = 0;
