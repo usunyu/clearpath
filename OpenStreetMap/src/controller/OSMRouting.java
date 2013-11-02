@@ -109,6 +109,8 @@ public class OSMRouting {
 	static int START_TIME 		= 10;
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
+	static int HEURISTIC_SPEED	= 60;
+	static int ENTRANCE_NUMBER	= 4;
 	/**
 	 * @param path
 	 */
@@ -202,8 +204,8 @@ public class OSMRouting {
 		openSet.offer(current);	// push the start node
 		nodeHelperCache.put(current.getNodeId(), current);	// add cache
 		
-		// find four entrance
-		while(!openSet.isEmpty() && highwayEntranceMap.size() < 4) {
+		// find entrances until reach ENTRANCE_NUMBER
+		while(!openSet.isEmpty() && highwayEntranceMap.size() < ENTRANCE_NUMBER) {
 			// remove current from openset
 			current = openSet.poll();
 			long nodeId = current.getNodeId();
@@ -213,12 +215,12 @@ public class OSMRouting {
 			// for time dependent routing
 			int timeIndex;
 			if(!exit) {
-				timeIndex = startTime + current.getCost() / 60 / TIME_INTERVAL;
+				timeIndex = startTime + current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
 				if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
 					timeIndex = TIME_RANGE - 1;
 			}
 			else {
-				timeIndex = startTime - current.getCost() / 60 / TIME_INTERVAL;
+				timeIndex = startTime - current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
 				if(timeIndex < 0) {
 					timeIndex = 0;
 				}
@@ -300,7 +302,6 @@ public class OSMRouting {
 					highwayEntrance.setHeuristic(current.getHeuristic());
 					highwayEntrance.setLocalToHighPath(entrancePathNodeList);
 					highwayEntranceMap.put(nodeId, highwayEntrance);
-					break;	// not transversal other connected node from current
 				}
 			}
 		}
@@ -335,7 +336,7 @@ public class OSMRouting {
 				return 0;
 			}
 			HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, endNode, startTime, nodeHashMap, nodesToEdgeHashMap, adjListHashMap, false);
-			int estimateArriveTime = startTime + estimateHeuristic(startNode, endNode, nodeHashMap) / 60 / TIME_INTERVAL;
+			int estimateArriveTime = startTime + estimateHeuristic(startNode, endNode, nodeHashMap) / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
 			HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode, startNode, estimateArriveTime, nodeHashMap, nodesToEdgeHashMap, adjReverseListHashMap, true);
 			
 			if(entranceMap == null || exitMap == null) {	// we should use normal tdsp in this situation
@@ -343,7 +344,7 @@ public class OSMRouting {
 			}
 			
 			// test
-			//generateEntranceExitKML(entranceMap, exitMap, nodeHashMap);
+			generateEntranceExitKML(entranceMap, exitMap, nodeHashMap);
 			
 			long finalEntrance = 0;
 			long finalExit = 0;
@@ -377,7 +378,7 @@ public class OSMRouting {
 						if(exitNodeList.size() == 4) break;	// find all four exits
 					}
 					// for time dependent routing, also need add the time from source to entrance
-					int timeIndex = startTime + entrance.getCost() / 60 / TIME_INTERVAL + current.getCost() / 60 / TIME_INTERVAL;
+					int timeIndex = startTime + entrance.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL + current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
 					if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
 						timeIndex = TIME_RANGE - 1;
 					LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
@@ -540,7 +541,7 @@ public class OSMRouting {
 		NodeInfo cur = nodeHashMap.get(curNode);
 		NodeInfo end = nodeHashMap.get(endNode);
 		double distance = Distance.calculateDistance(cur.getLocation(), end.getLocation());
-		return (int) (distance / 60 * OSMParam.SECOND_PER_HOUR);
+		return (int) (distance / HEURISTIC_SPEED * OSMParam.SECOND_PER_HOUR);
 	}
 	
 	/**
@@ -602,7 +603,7 @@ public class OSMRouting {
 					break;
 				}
 				// for time dependent routing
-				int timeIndex = startTime + current.getCost() / 60 / TIME_INTERVAL;
+				int timeIndex = startTime + current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
 				if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
 					timeIndex = TIME_RANGE - 1;
 				LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);

@@ -90,6 +90,7 @@ public class OSMParam {
 	public static int FEET_PER_MILE			= 5280;
 	public static int SECOND_PER_HOUR		= 3600;
 	public static int MILLI_PER_SECOND		= 1000;
+	public static int SECOND_PER_MINUTE		= 60;
 	
 	public static void paramConfig(String name) {
 		// source
