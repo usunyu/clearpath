@@ -15,10 +15,14 @@ class Report {
 	int costH;
 	long start;
 	long end;
+	long responseTime;
+	long responseTimeH;
 	
-	public Report(int cost, int costH, long start, long end) {
+	public Report(int cost, int costH, long responseTime, long responseTimeH, long start, long end) {
 		this.cost = cost;
 		this.costH = costH;
+		this.responseTime = responseTime;
+		this.responseTimeH = responseTimeH;
 		this.start = start;
 		this.end = end;
 	}
@@ -46,37 +50,40 @@ public class CompareTdspTdspHTimeCost {
 		for(int i = 0; i < 100; i++) {
 			long startNode = OSMData.nodeArrayList.get((int)(Math.random() * size)).getNodeId();
 			long endNode = OSMData.nodeArrayList.get((int)(Math.random() * size)).getNodeId();
+			long begintime, endtime, costtime, costtimeH;
 			
+			begintime = System.currentTimeMillis();
 			int cost = OSMRouting.tdsp(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.adjListHashMap);
-			//int costH = OSMRouting.tdspHierarchy(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
-
-//			if(cost == -1 || costH == -1) {
-//				i--;
-//				// start over
-//				continue;
-//			}
-			
-			//Report r = new Report(cost, costH, startNode, endNode);
-
-			//reportList.add(r);
+			endtime = System.currentTimeMillis();
+			costtime = endtime - begintime;
+			begintime = System.currentTimeMillis();
+			int costH = OSMRouting.tdspHierarchy(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap, OSMData.nodesToEdgeHashMap);
+			endtime = System.currentTimeMillis();
+			costtimeH = endtime - begintime;
+			Report r = new Report(cost, costH, costtime, costtimeH, startNode, endNode);
+			reportList.add(r);
 		}
 		// write report
 		int debug = 0;
 		long totalCost = 0;
 		long totalCostH = 0;
+		long totalResponse = 0;
+		long totalResponseH = 0;
 		try {
 			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.costReportFile);
 			BufferedWriter out = new BufferedWriter(fstream);
-			out.write("Start Node:\tEnd Node:\tTdsp Cost:\tTdspH Cost:" + OSMParam.LINEEND);
+			out.write("Start Node:\tEnd Node:\tTdsp Response(ms):\tTdspH Response(ms):\tTdsp Cost(m):\tTdspH Cost(m):" + OSMParam.LINEEND);
 			for(int i = 0; i < reportList.size(); i++) {
 				Report r = reportList.get(i);
-				String strLine = r.start + "\t" + r.end + "\t" + r.cost/1000 + "\t" + r.costH/1000 + OSMParam.LINEEND;
-				totalCost += r.cost/1000;
-				totalCostH += r.costH/1000;
+				String strLine = r.start + "\t" + r.end + "\t" + r.responseTime + "\t" + r.responseTimeH + "\t" + r.cost/60 + "\t" + r.costH/60 + OSMParam.LINEEND;
+				totalCost += r.cost/60;
+				totalCostH += r.costH/60;
+				totalResponse += r.responseTime;
+				totalResponseH += r.responseTimeH;
 				out.write(strLine);
 			}
-			out.write("Tdsp Total Cost:\tTdspH Total Cost:" + OSMParam.LINEEND);
-			out.write(totalCost + "\t" + totalCostH + OSMParam.LINEEND);
+			out.write("Tdsp Total Response(ms):\tTdspH Total Response(ms):\tTdsp Total Cost:\tTdspH Total Cost:" + OSMParam.LINEEND);
+			out.write(totalResponse + "\t\t" + totalResponseH + "\t\t" + totalCost + "\t\t" + totalCostH + OSMParam.LINEEND);
 			out.close();
 		} catch (Exception e) {
 			// TODO: handle exception
