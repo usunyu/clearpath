@@ -138,7 +138,7 @@ public class OSMRouting {
 	public static void routing(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap,
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
 		// test start end node
-		OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
+		// OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
 		// test count time
 		long begintime = System.currentTimeMillis();
 		//routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
@@ -307,6 +307,17 @@ public class OSMRouting {
 		return highwayEntranceMap;
 	}
 	
+	/**
+	 * hierarchy routing with A* algorithm 
+	 * @param startNode
+	 * @param endNode
+	 * @param startTime
+	 * @param nodeHashMap
+	 * @param adjListHashMap
+	 * @param adjReverseListHashMap
+	 * @param nodesToEdgeHashMap
+	 * @return
+	 */
 	public static int routingHierarchy(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap, 
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap,
 			HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
@@ -332,7 +343,7 @@ public class OSMRouting {
 			}
 			
 			// test
-			generateEntranceExitKML(entranceMap, exitMap, nodeHashMap);
+			//generateEntranceExitKML(entranceMap, exitMap, nodeHashMap);
 			
 			long finalEntrance = 0;
 			long finalExit = 0;
@@ -360,10 +371,10 @@ public class OSMRouting {
 					// remove current from openset
 					current = openSet.poll();
 					long nodeId = current.getNodeId();
+					
 					if(exitMap.containsKey(nodeId)) {	// find exit
 						exitNodeList.add(current);
-						//if(exitNodeList.size() == 4) break;	// find all four exits
-						break;
+						if(exitNodeList.size() == 4) break;	// find all four exits
 					}
 					// for time dependent routing, also need add the time from source to entrance
 					int timeIndex = startTime + entrance.getCost() / 60 / TIME_INTERVAL + current.getCost() / 60 / TIME_INTERVAL;
@@ -426,6 +437,7 @@ public class OSMRouting {
 					for(NodeInfoHelper exit : exitNodeList) {
 						long exitId = exit.getNodeId();
 						NodeInfoHelper node = exit;
+						// TODO: from exit to destination, here use reverse calculate, should modify later
 						int newCost = node.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
 						
 						if(newCost < totalCost) {	// find less cost path
@@ -517,6 +529,13 @@ public class OSMRouting {
 		System.out.println("generate entrance exit kml finish!");
 	}
 	
+	/**
+	 * estimate heuristic, using distance/speed
+	 * @param curNode
+	 * @param endNode
+	 * @param nodeHashMap
+	 * @return
+	 */
 	public static int estimateHeuristic(long curNode, long endNode, HashMap<Long, NodeInfo> nodeHashMap) {
 		NodeInfo cur = nodeHashMap.get(curNode);
 		NodeInfo end = nodeHashMap.get(endNode);
@@ -524,8 +543,16 @@ public class OSMRouting {
 		return (int) (distance / 60 * OSMParam.SECOND_PER_HOUR);
 	}
 	
-	// using A* algorithm
-	// http://en.wikipedia.org/wiki/A*_search_algorithm
+	/**
+	 * routing using A* algorithm
+	 * http://en.wikipedia.org/wiki/A*_search_algorithm
+	 * @param startNode
+	 * @param endNode
+	 * @param startTime
+	 * @param nodeHashMap
+	 * @param adjListHashMap
+	 * @return
+	 */
 	public static int routingAStar(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap,
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap) {
 		System.out.println("start finding the path...");
@@ -533,7 +560,7 @@ public class OSMRouting {
 		int totalCost = -1;
 		try {
 			// test store transversal nodes
-			HashSet<Long> transversalSet = new HashSet<Long>();
+			// HashSet<Long> transversalSet = new HashSet<Long>();
 			
 			if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
 				System.err.println("cannot find start or end node!");
@@ -564,8 +591,8 @@ public class OSMRouting {
 				// remove current from openset
 				current = openSet.poll();
 				
-				if(!transversalSet.contains(current.getNodeId()))
-					transversalSet.add(current.getNodeId());
+				// if(!transversalSet.contains(current.getNodeId()))
+					// transversalSet.add(current.getNodeId());
 				
 				long nodeId = current.getNodeId();
 				// add current to closedset
@@ -639,7 +666,7 @@ public class OSMRouting {
 			else {
 				System.out.println("can not find the path!");
 			}
-			OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
+			// OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
