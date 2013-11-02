@@ -26,6 +26,7 @@ public class OSMParam {
 	public static String highwayKMLFile;
 	public static String costReportFile;
 	public static String transversalNodeKMLFile;
+	public static String startEndNodeKMLFile;
 	// deprecated
 	public static String extraNodeFile;
 	/**
@@ -112,6 +113,7 @@ public class OSMParam {
 		highwayKMLFile						= name + "_highway.kml";
 		costReportFile						= name + "_cost_report.csv";
 		transversalNodeKMLFile				= name + "_transversal_node.kml";
+		startEndNodeKMLFile					= name + "_start_end_node.kml";
 		// deprecated
 		extraNodeFile						= name + "_way_extra.csv";
 	}

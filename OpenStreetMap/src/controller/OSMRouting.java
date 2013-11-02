@@ -137,7 +137,9 @@ public class OSMRouting {
 	
 	public static void tdsp(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap,
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
-		// count time
+		// test start end node
+		OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
+		// test count time
 		long begintime = System.currentTimeMillis();
 		//tdsp(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
 		tdspHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);

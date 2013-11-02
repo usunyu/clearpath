@@ -208,6 +208,49 @@ public class OSMOutput {
 		System.out.println("write edge file finish!");
 	}
 	
+	public static void generateStartEndlNodeKML(long start, long end, HashMap<Long, NodeInfo> nodeHashMap) {
+		System.out.println("generate transversal node kml...");
+		int debug = 0;
+		try {
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.transversalNodeKMLFile);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write("<kml><Document>");
+			
+			NodeInfo nodeInfo = nodeHashMap.get(start);
+			String strLine = "<Placemark>";
+			strLine += "<name>" + nodeInfo.getNodeId() + "</name>";
+			strLine += "<description>";
+			strLine += "Id:" + nodeInfo.getNodeId();
+			strLine += "</description>";
+			strLine += "<Point><coordinates>";
+			strLine += nodeInfo.getLocation().getLongitude() + OSMParam.COMMA + nodeInfo.getLocation().getLatitude() + OSMParam.COMMA + "0 ";
+			strLine += "</coordinates></Point>";
+			strLine += "</Placemark>";
+			out.write(strLine);
+			
+			nodeInfo = nodeHashMap.get(end);
+			strLine = "<Placemark>";
+			strLine += "<name>" + nodeInfo.getNodeId() + "</name>";
+			strLine += "<description>";
+			strLine += "Id:" + nodeInfo.getNodeId();
+			strLine += "</description>";
+			strLine += "<Point><coordinates>";
+			strLine += nodeInfo.getLocation().getLongitude() + OSMParam.COMMA + nodeInfo.getLocation().getLatitude() + OSMParam.COMMA + "0 ";
+			strLine += "</coordinates></Point>";
+			strLine += "</Placemark>";
+			out.write(strLine);
+			
+			out.write("</Document></kml>");
+			out.close();
+			fstream.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("generateTransversalNodeKML: debug code: " + debug);
+		}
+		System.out.println("generate transversal node kml finish!");
+	}
+	
 	/**
 	 * generate transversal nodes
 	 * @param transversalList
