@@ -104,8 +104,8 @@ public class OSMRouting {
 	/**
 	 * @param param
 	 */
-	static long START_NODE 		= 33525194;
-	static long END_NODE 		= 187954876;
+	static long START_NODE 		= 188411846;
+	static long END_NODE 		= 187508822;
 	static int START_TIME 		= 10;
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
@@ -139,8 +139,8 @@ public class OSMRouting {
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
 		// count time
 		long begintime = System.currentTimeMillis();
-		//tdsp(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
-		tdspHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
+		tdsp(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		//tdspHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("tdsp cost: " + costTime + " ms");
@@ -283,10 +283,11 @@ public class OSMRouting {
 				if(hierarchy == 1) {	// find one highway entrance
 					ArrayList<Long> entrancePathNodeList = new ArrayList<Long>();
 					long traceNodeId = current.getNodeId();
+					NodeInfoHelper cur = current;
 					while(traceNodeId != 0) {
-						pathNodeList.add(traceNodeId);	// add end node
-						current = nodeHelperCache.get(traceNodeId);
-						traceNodeId = current.getParentId();
+						entrancePathNodeList.add(traceNodeId);	// add end node
+						cur = nodeHelperCache.get(traceNodeId);
+						traceNodeId = cur.getParentId();
 					}
 					
 					if(!exit) { 
@@ -308,150 +309,162 @@ public class OSMRouting {
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap,
 			HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
 		System.out.println("start finding the path...");
-		if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
-			System.err.println("cannot find start or end node!");
-			return -1;
-		}
-		
-		if (startNode == endNode) {
-			System.out.println("start node is the same as end node.");
-			return 0;
-		}
-		HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, endNode, startTime, nodeHashMap, nodesToEdgeHashMap, adjListHashMap, false);
-		int estimateArriveTime = startTime + estimateHeuristic(startNode, endNode, nodeHashMap) / 60 / TIME_INTERVAL;
-		HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode, startNode, estimateArriveTime, nodeHashMap, nodesToEdgeHashMap, adjReverseListHashMap, true);
-		
-		if(entranceMap == null || exitMap == null) {	// we should use normal tdsp in this situation
-			return tdsp(startNode, endNode, startTime, nodeHashMap, adjListHashMap);
-		}
-		
-		// test
-		generateEntranceExitKML(startNode, endNode, entranceMap, exitMap, nodeHashMap);
-		
+		int debug = 0;
 		int totalCost = Integer.MAX_VALUE;
-		long finalEntrance = 0;
-		long finalExit = 0;
-		
-		// iterate each entrance
-		for(long entranceId : entranceMap.keySet()) {
-			PriorityQueue<NodeInfoHelper> openSet = new PriorityQueue<NodeInfoHelper>( 5000, new Comparator<NodeInfoHelper>() {
-				public int compare(NodeInfoHelper n1, NodeInfoHelper n2) {
-					return n1.getTotalCost() - n2.getTotalCost();
-				}
-			});
-			HashSet<Long> closedSet = new HashSet<Long>();
-			HashMap<Long, NodeInfoHelper> nodeHelperCache = new HashMap<Long, NodeInfoHelper>();
-			// initial
-			NodeInfoHelper current = new NodeInfoHelper(entranceId);
-			current.setCost(0);
-			current.setHeuristic(estimateHeuristic(entranceId, endNode, nodeHashMap));
-			openSet.offer(current);	// push the start node
-			nodeHelperCache.put(current.getNodeId(), current);	// add cache
-			HighwayEntrance entrance = entranceMap.get(entranceId);
-			
-			LinkedList<NodeInfoHelper> exitNodeList = new LinkedList<NodeInfoHelper>();
-			while (!openSet.isEmpty()) {
-				// remove current from openset
-				current = openSet.poll();
-				long nodeId = current.getNodeId();
-				if(exitMap.containsKey(nodeId)) {	// find exit
-					exitNodeList.add(current);
-					//if(exitNodeList.size() == 4) break;	// find all four exits
-					break;
-				}
-				// for time dependent routing, also need add the time from source to entrance
-				int timeIndex = startTime + entrance.getCost() / 60 / TIME_INTERVAL + current.getCost() / 60 / TIME_INTERVAL;
-				if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
-					timeIndex = TIME_RANGE - 1;
-				LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
-				if(adjNodeList == null) continue;	// this node cannot go anywhere
-				int arriveTime = current.getCost();
-				// for each neighbor in neighbor_nodes(current)
-				for(ToNodeInfo toNode : adjNodeList) {
-					long toNodeId = toNode.getNodeId();
-					String nodeIdKey = nodeId + OSMParam.COMMA + toNodeId;
-					EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdKey);
-					String highway = edge.getHighway();
-					int hierarchy = 6;
-					if(hierarchyHashMap.containsKey(highway)) {
-						hierarchy = hierarchyHashMap.get(highway);
-					}
-					if(hierarchy != 1) continue;	// keep on in highway
-					int travelTime;
-					if(toNode.isFix())	// fix time
-						travelTime = toNode.getTravelTime();
-					else	// fetch from time array
-						travelTime = toNode.getTravelTimeArray()[timeIndex];
-					// tentative_g_score := g_score[current] + dist_between(current,neighbor)
-					int costTime = arriveTime + travelTime;
-					// tentative_f_score := tentative_g_score + heuristic_cost_estimate(neighbor, goal)
-					int heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
-					int totalCostTime = costTime + heuristicTime;
-					// if neighbor in closedset and tentative_f_score >= f_score[neighbor]
-					if(closedSet.contains(toNodeId) && nodeHelperCache.get(toNodeId).getTotalCost() <= totalCostTime) {
-						continue;
-					}
-					NodeInfoHelper node = null;
-					// if neighbor not in openset or tentative_f_score < f_score[neighbor]
-					if(!nodeHelperCache.containsKey(toNodeId)) {	// neighbor not in openset
-						node = new NodeInfoHelper(toNodeId);
-						nodeHelperCache.put(node.getNodeId(), node);
-					}
-					else if (nodeHelperCache.get(toNodeId).getTotalCost() > totalCostTime) {	// neighbor in openset
-						node = nodeHelperCache.get(toNodeId);
-						if(closedSet.contains(toNodeId)) {	// neighbor in closeset
-							closedSet.remove(toNodeId);	// remove neighbor form colseset
-						}
-						else {
-							openSet.remove(node);
-						}
-					}
-					// neighbor need update
-					if(node != null) {
-						node.setCost(costTime);
-						node.setHeuristic(heuristicTime);
-						node.setParentId(nodeId);
-						openSet.offer(node);	// add neighbor to openset again
-					}
-				}
+		try {
+			if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
+				System.err.println("cannot find start or end node!");
+				return -1;
 			}
 			
-			if(exitNodeList.size() > 0) {
-				for(NodeInfoHelper exit : exitNodeList) {
-					long exitId = exit.getNodeId();
-					NodeInfoHelper node = exit;
-					int newCost = node.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
-					
-					if(newCost < totalCost) {	// find less cost path
-						totalCost = newCost;
-						pathNodeList = new ArrayList<Long>();
-						long traceNodeId = node.getNodeId();
-						while(traceNodeId != 0) {
-							pathNodeList.add(traceNodeId);	// add end node
-							node = nodeHelperCache.get(traceNodeId);
-							traceNodeId = node.getParentId();
+			if (startNode == endNode) {
+				System.out.println("start node is the same as end node.");
+				return 0;
+			}
+			HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, endNode, startTime, nodeHashMap, nodesToEdgeHashMap, adjListHashMap, false);
+			int estimateArriveTime = startTime + estimateHeuristic(startNode, endNode, nodeHashMap) / 60 / TIME_INTERVAL;
+			HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode, startNode, estimateArriveTime, nodeHashMap, nodesToEdgeHashMap, adjReverseListHashMap, true);
+			
+			if(entranceMap == null || exitMap == null) {	// we should use normal tdsp in this situation
+				return tdsp(startNode, endNode, startTime, nodeHashMap, adjListHashMap);
+			}
+			
+			// test
+			generateEntranceExitKML(startNode, endNode, entranceMap, exitMap, nodeHashMap);
+			
+			long finalEntrance = 0;
+			long finalExit = 0;
+			
+			// iterate each entrance
+			for(long entranceId : entranceMap.keySet()) {
+				PriorityQueue<NodeInfoHelper> openSet = new PriorityQueue<NodeInfoHelper>( 5000, new Comparator<NodeInfoHelper>() {
+					public int compare(NodeInfoHelper n1, NodeInfoHelper n2) {
+						return n1.getTotalCost() - n2.getTotalCost();
+					}
+				});
+				HashSet<Long> closedSet = new HashSet<Long>();
+				HashMap<Long, NodeInfoHelper> nodeHelperCache = new HashMap<Long, NodeInfoHelper>();
+				// initial
+				NodeInfoHelper current = new NodeInfoHelper(entranceId);
+				current.setCost(0);
+				current.setHeuristic(estimateHeuristic(entranceId, endNode, nodeHashMap));
+				openSet.offer(current);	// push the start node
+				nodeHelperCache.put(current.getNodeId(), current);	// add cache
+				HighwayEntrance entrance = entranceMap.get(entranceId);
+				
+				LinkedList<NodeInfoHelper> exitNodeList = new LinkedList<NodeInfoHelper>();
+				while (!openSet.isEmpty()) {
+					debug++;
+					if(debug == 7484) {
+						System.out.println();
+					}
+					// remove current from openset
+					current = openSet.poll();
+					long nodeId = current.getNodeId();
+					if(exitMap.containsKey(nodeId)) {	// find exit
+						exitNodeList.add(current);
+						//if(exitNodeList.size() == 4) break;	// find all four exits
+						break;
+					}
+					// for time dependent routing, also need add the time from source to entrance
+					int timeIndex = startTime + entrance.getCost() / 60 / TIME_INTERVAL + current.getCost() / 60 / TIME_INTERVAL;
+					if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
+						timeIndex = TIME_RANGE - 1;
+					LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
+					if(adjNodeList == null) continue;	// this node cannot go anywhere
+					int arriveTime = current.getCost();
+					// for each neighbor in neighbor_nodes(current)
+					for(ToNodeInfo toNode : adjNodeList) {
+						long toNodeId = toNode.getNodeId();
+						String nodeIdKey = nodeId + OSMParam.COMMA + toNodeId;
+						EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdKey);
+						String highway = edge.getHighway();
+						int hierarchy = 6;
+						if(hierarchyHashMap.containsKey(highway)) {
+							hierarchy = hierarchyHashMap.get(highway);
 						}
+						if(hierarchy != 1) continue;	// keep on in highway
+						int travelTime;
+						if(toNode.isFix())	// fix time
+							travelTime = toNode.getTravelTime();
+						else	// fetch from time array
+							travelTime = toNode.getTravelTimeArray()[timeIndex];
+						// tentative_g_score := g_score[current] + dist_between(current,neighbor)
+						int costTime = arriveTime + travelTime;
+						// tentative_f_score := tentative_g_score + heuristic_cost_estimate(neighbor, goal)
+						int heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
+						int totalCostTime = costTime + heuristicTime;
+						// if neighbor in closedset and tentative_f_score >= f_score[neighbor]
+						if(closedSet.contains(toNodeId) && nodeHelperCache.get(toNodeId).getTotalCost() <= totalCostTime) {
+							continue;
+						}
+						NodeInfoHelper node = null;
+						// if neighbor not in openset or tentative_f_score < f_score[neighbor]
+						if(!nodeHelperCache.containsKey(toNodeId)) {	// neighbor not in openset
+							node = new NodeInfoHelper(toNodeId);
+							nodeHelperCache.put(node.getNodeId(), node);
+						}
+						else if (nodeHelperCache.get(toNodeId).getTotalCost() > totalCostTime) {	// neighbor in openset
+							node = nodeHelperCache.get(toNodeId);
+							if(closedSet.contains(toNodeId)) {	// neighbor in closeset
+								closedSet.remove(toNodeId);	// remove neighbor form colseset
+							}
+							else {
+								openSet.remove(node);
+							}
+						}
+						// neighbor need update
+						if(node != null) {
+							node.setCost(costTime);
+							node.setHeuristic(heuristicTime);
+							node.setParentId(nodeId);
+							openSet.offer(node);	// add neighbor to openset again
+						}
+					}
+				}
+				
+				if(exitNodeList.size() > 0) {
+					for(NodeInfoHelper exit : exitNodeList) {
+						long exitId = exit.getNodeId();
+						NodeInfoHelper node = exit;
+						int newCost = node.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
 						
-						Collections.reverse(pathNodeList);
-						finalEntrance = entranceId;
-						finalExit = exitId;
+						if(newCost < totalCost) {	// find less cost path
+							totalCost = newCost;
+							pathNodeList = new ArrayList<Long>();
+							long traceNodeId = node.getNodeId();
+							while(traceNodeId != 0) {
+								pathNodeList.add(traceNodeId);	// add end node
+								node = nodeHelperCache.get(traceNodeId);
+								traceNodeId = node.getParentId();
+							}
+							
+							Collections.reverse(pathNodeList);
+							finalEntrance = entranceId;
+							finalExit = exitId;
+						}
 					}
 				}
 			}
+			
+			HighwayEntrance entrance = entranceMap.get(finalEntrance);
+			HighwayEntrance exit = exitMap.get(finalExit);
+
+			ArrayList<Long> entrancePath = entrance.getLocalToHighPath();
+			// remove the duplicate entrance
+			entrancePath.remove(entrancePath.size() - 1);
+			ArrayList<Long> exitPath = exit.getLocalToHighPath();
+			// remove the duplicate exit
+			pathNodeList.remove(pathNodeList.size() - 1);
+			// add entrance and exit path
+			pathNodeList.addAll(0, entrancePath);
+			pathNodeList.addAll(pathNodeList.size(), exitPath);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("tdspHierarchy: debug code " + debug);
 		}
 		
-		HighwayEntrance entrance = entranceMap.get(finalEntrance);
-		HighwayEntrance exit = exitMap.get(finalExit);
-
-		ArrayList<Long> entrancePath = entrance.getLocalToHighPath();
-		// remove the duplicate entrance
-		entrancePath.remove(entrancePath.size() - 1);
-		ArrayList<Long> exitPath = exit.getLocalToHighPath();
-		// remove the duplicate exit
-		pathNodeList.remove(pathNodeList.size() - 1);
-		// add entrance and exit path
-		pathNodeList.addAll(0, entrancePath);
-		pathNodeList.addAll(pathNodeList.size(), exitPath);
 		System.out.println("find the path successful!");
 		
 		return totalCost;
@@ -519,113 +532,122 @@ public class OSMRouting {
 	public static int tdsp(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap,
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap) {
 		System.out.println("start finding the path...");
-		
-		// test store transversal nodes
-		//HashSet<Long> transversalSet = new HashSet<Long>();
-		
-		if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
-			System.err.println("cannot find start or end node!");
-			return -1;
-		}
-		
-		if (startNode == endNode) {
-			System.out.println("start node is the same as end node.");
-			return 0;
-		}
-		
-		PriorityQueue<NodeInfoHelper> openSet = new PriorityQueue<NodeInfoHelper>( 10000, new Comparator<NodeInfoHelper>() {
-			public int compare(NodeInfoHelper n1, NodeInfoHelper n2) {
-				return n1.getTotalCost() - n2.getTotalCost();
-			}
-		});
-		HashSet<Long> closedSet = new HashSet<Long>();
-		HashMap<Long, NodeInfoHelper> nodeHelperCache = new HashMap<Long, NodeInfoHelper>();
-		
-		// initial
-		NodeInfoHelper current = new NodeInfoHelper(startNode);
-		current.setCost(0);
-		current.setHeuristic(estimateHeuristic(startNode, endNode, nodeHashMap));
-		openSet.offer(current);	// push the start node
-		nodeHelperCache.put(current.getNodeId(), current);	// add cache
-		
+		int debug = 0;
 		int totalCost = -1;
-		
-		while(!openSet.isEmpty()) {
-			// remove current from openset
-			current = openSet.poll();
+		try {
+			// test store transversal nodes
+			//HashSet<Long> transversalSet = new HashSet<Long>();
 			
-			//if(!transversalSet.contains(current.getNodeId()))
-			//	transversalSet.add(current.getNodeId());
-			
-			long nodeId = current.getNodeId();
-			// add current to closedset
-			closedSet.add(nodeId);
-			if(nodeId == endNode) {	// find the destination
-				totalCost = current.getCost();
-				break;
+			if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
+				System.err.println("cannot find start or end node!");
+				return -1;
 			}
-			// for time dependent routing
-			int timeIndex = startTime + current.getCost() / 60 / TIME_INTERVAL;
-			if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
-				timeIndex = TIME_RANGE - 1;
-			LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
-			if(adjNodeList == null) continue;	// this node cannot go anywhere
-			int arriveTime = current.getCost();
-			// for each neighbor in neighbor_nodes(current)
-			for(ToNodeInfo toNode : adjNodeList) {
-				long toNodeId = toNode.getNodeId();
-				int travelTime;
-				if(toNode.isFix())	// fix time
-					travelTime = toNode.getTravelTime();
-				else	// fetch from time array
-					travelTime = toNode.getTravelTimeArray()[timeIndex];
-				// tentative_g_score := g_score[current] + dist_between(current,neighbor)
-				int costTime = arriveTime + travelTime;
-				// tentative_f_score := tentative_g_score + heuristic_cost_estimate(neighbor, goal)
-				int heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
-				int totalCostTime = costTime + heuristicTime;
-				// if neighbor in closedset and tentative_f_score >= f_score[neighbor]
-				if(closedSet.contains(toNodeId) && nodeHelperCache.get(toNodeId).getTotalCost() <= totalCostTime) {
-					continue;
+			
+			if (startNode == endNode) {
+				System.out.println("start node is the same as end node.");
+				return 0;
+			}
+			
+			PriorityQueue<NodeInfoHelper> openSet = new PriorityQueue<NodeInfoHelper>( 10000, new Comparator<NodeInfoHelper>() {
+				public int compare(NodeInfoHelper n1, NodeInfoHelper n2) {
+					return n1.getTotalCost() - n2.getTotalCost();
 				}
-				NodeInfoHelper node = null;
-				// if neighbor not in openset or tentative_f_score < f_score[neighbor]
-				if(!nodeHelperCache.containsKey(toNodeId)) {	// neighbor not in openset
-					node = new NodeInfoHelper(toNodeId);
-					nodeHelperCache.put(node.getNodeId(), node);
+			});
+			HashSet<Long> closedSet = new HashSet<Long>();
+			HashMap<Long, NodeInfoHelper> nodeHelperCache = new HashMap<Long, NodeInfoHelper>();
+			
+			// initial
+			NodeInfoHelper current = new NodeInfoHelper(startNode);
+			current.setCost(0);
+			current.setHeuristic(estimateHeuristic(startNode, endNode, nodeHashMap));
+			openSet.offer(current);	// push the start node
+			nodeHelperCache.put(current.getNodeId(), current);	// add cache
+			
+			while(!openSet.isEmpty()) {
+				// remove current from openset
+				current = openSet.poll();
+				
+				//if(!transversalSet.contains(current.getNodeId()))
+				//	transversalSet.add(current.getNodeId());
+				
+				long nodeId = current.getNodeId();
+				// add current to closedset
+				closedSet.add(nodeId);
+				if(nodeId == endNode) {	// find the destination
+					totalCost = current.getCost();
+					break;
 				}
-				else if (nodeHelperCache.get(toNodeId).getTotalCost() > totalCostTime) {	// neighbor in openset
-					node = nodeHelperCache.get(toNodeId);
-					if(closedSet.contains(toNodeId)) {	// neighbor in closeset
-						closedSet.remove(toNodeId);	// remove neighbor form colseset
+				// for time dependent routing
+				int timeIndex = startTime + current.getCost() / 60 / TIME_INTERVAL;
+				if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
+					timeIndex = TIME_RANGE - 1;
+				LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
+				if(adjNodeList == null) continue;	// this node cannot go anywhere
+				int arriveTime = current.getCost();
+				// for each neighbor in neighbor_nodes(current)
+				for(ToNodeInfo toNode : adjNodeList) {
+					debug++;
+					long toNodeId = toNode.getNodeId();
+					int travelTime;
+					if(toNode.isFix())	// fix time
+						travelTime = toNode.getTravelTime();
+					else	// fetch from time array
+						travelTime = toNode.getTravelTimeArray()[timeIndex];
+					// tentative_g_score := g_score[current] + dist_between(current,neighbor)
+					int costTime = arriveTime + travelTime;
+					// tentative_f_score := tentative_g_score + heuristic_cost_estimate(neighbor, goal)
+					int heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
+					int totalCostTime = costTime + heuristicTime;
+					// if neighbor in closedset and tentative_f_score >= f_score[neighbor]
+					if(closedSet.contains(toNodeId) && nodeHelperCache.get(toNodeId).getTotalCost() <= totalCostTime) {
+						continue;
 					}
-					else {
-						openSet.remove(node);
+					NodeInfoHelper node = null;
+					// if neighbor not in openset or tentative_f_score < f_score[neighbor]
+					if(!nodeHelperCache.containsKey(toNodeId)) {	// neighbor not in openset
+						node = new NodeInfoHelper(toNodeId);
+						nodeHelperCache.put(node.getNodeId(), node);
 					}
-				}
+					else if (nodeHelperCache.get(toNodeId).getTotalCost() > totalCostTime) {	// neighbor in openset
+						node = nodeHelperCache.get(toNodeId);
+						if(closedSet.contains(toNodeId)) {	// neighbor in closeset
+							closedSet.remove(toNodeId);	// remove neighbor form colseset
+						}
+						else {
+							openSet.remove(node);
+						}
+					}
 
-				// neighbor need update
-				if(node != null) {
-					node.setCost(costTime);
-					node.setHeuristic(heuristicTime);
-					node.setParentId(nodeId);
-					openSet.offer(node);	// add neighbor to openset again
+					// neighbor need update
+					if(node != null) {
+						node.setCost(costTime);
+						node.setHeuristic(heuristicTime);
+						node.setParentId(nodeId);
+						openSet.offer(node);	// add neighbor to openset again
+					}
 				}
 			}
+			
+			if(totalCost != -1) {
+				current = nodeHelperCache.get(endNode);
+				long traceNodeId = current.getNodeId();
+				while(traceNodeId != 0) {
+					pathNodeList.add(traceNodeId);	// add end node
+					current = nodeHelperCache.get(traceNodeId);
+					traceNodeId = current.getParentId();
+				}
+				Collections.reverse(pathNodeList);	// reverse the path list
+				System.out.println("find the path successful!");
+			}
+			else {
+				System.out.println("can not find the path!");
+			}
+			//OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
 		}
-		
-		current = nodeHelperCache.get(endNode);
-		long traceNodeId = current.getNodeId();
-		while(traceNodeId != 0) {
-			pathNodeList.add(traceNodeId);	// add end node
-			current = nodeHelperCache.get(traceNodeId);
-			traceNodeId = current.getParentId();
+		catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("tdsp: debug code " + debug);
 		}
-		Collections.reverse(pathNodeList);	// reverse the path list
-		
-		//OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
-		
-		System.out.println("find the path successful!");
 		return totalCost;
 	}
 }

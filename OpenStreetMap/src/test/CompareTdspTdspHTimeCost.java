@@ -50,6 +50,10 @@ public class CompareTdspTdspHTimeCost {
 		for(int i = 0; i < 100; i++) {
 			long startNode = OSMData.nodeArrayList.get((int)(Math.random() * size)).getNodeId();
 			long endNode = OSMData.nodeArrayList.get((int)(Math.random() * size)).getNodeId();
+			
+			System.out.println("start node: " + startNode);
+			System.out.println("end node: " + endNode);
+			
 			long begintime, endtime, costtime, costtimeH;
 			
 			begintime = System.currentTimeMillis();
