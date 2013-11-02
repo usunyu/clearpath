@@ -566,7 +566,7 @@ public class OSMRouting {
 				int heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
 				int totalCostTime = costTime + heuristicTime;
 				// if neighbor in closedset and tentative_f_score >= f_score[neighbor]
-				if(closedSet.contains(toNodeId) && nodeHelperCache.get(toNodeId).getTotalCost() <= totalCostTime) {
+				if(closedSet.contains(toNodeId) && nodeHelperCache.get(toNodeId).getCost() <= costTime) {
 					continue;
 				}
 				NodeInfoHelper node = null;
@@ -577,7 +577,7 @@ public class OSMRouting {
 					openSet.offer(node);
 					nodeHelperCache.put(node.getNodeId(), node);
 				}
-				else if (nodeHelperCache.get(toNodeId).getTotalCost() > totalCostTime) {	// neighbor in openset
+				else if (nodeHelperCache.get(toNodeId).getCost() > costTime) {	// neighbor in openset
 					node = nodeHelperCache.get(toNodeId);
 					if(closedSet.contains(toNodeId)) {	// neighbor in closeset
 						closedSet.remove(toNodeId);	// remove neighbor form colseset
