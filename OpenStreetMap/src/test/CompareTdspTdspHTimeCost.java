@@ -29,18 +29,20 @@ class Report {
 }
 
 public class CompareTdspTdspHTimeCost {
-
-	/**
-	 * @param args
-	 */
+	
 	public static void main(String[] args) {
 		// config
 		OSMParam.paramConfig(OSMMain.osm);
 		// input
-		OSMInput.readNodeFile(OSMData.nodeHashMap, OSMData.nodeArrayList);
+		OSMInput.readNodeFile(OSMData.nodeHashMap);
 		OSMInput.readEdgeFile(OSMData.edgeHashMap, OSMData.nodesToEdgeHashMap);
 		OSMInput.readAdjList(OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
 		OSMRouting.initialHierarchy(OSMRouting.hierarchyHashMap);
+		// for now, just use node exist in adjlist
+		for(long nodeId : OSMData.adjListHashMap.keySet()) {
+			NodeInfo nodeInfo = OSMData.nodeHashMap.get(nodeId);
+			OSMData.nodeArrayList.add(nodeInfo);
+		}
 		
 		int startTime = 10;
 		// test for routing
