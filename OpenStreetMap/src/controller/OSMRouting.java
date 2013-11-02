@@ -285,7 +285,7 @@ public class OSMRouting {
 					NodeInfoHelper entrance = current;
 					while(entrance.getParentId() != 0) {
 						entrancePathNodeList.add(entrance.getNodeId());	// add end node
-						entrance = nodeHelperCache.get(current.getParentId());
+						entrance = nodeHelperCache.get(entrance.getParentId());
 					}
 					if(!exit) { 
 						Collections.reverse(entrancePathNodeList);
