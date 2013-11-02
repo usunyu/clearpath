@@ -282,11 +282,13 @@ public class OSMRouting {
 				
 				if(hierarchy == 1) {	// find one highway entrance
 					ArrayList<Long> entrancePathNodeList = new ArrayList<Long>();
-					NodeInfoHelper entrance = current;
-					while(entrance.getParentId() != 0) {
-						entrancePathNodeList.add(entrance.getNodeId());	// add end node
-						entrance = nodeHelperCache.get(entrance.getParentId());
+					long traceNodeId = current.getNodeId();
+					while(traceNodeId != 0) {
+						pathNodeList.add(traceNodeId);	// add end node
+						current = nodeHelperCache.get(traceNodeId);
+						traceNodeId = current.getParentId();
 					}
+					
 					if(!exit) { 
 						Collections.reverse(entrancePathNodeList);
 					}
@@ -423,10 +425,13 @@ public class OSMRouting {
 					if(newCost < totalCost) {	// find less cost path
 						totalCost = newCost;
 						pathNodeList = new ArrayList<Long>();
-						while(node.getParentId() != 0) {
-							pathNodeList.add(node.getNodeId());
-							node = nodeHelperCache.get(node.getParentId());
+						long traceNodeId = node.getNodeId();
+						while(traceNodeId != 0) {
+							pathNodeList.add(traceNodeId);	// add end node
+							node = nodeHelperCache.get(traceNodeId);
+							traceNodeId = node.getParentId();
 						}
+						
 						Collections.reverse(pathNodeList);
 						finalEntrance = entranceId;
 						finalExit = exitId;
@@ -610,9 +615,11 @@ public class OSMRouting {
 		}
 		
 		current = nodeHelperCache.get(endNode);
-		while(current.getParentId() != 0) {
-			pathNodeList.add(current.getNodeId());	// add end node
-			current = nodeHelperCache.get(current.getParentId());
+		long traceNodeId = current.getNodeId();
+		while(traceNodeId != 0) {
+			pathNodeList.add(traceNodeId);	// add end node
+			current = nodeHelperCache.get(traceNodeId);
+			traceNodeId = current.getParentId();
 		}
 		Collections.reverse(pathNodeList);	// reverse the path list
 		
