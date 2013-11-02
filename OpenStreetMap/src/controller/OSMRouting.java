@@ -513,7 +513,7 @@ public class OSMRouting {
 			return 0;
 		}
 		
-		PriorityQueue<NodeInfoHelper> openSet = new PriorityQueue<NodeInfoHelper>( 20, new Comparator<NodeInfoHelper>() {
+		PriorityQueue<NodeInfoHelper> openSet = new PriorityQueue<NodeInfoHelper>( 10000, new Comparator<NodeInfoHelper>() {
 			public int compare(NodeInfoHelper n1, NodeInfoHelper n2) {
 				return n1.getTotalCost() - n2.getTotalCost();
 			}
@@ -573,15 +573,15 @@ public class OSMRouting {
 				// if neighbor not in openset or tentative_f_score < f_score[neighbor]
 				if(!nodeHelperCache.containsKey(toNodeId)) {	// neighbor not in openset
 					node = new NodeInfoHelper(toNodeId);
-					// add neighbor to openset
-					openSet.offer(node);
 					nodeHelperCache.put(node.getNodeId(), node);
 				}
 				else if (nodeHelperCache.get(toNodeId).getTotalCost() > totalCostTime) {	// neighbor in openset
 					node = nodeHelperCache.get(toNodeId);
 					if(closedSet.contains(toNodeId)) {	// neighbor in closeset
 						closedSet.remove(toNodeId);	// remove neighbor form colseset
-						openSet.offer(node);	// add neighbor to openset again
+					}
+					else {
+						openSet.remove(node);
 					}
 				}
 
@@ -590,6 +590,7 @@ public class OSMRouting {
 					node.setCost(costTime);
 					node.setHeuristic(heuristicTime);
 					node.setParentId(nodeId);
+					openSet.offer(node);	// add neighbor to openset again
 				}
 			}
 		}
