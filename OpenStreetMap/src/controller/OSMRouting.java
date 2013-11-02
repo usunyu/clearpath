@@ -462,6 +462,7 @@ public class OSMRouting {
 			}
 			else {
 				System.out.println("can not find the path!");
+				return -1;
 			}
 		}
 		catch (Exception e) {
