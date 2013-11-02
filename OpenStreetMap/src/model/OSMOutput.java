@@ -209,10 +209,10 @@ public class OSMOutput {
 	}
 	
 	public static void generateStartEndlNodeKML(long start, long end, HashMap<Long, NodeInfo> nodeHashMap) {
-		System.out.println("generate transversal node kml...");
+		System.out.println("generate start end node kml...");
 		int debug = 0;
 		try {
-			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.transversalNodeKMLFile);
+			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.startEndNodeKMLFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("<kml><Document>");
 			
@@ -246,9 +246,9 @@ public class OSMOutput {
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			System.err.println("generateTransversalNodeKML: debug code: " + debug);
+			System.err.println("generateStartEndlNodeKML: debug code: " + debug);
 		}
-		System.out.println("generate transversal node kml finish!");
+		System.out.println("generate start end node kml finish!");
 	}
 	
 	/**
