@@ -104,8 +104,8 @@ public class OSMRouting {
 	/**
 	 * @param param
 	 */
-	static long START_NODE 		= 534481095;
-	static long END_NODE 		= 187341111;
+	static long START_NODE 		= 187071605;
+	static long END_NODE 		= 34665850;
 	static int START_TIME 		= 10;
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
@@ -446,26 +446,28 @@ public class OSMRouting {
 				}
 			}
 			
-			HighwayEntrance entrance = entranceMap.get(finalEntrance);
-			HighwayEntrance exit = exitMap.get(finalExit);
-
-			ArrayList<Long> entrancePath = entrance.getLocalToHighPath();
-			// remove the duplicate entrance
-			entrancePath.remove(entrancePath.size() - 1);
-			ArrayList<Long> exitPath = exit.getLocalToHighPath();
-			// remove the duplicate exit
-			pathNodeList.remove(pathNodeList.size() - 1);
-			// add entrance and exit path
-			pathNodeList.addAll(0, entrancePath);
-			pathNodeList.addAll(pathNodeList.size(), exitPath);
+			if(entranceMap.containsKey(finalEntrance) && exitMap.containsKey(finalExit)) {
+				HighwayEntrance entrance = entranceMap.get(finalEntrance);
+				HighwayEntrance exit = exitMap.get(finalExit);
+				ArrayList<Long> entrancePath = entrance.getLocalToHighPath();
+				// remove the duplicate entrance
+				entrancePath.remove(entrancePath.size() - 1);
+				ArrayList<Long> exitPath = exit.getLocalToHighPath();
+				// remove the duplicate exit
+				pathNodeList.remove(pathNodeList.size() - 1);
+				// add entrance and exit path
+				pathNodeList.addAll(0, entrancePath);
+				pathNodeList.addAll(pathNodeList.size(), exitPath);
+				System.out.println("find the path successful!");
+			}
+			else {
+				System.out.println("can not find the path!");
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			System.err.println("tdspHierarchy: debug code " + debug);
 		}
-		
-		System.out.println("find the path successful!");
-		
 		return totalCost;
 	}
 	
