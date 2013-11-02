@@ -66,6 +66,12 @@ public class CompareTdspTdspHTimeCost {
 			int costH = OSMRouting.tdspHierarchy(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap, OSMData.nodesToEdgeHashMap);
 			endtime = System.currentTimeMillis();
 			costtimeH = endtime - begintime;
+			
+			if(cost == -1 || costH == -1) {
+				i--;
+				continue;
+			}
+			
 			Report r = new Report(cost, costH, costtime, costtimeH, startNode, endNode);
 			reportList.add(r);
 		}
