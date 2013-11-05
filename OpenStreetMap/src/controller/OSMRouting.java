@@ -381,7 +381,7 @@ public class OSMRouting {
 					
 					if(exitMap.containsKey(nodeId)) {	// find exit
 						exitNodeList.add(current);
-						if(exitNodeList.size() == 4) break;	// find all four exits
+						if(exitNodeList.size() == ENTRANCE_NUMBER / 2) break;	// find all four exits
 					}
 					// for time dependent routing, also need add the time from source to entrance
 					int timeIndex = startTime + (int)(entrance.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL + current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL);

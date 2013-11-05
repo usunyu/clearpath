@@ -63,13 +63,14 @@ public class OSMDivideWayToEdge {
 		EdgeInfo edge = new EdgeInfo(wayId, edgeId, name, highway, isOneway, nodeList, distance);
 		String nodeStrId = edge.getStartNode() + OSMParam.COMMA + edge.getEndNode();
 		// if we don't have the edge with same start and end, add it directly
-		if(nodeStrId.equals("187491982,187492007")) {
-			System.out.println();
-		}
 		if(!duplicateEndEdgeMap.containsKey(nodeStrId)) {
 			edgeId++;
 			edgeHashMap.put(id, edge);
 			duplicateEndEdgeMap.put(nodeStrId, edge);
+			if(!edge.isOneway()) {
+				nodeStrId = edge.getEndNode() + OSMParam.COMMA + edge.getStartNode();
+				duplicateEndEdgeMap.put(nodeStrId, edge);
+			}
 		}
 		else {	// if we have the edge with same start and end, we need add a node manually to avoid error
 			// if current edge can be divide two edges
@@ -102,11 +103,19 @@ public class OSMDivideWayToEdge {
 					edgeId++;
 					edgeHashMap.put(id, edge);
 					duplicateEndEdgeMap.put(nodeStrId, edge);
+					if(!edge.isOneway()) {
+						nodeStrId = edge.getEndNode() + OSMParam.COMMA + edge.getStartNode();
+						duplicateEndEdgeMap.put(nodeStrId, edge);
+					}
 				}
 				else {	// we can only remove an edge, chose the longer one two remove
 					if(edge.getDistance() < prevEdge.getDistance()) {
 						edgeHashMap.put(id, edge);
 						duplicateEndEdgeMap.put(nodeStrId, edge);
+						if(!edge.isOneway()) {
+							nodeStrId = edge.getEndNode() + OSMParam.COMMA + edge.getStartNode();
+							duplicateEndEdgeMap.put(nodeStrId, edge);
+						}
 					}
 				}
 			}
