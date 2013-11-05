@@ -375,7 +375,7 @@ public class OSMRouting {
 					current = openSet.poll();
 					long nodeId = current.getNodeId();
 					// test
-					if(!transversalSet.contains(nodeId))
+					if(!transversalSet.contains(nodeId) && entranceId == 188325235l)
 						transversalSet.add(nodeId);
 					
 					if(exitMap.containsKey(nodeId)) {	// find exit
