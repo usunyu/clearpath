@@ -143,8 +143,8 @@ public class OSMRouting {
 		OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
 		// test count time
 		long begintime = System.currentTimeMillis();
-		//routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
-		routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
+		routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		//routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("routing cost: " + costTime + " ms");
@@ -348,6 +348,8 @@ public class OSMRouting {
 			
 			long finalEntrance = 0;
 			long finalExit = 0;
+			// test  for transversal nodes
+			HashSet<Long> transversalSet = new HashSet<Long>();
 			
 			// iterate each entrance
 			for(long entranceId : entranceMap.keySet()) {
@@ -372,6 +374,9 @@ public class OSMRouting {
 					// remove current from openset
 					current = openSet.poll();
 					long nodeId = current.getNodeId();
+					// test
+					if(!transversalSet.contains(nodeId))
+						transversalSet.add(nodeId);
 					
 					if(exitMap.containsKey(nodeId)) {	// find exit
 						exitNodeList.add(current);
@@ -477,6 +482,8 @@ public class OSMRouting {
 				System.out.println("can not find the path!");
 				return -1;
 			}
+			
+			OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -561,7 +568,7 @@ public class OSMRouting {
 		int totalCost = -1;
 		try {
 			// test store transversal nodes
-			// HashSet<Long> transversalSet = new HashSet<Long>();
+			HashSet<Long> transversalSet = new HashSet<Long>();
 			
 			if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
 				System.err.println("cannot find start or end node!");
@@ -592,8 +599,8 @@ public class OSMRouting {
 				// remove current from openset
 				current = openSet.poll();
 				
-				// if(!transversalSet.contains(current.getNodeId()))
-					// transversalSet.add(current.getNodeId());
+				if(!transversalSet.contains(current.getNodeId()))
+					transversalSet.add(current.getNodeId());
 				
 				long nodeId = current.getNodeId();
 				// add current to closedset
@@ -667,7 +674,7 @@ public class OSMRouting {
 			else {
 				System.out.println("can not find the path!");
 			}
-			// OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
+			OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
