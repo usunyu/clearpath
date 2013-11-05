@@ -59,20 +59,20 @@ public class CompareTdspTdspHTimeCost {
 			long begintime, endtime, costtime, costtimeH;
 			
 			begintime = System.currentTimeMillis();
-			int cost = OSMRouting.routingAStar(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.adjListHashMap);
+			double cost = OSMRouting.routingAStar(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.adjListHashMap);
 			endtime = System.currentTimeMillis();
 			costtime = endtime - begintime;
 			begintime = System.currentTimeMillis();
-			int costH = OSMRouting.routingHierarchy(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap, OSMData.nodesToEdgeHashMap);
+			double costH = OSMRouting.routingHierarchy(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap, OSMData.nodesToEdgeHashMap);
 			endtime = System.currentTimeMillis();
 			costtimeH = endtime - begintime;
 			
-			if(cost == -1 || costH == -1) {
+			if(cost < 0 || costH < 0) {
 				i--;
 				continue;
 			}
 			
-			Report r = new Report(cost, costH, costtime, costtimeH, startNode, endNode);
+			Report r = new Report((int)cost, (int)costH, costtime, costtimeH, startNode, endNode);
 			reportList.add(r);
 		}
 		// write report

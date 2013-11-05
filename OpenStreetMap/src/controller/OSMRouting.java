@@ -15,8 +15,8 @@ import model.*;
 class NodeInfoHelper {
 	long nodeId;
 	
-	int cost;
-	int heuristic;
+	double cost;
+	double heuristic;
 	long parentId;
 	
 	public NodeInfoHelper(long nodeId) {
@@ -27,23 +27,23 @@ class NodeInfoHelper {
 		return nodeId;
 	}
 	
-	public void setCost(int cost) {
+	public void setCost(double cost) {
 		this.cost = cost;
 	}
 	
-	public int getCost() {
+	public double getCost() {
 		return cost;
 	}
 
-	public void setHeuristic(int heuristic) {
+	public void setHeuristic(double heuristic) {
 		this.heuristic = heuristic;
 	}
 
-	public int getHeuristic() {
+	public double getHeuristic() {
 		return heuristic;
 	}
 
-	public int getTotalCost() {
+	public double getTotalCost() {
 		return cost + heuristic;
 	}
 	
@@ -63,8 +63,8 @@ class HighwayEntrance {
 	long entranceNodeId;
 	// path from source or destination to highway entrance or exit
 	ArrayList<Long> localToHighPath;
-	int cost;
-	int heuristic;
+	double cost;
+	double heuristic;
 	
 	public HighwayEntrance(long nodeId) {
 		entranceNodeId = nodeId;
@@ -78,23 +78,23 @@ class HighwayEntrance {
 		return localToHighPath;
 	}
 	
-	public void setCost(int cost) {
+	public void setCost(double cost) {
 		this.cost = cost;
 	}
 	
-	public int getCost() {
+	public double getCost() {
 		return cost;
 	}
 
-	public void setHeuristic(int heuristic) {
+	public void setHeuristic(double heuristic) {
 		this.heuristic = heuristic;
 	}
 	
-	public int getHeuristic() {
+	public double getHeuristic() {
 		return heuristic;
 	}
 
-	public int getTotalCost() {
+	public double getTotalCost() {
 		return cost + heuristic;
 	}
 }
@@ -190,7 +190,7 @@ public class OSMRouting {
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, boolean exit) {
 		PriorityQueue<NodeInfoHelper> openSet = new PriorityQueue<NodeInfoHelper>( 500, new Comparator<NodeInfoHelper>() {
 			public int compare(NodeInfoHelper n1, NodeInfoHelper n2) {
-				return n1.getTotalCost() - n2.getTotalCost();
+				return (int)(n1.getTotalCost() - n2.getTotalCost());
 			}
 		});
 		HashSet<Long> closedSet = new HashSet<Long>();
@@ -215,12 +215,12 @@ public class OSMRouting {
 			// for time dependent routing
 			int timeIndex;
 			if(!exit) {
-				timeIndex = startTime + current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
+				timeIndex = startTime + (int)current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
 				if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
 					timeIndex = TIME_RANGE - 1;
 			}
 			else {
-				timeIndex = startTime - current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
+				timeIndex = startTime - (int)current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
 				if(timeIndex < 0) {
 					timeIndex = 0;
 				}
@@ -228,7 +228,7 @@ public class OSMRouting {
 			
 			LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
 			if(adjNodeList == null) continue;	// this node cannot go anywhere
-			int arriveTime = current.getCost();
+			double arriveTime = current.getCost();
 			// for each neighbor in neighbor_nodes(current)
 			for(ToNodeInfo toNode : adjNodeList) {
 				long toNodeId = toNode.getNodeId();
@@ -251,10 +251,10 @@ public class OSMRouting {
 				else	// fetch from time array
 					travelTime = toNode.getTravelTimeArray()[timeIndex];
 				// tentative_g_score := g_score[current] + dist_between(current,neighbor)
-				int costTime = arriveTime + travelTime;
+				double costTime = arriveTime + (double)travelTime / OSMParam.MILLI_PER_SECOND;
 				// tentative_f_score := tentative_g_score + heuristic_cost_estimate(neighbor, goal)
-				int heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
-				int totalCostTime = costTime + heuristicTime;
+				double heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
+				double totalCostTime = costTime + heuristicTime;
 				// if neighbor in closedset and tentative_f_score >= f_score[neighbor]
 				if(closedSet.contains(toNodeId) && nodeHelperCache.get(toNodeId).getTotalCost() <= totalCostTime) {
 					continue;
@@ -319,12 +319,12 @@ public class OSMRouting {
 	 * @param nodesToEdgeHashMap
 	 * @return
 	 */
-	public static int routingHierarchy(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap, 
+	public static double routingHierarchy(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap, 
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap,
 			HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
 		System.out.println("start finding the path...");
 		int debug = 0;
-		int totalCost = Integer.MAX_VALUE;
+		double totalCost = Double.MAX_VALUE;
 		try {
 			if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
 				System.err.println("cannot find start or end node!");
@@ -336,7 +336,7 @@ public class OSMRouting {
 				return 0;
 			}
 			HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, endNode, startTime, nodeHashMap, nodesToEdgeHashMap, adjListHashMap, false);
-			int estimateArriveTime = startTime + estimateHeuristic(startNode, endNode, nodeHashMap) / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
+			int estimateArriveTime = startTime + (int)(estimateHeuristic(startNode, endNode, nodeHashMap) / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL);
 			HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode, startNode, estimateArriveTime, nodeHashMap, nodesToEdgeHashMap, adjReverseListHashMap, true);
 			
 			if(entranceMap == null || exitMap == null) {	// we should use normal tdsp in this situation
@@ -355,7 +355,7 @@ public class OSMRouting {
 			for(long entranceId : entranceMap.keySet()) {
 				PriorityQueue<NodeInfoHelper> openSet = new PriorityQueue<NodeInfoHelper>( 5000, new Comparator<NodeInfoHelper>() {
 					public int compare(NodeInfoHelper n1, NodeInfoHelper n2) {
-						return n1.getTotalCost() - n2.getTotalCost();
+						return (int)(n1.getTotalCost() - n2.getTotalCost());
 					}
 				});
 				HashSet<Long> closedSet = new HashSet<Long>();
@@ -384,12 +384,12 @@ public class OSMRouting {
 						if(exitNodeList.size() == 4) break;	// find all four exits
 					}
 					// for time dependent routing, also need add the time from source to entrance
-					int timeIndex = startTime + entrance.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL + current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
+					int timeIndex = startTime + (int)(entrance.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL + current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL);
 					if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
 						timeIndex = TIME_RANGE - 1;
 					LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
 					if(adjNodeList == null) continue;	// this node cannot go anywhere
-					int arriveTime = current.getCost();
+					double arriveTime = current.getCost();
 					// for each neighbor in neighbor_nodes(current)
 					for(ToNodeInfo toNode : adjNodeList) {
 						long toNodeId = toNode.getNodeId();
@@ -407,10 +407,10 @@ public class OSMRouting {
 						else	// fetch from time array
 							travelTime = toNode.getTravelTimeArray()[timeIndex];
 						// tentative_g_score := g_score[current] + dist_between(current,neighbor)
-						int costTime = arriveTime + travelTime;
+						double costTime = arriveTime + (double)travelTime / OSMParam.MILLI_PER_SECOND;
 						// tentative_f_score := tentative_g_score + heuristic_cost_estimate(neighbor, goal)
-						int heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
-						int totalCostTime = costTime + heuristicTime;
+						double heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
+						double totalCostTime = costTime + heuristicTime;
 						// if neighbor in closedset and tentative_f_score >= f_score[neighbor]
 						if(closedSet.contains(toNodeId) && nodeHelperCache.get(toNodeId).getTotalCost() <= totalCostTime) {
 							continue;
@@ -445,7 +445,7 @@ public class OSMRouting {
 						long exitId = exit.getNodeId();
 						NodeInfoHelper node = exit;
 						// TODO: from exit to destination, here use reverse calculate, should modify later
-						int newCost = node.getCost() + exitMap.get(exitId).getCost();
+						double newCost = node.getCost() + exitMap.get(exitId).getCost();
 						
 						if(newCost < totalCost) {	// find less cost path
 							totalCost = newCost;
@@ -545,11 +545,11 @@ public class OSMRouting {
 	 * @param nodeHashMap
 	 * @return
 	 */
-	public static int estimateHeuristic(long curNode, long endNode, HashMap<Long, NodeInfo> nodeHashMap) {
+	public static double estimateHeuristic(long curNode, long endNode, HashMap<Long, NodeInfo> nodeHashMap) {
 		NodeInfo cur = nodeHashMap.get(curNode);
 		NodeInfo end = nodeHashMap.get(endNode);
 		double distance = Distance.calculateDistance(cur.getLocation(), end.getLocation());
-		return (int) (distance / HEURISTIC_SPEED * OSMParam.SECOND_PER_HOUR);
+		return distance / HEURISTIC_SPEED * OSMParam.SECOND_PER_HOUR;
 	}
 	
 	/**
@@ -562,11 +562,11 @@ public class OSMRouting {
 	 * @param adjListHashMap
 	 * @return
 	 */
-	public static int routingAStar(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap,
+	public static double routingAStar(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap,
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap) {
 		System.out.println("start finding the path...");
 		int debug = 0;
-		int totalCost = -1;
+		double totalCost = -1;
 		try {
 			// test store transversal nodes
 			HashSet<Long> transversalSet = new HashSet<Long>();
@@ -583,7 +583,7 @@ public class OSMRouting {
 			
 			PriorityQueue<NodeInfoHelper> openSet = new PriorityQueue<NodeInfoHelper>( 10000, new Comparator<NodeInfoHelper>() {
 				public int compare(NodeInfoHelper n1, NodeInfoHelper n2) {
-					return n1.getTotalCost() - n2.getTotalCost();
+					return (int)(n1.getTotalCost() - n2.getTotalCost());
 				}
 			});
 			HashSet<Long> closedSet = new HashSet<Long>();
@@ -604,9 +604,6 @@ public class OSMRouting {
 					transversalSet.add(current.getNodeId());
 				
 				long nodeId = current.getNodeId();
-				if(nodeId == 188325235) {
-					System.out.println();
-				}
 				// add current to closedset
 				closedSet.add(nodeId);
 				if(nodeId == endNode) {	// find the destination
@@ -614,12 +611,12 @@ public class OSMRouting {
 					break;
 				}
 				// for time dependent routing
-				int timeIndex = startTime + current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL;
+				int timeIndex = startTime + (int)(current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL);
 				if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
 					timeIndex = TIME_RANGE - 1;
 				LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
 				if(adjNodeList == null) continue;	// this node cannot go anywhere
-				int arriveTime = current.getCost();
+				double arriveTime = current.getCost();
 				// for each neighbor in neighbor_nodes(current)
 				for(ToNodeInfo toNode : adjNodeList) {
 					debug++;
@@ -630,10 +627,10 @@ public class OSMRouting {
 					else	// fetch from time array
 						travelTime = toNode.getTravelTimeArray()[timeIndex];
 					// tentative_g_score := g_score[current] + dist_between(current,neighbor)
-					int costTime = arriveTime + travelTime;
+					double costTime = arriveTime + (double)travelTime / OSMParam.MILLI_PER_SECOND;
 					// tentative_f_score := tentative_g_score + heuristic_cost_estimate(neighbor, goal)
-					int heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
-					int totalCostTime = costTime + heuristicTime;
+					double heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
+					double totalCostTime = costTime + heuristicTime;
 					// if neighbor in closedset and tentative_f_score >= f_score[neighbor]
 					if(closedSet.contains(toNodeId) && nodeHelperCache.get(toNodeId).getTotalCost() <= totalCostTime) {
 						continue;

@@ -30,18 +30,22 @@ public class ToNodeInfo {
 		return fix;
 	}
 
+	// in millisecond
 	public void setTravelTimeArray(int[] travelTimeArray) {
 		this.travelTimeArray = travelTimeArray;
 	}
 	
+	// in millisecond
 	public int[] getTravelTimeArray() {
 		return travelTimeArray;
 	}
 
+	// in millisecond
 	public void setTravelTime(int travelTime) {
 		this.travelTime = travelTime;
 	}
 	
+	// in millisecond
 	public int getTravelTime() {
 		return travelTime;
 	}
