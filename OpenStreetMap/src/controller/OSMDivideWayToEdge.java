@@ -63,6 +63,9 @@ public class OSMDivideWayToEdge {
 		EdgeInfo edge = new EdgeInfo(wayId, edgeId, name, highway, isOneway, nodeList, distance);
 		String nodeStrId = edge.getStartNode() + OSMParam.COMMA + edge.getEndNode();
 		// if we don't have the edge with same start and end, add it directly
+		if(nodeStrId == "187491982,187492007") {
+			System.out.println();
+		}
 		if(!duplicateEndEdgeMap.containsKey(nodeStrId)) {
 			edgeId++;
 			edgeHashMap.put(id, edge);
