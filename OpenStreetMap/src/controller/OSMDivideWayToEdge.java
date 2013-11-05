@@ -40,11 +40,75 @@ public class OSMDivideWayToEdge {
 		adjList.add(node2);
 	}
 	
-	public static void addEdgeToEdgeHashMap(long wayId, int edgeId, String name, String highway, boolean isOneway,
-			LinkedList<Long> nodeList, int distance, HashMap<Long, EdgeInfo> edgeHashMap) {
+	/**
+	 * add edge to the edgeHashMap
+	 * @param wayId
+	 * @param edgeId
+	 * @param name
+	 * @param highway
+	 * @param isOneway
+	 * @param nodeList
+	 * @param duplicateEndEdgeMap
+	 * @param nodeHashMap
+	 * @param wayHashMap
+	 * @param edgeHashMap
+	 * @return
+	 */
+	public static int addEdgeToEdgeHashMap(long wayId, int edgeId, String name, String highway, boolean isOneway,
+			LinkedList<Long> nodeList, HashMap<String, EdgeInfo> duplicateEndEdgeMap, 
+			HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, WayInfo> wayHashMap, 
+			HashMap<Long, EdgeInfo> edgeHashMap) {
 		long id = wayId * 1000 + edgeId;
+		int distance = getDistance(nodeList, nodeHashMap);
 		EdgeInfo edge = new EdgeInfo(wayId, edgeId, name, highway, isOneway, nodeList, distance);
-		edgeHashMap.put(id, edge);
+		String nodeStrId = edge.getStartNode() + OSMParam.COMMA + edge.getEndNode();
+		// if we don't have the edge with same start and end, add it directly
+		if(!duplicateEndEdgeMap.containsKey(nodeStrId)) {
+			edgeId++;
+			edgeHashMap.put(id, edge);
+			duplicateEndEdgeMap.put(nodeStrId, edge);
+		}
+		else {	// if we have the edge with same start and end, we need add a node manually to avoid error
+			// if current edge can be divide two edges
+			if(nodeList.size() >= 3) {
+				LinkedList<Long> subNodeList1 = new LinkedList<Long>();
+				LinkedList<Long> subNodeList2 = new LinkedList<Long>();
+				for(long nodeId : nodeList.subList(0, 2)) subNodeList1.add(nodeId);
+				for(long nodeId : nodeList.subList(1, nodeList.size())) 	subNodeList2.add(nodeId);
+				edgeId = addEdgeToEdgeHashMap(wayId, edgeId, name, highway, isOneway, subNodeList1, duplicateEndEdgeMap, nodeHashMap, wayHashMap, edgeHashMap);
+				edgeId = addEdgeToEdgeHashMap(wayId, edgeId, name, highway, isOneway, subNodeList2, duplicateEndEdgeMap, nodeHashMap, wayHashMap, edgeHashMap);
+			}
+			else {
+				EdgeInfo prevEdge = duplicateEndEdgeMap.get(nodeStrId);
+				long prevId = prevEdge.getId();
+				// rempve the prev edge from edgeHashMap
+				edgeHashMap.remove(prevId);
+				long prevWayId = prevEdge.getWayId();
+				int prevEdgeId = prevEdge.getEdgeId();
+				// estimate the edge total number
+				int count = wayHashMap.get(prevWayId).getNodeArrayList().size();
+				LinkedList<Long> prevNodeList = prevEdge.getNodeList();
+				// if prev edge can be divide to two edges
+				if(prevNodeList.size() >= 3) {
+					LinkedList<Long> subNodeList1 = new LinkedList<Long>();
+					LinkedList<Long> subNodeList2 = new LinkedList<Long>();
+					for(long nodeId : prevNodeList.subList(0, 2)) subNodeList1.add(nodeId);
+					for(long nodeId : prevNodeList.subList(1, prevNodeList.size())) subNodeList2.add(nodeId);
+					addEdgeToEdgeHashMap(prevWayId, prevEdgeId, name, highway, isOneway, subNodeList1, duplicateEndEdgeMap, nodeHashMap, wayHashMap, edgeHashMap);
+					addEdgeToEdgeHashMap(prevWayId, count, name, highway, isOneway, subNodeList2, duplicateEndEdgeMap, nodeHashMap, wayHashMap, edgeHashMap);
+					edgeId++;
+					edgeHashMap.put(id, edge);
+					duplicateEndEdgeMap.put(nodeStrId, edge);
+				}
+				else {	// we can only remove an edge, chose the longer one two remove
+					if(edge.getDistance() < prevEdge.getDistance()) {
+						edgeHashMap.put(id, edge);
+						duplicateEndEdgeMap.put(nodeStrId, edge);
+					}
+				}
+			}
+		}
+		return edgeId;
 	}
 	
 	public static int getDistance(LinkedList<Long> nodeList, HashMap<Long, NodeInfo> nodeHashMap) {
@@ -64,6 +128,8 @@ public class OSMDivideWayToEdge {
 	public static void divideWayToEdge(HashMap<Long, WayInfo> wayHashMap, HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, EdgeInfo> edgeHashMap) {
 		System.out.println("divide way to edge...");
 		HashMap<Long, LinkedList<Long>> adjListMap = new HashMap<Long, LinkedList<Long>>();
+		// used to check if there already has an edge with same start node ane end node
+		HashMap<String, EdgeInfo> duplicateEndEdgeMap = new HashMap<String, EdgeInfo>();
 		// build adjlist
 		for(WayInfo way : wayHashMap.values()) {
 			ArrayList<Long> localNodeArrayList = way.getNodeArrayList();
@@ -101,8 +167,7 @@ public class OSMDivideWayToEdge {
 					}
 					else {
 						currentList.add(nodeId);
-						int distance = getDistance(currentList, nodeHashMap);
-						addEdgeToEdgeHashMap(wayId, edgeId++, name, highway, isOneway, currentList, distance, edgeHashMap);
+						edgeId = addEdgeToEdgeHashMap(wayId, edgeId, name, highway, isOneway, currentList, duplicateEndEdgeMap, nodeHashMap, wayHashMap, edgeHashMap);
 						// prepare for next
 						currentList = new LinkedList<Long>();
 						currentList.add(nodeId);

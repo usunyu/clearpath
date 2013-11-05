@@ -143,8 +143,8 @@ public class OSMRouting {
 		OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
 		// test count time
 		long begintime = System.currentTimeMillis();
-		//routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
-		routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
+		routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		//routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("routing cost: " + costTime + " ms");
@@ -361,12 +361,13 @@ public class OSMRouting {
 				HashSet<Long> closedSet = new HashSet<Long>();
 				HashMap<Long, NodeInfoHelper> nodeHelperCache = new HashMap<Long, NodeInfoHelper>();
 				// initial
+				HighwayEntrance entrance = entranceMap.get(entranceId);
 				NodeInfoHelper current = new NodeInfoHelper(entranceId);
-				current.setCost(0);
+				current.setCost(entrance.getCost());
 				current.setHeuristic(estimateHeuristic(entranceId, endNode, nodeHashMap));
 				openSet.offer(current);	// push the start node
 				nodeHelperCache.put(current.getNodeId(), current);	// add cache
-				HighwayEntrance entrance = entranceMap.get(entranceId);
+				
 				
 				LinkedList<NodeInfoHelper> exitNodeList = new LinkedList<NodeInfoHelper>();
 				while (!openSet.isEmpty()) {
@@ -444,7 +445,7 @@ public class OSMRouting {
 						long exitId = exit.getNodeId();
 						NodeInfoHelper node = exit;
 						// TODO: from exit to destination, here use reverse calculate, should modify later
-						int newCost = node.getCost() + entranceMap.get(entranceId).getCost() + exitMap.get(exitId).getCost();
+						int newCost = node.getCost() + exitMap.get(exitId).getCost();
 						
 						if(newCost < totalCost) {	// find less cost path
 							totalCost = newCost;
@@ -603,6 +604,9 @@ public class OSMRouting {
 					transversalSet.add(current.getNodeId());
 				
 				long nodeId = current.getNodeId();
+				if(nodeId == 188325235) {
+					System.out.println();
+				}
 				// add current to closedset
 				closedSet.add(nodeId);
 				if(nodeId == endNode) {	// find the destination
