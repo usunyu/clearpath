@@ -143,8 +143,8 @@ public class OSMRouting {
 		OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
 		// test count time
 		long begintime = System.currentTimeMillis();
-		routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
-		//routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
+		//routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("routing cost: " + costTime + " ms");
