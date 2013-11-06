@@ -140,7 +140,7 @@ public class OSMRouting {
 	public static void routing(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap,
 			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
 		// test start end node
-		OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
+		//OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
 		// test count time
 		long begintime = System.currentTimeMillis();
 		routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
@@ -344,12 +344,12 @@ public class OSMRouting {
 			}
 			
 			// test
-			generateEntranceExitKML(entranceMap, exitMap, nodeHashMap);
+			//generateEntranceExitKML(entranceMap, exitMap, nodeHashMap);
 			
 			long finalEntrance = 0;
 			long finalExit = 0;
 			// test  for transversal nodes
-			HashSet<Long> transversalSet = new HashSet<Long>();
+			//HashSet<Long> transversalSet = new HashSet<Long>();
 			
 			// iterate each entrance
 			for(long entranceId : entranceMap.keySet()) {
@@ -376,8 +376,8 @@ public class OSMRouting {
 					current = openSet.poll();
 					long nodeId = current.getNodeId();
 					// test
-					if(!transversalSet.contains(nodeId))
-						transversalSet.add(nodeId);
+					//if(!transversalSet.contains(nodeId))
+					//	transversalSet.add(nodeId);
 					
 					if(exitMap.containsKey(nodeId)) {	// find exit
 						exitNodeList.add(current);
@@ -484,7 +484,7 @@ public class OSMRouting {
 				return -1;
 			}
 			
-			OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
+			//OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -569,7 +569,7 @@ public class OSMRouting {
 		double totalCost = -1;
 		try {
 			// test store transversal nodes
-			HashSet<Long> transversalSet = new HashSet<Long>();
+			//HashSet<Long> transversalSet = new HashSet<Long>();
 			
 			if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
 				System.err.println("cannot find start or end node!");
@@ -600,8 +600,8 @@ public class OSMRouting {
 				// remove current from openset
 				current = openSet.poll();
 				
-				if(!transversalSet.contains(current.getNodeId()))
-					transversalSet.add(current.getNodeId());
+				//if(!transversalSet.contains(current.getNodeId()))
+				//	transversalSet.add(current.getNodeId());
 				
 				long nodeId = current.getNodeId();
 				// add current to closedset
@@ -675,7 +675,7 @@ public class OSMRouting {
 			else {
 				System.out.println("can not find the path!");
 			}
-			OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
+			//OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
