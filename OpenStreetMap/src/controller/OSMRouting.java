@@ -148,6 +148,22 @@ public class OSMRouting {
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("routing cost: " + costTime + " ms");
+		turnByTurn(nodeHashMap, nodesToEdgeHashMap);
+	}
+	
+	public static String turnByTurn(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
+		String turnByTurnText = "";
+		long prevNodeId = -1;
+		for(long nodeId : pathNodeList) {
+			if(prevNodeId == -1) {
+				prevNodeId = nodeId;
+				continue;
+			}
+			String nodeIdStr = prevNodeId + OSMParam.COMMA + nodeId;
+			EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdStr);
+			
+		}
+		return turnByTurnText;
 	}
 	
 	public static void initialHierarchy(HashMap<String, Integer> hierarchyHashMap) {
@@ -548,7 +564,7 @@ public class OSMRouting {
 	public static double estimateHeuristic(long curNode, long endNode, HashMap<Long, NodeInfo> nodeHashMap) {
 		NodeInfo cur = nodeHashMap.get(curNode);
 		NodeInfo end = nodeHashMap.get(endNode);
-		double distance = Distance.calculateDistance(cur.getLocation(), end.getLocation());
+		double distance = Geometry.calculateDistance(cur.getLocation(), end.getLocation());
 		return distance / HEURISTIC_SPEED * OSMParam.SECOND_PER_HOUR;
 	}
 	

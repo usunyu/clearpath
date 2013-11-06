@@ -130,7 +130,7 @@ public class OSMDivideWayToEdge {
 			if(preNodeId != -1) {
 				NodeInfo node1 = nodeHashMap.get(preNodeId);
 				NodeInfo node2 = nodeHashMap.get(nodeId);
-				distance += Distance.calculateDistance(node1.getLocation(), node2.getLocation()) * OSMParam.FEET_PER_MILE;
+				distance += Geometry.calculateDistance(node1.getLocation(), node2.getLocation()) * OSMParam.FEET_PER_MILE;
 			}
 			preNodeId = nodeId;
 		}
