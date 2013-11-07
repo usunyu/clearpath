@@ -1,7 +1,7 @@
 package controller;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.*;
+import java.text.*;
 import java.util.*;
 
 import global.*;
@@ -148,12 +148,19 @@ public class OSMRouting {
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("routing cost: " + costTime + " ms");
-		turnByTurn(nodeHashMap, nodesToEdgeHashMap);
+		String turnByTurn = turnByTurn(nodeHashMap, nodesToEdgeHashMap);
+		System.out.println(turnByTurn);
 	}
 	
 	public static String turnByTurn(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
 		String turnByTurnText = "";
 		long prevNodeId = -1;
+		int prevHierarchy = -1;
+		int prevDirIndex = -1;
+		String prevName = "";
+		long distance = 0;
+		boolean firstRoute = true;
+		
 		for(long nodeId : pathNodeList) {
 			if(prevNodeId == -1) {
 				prevNodeId = nodeId;
@@ -161,9 +168,153 @@ public class OSMRouting {
 			}
 			String nodeIdStr = prevNodeId + OSMParam.COMMA + nodeId;
 			EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdStr);
-			
+			String highway = edge.getHighway();
+			String name = edge.getName();
+			int hierarchy = 6;
+			if(hierarchyHashMap.containsKey(highway)) {
+				hierarchy = hierarchyHashMap.get(highway);
+			}
+			NodeInfo prevNodeInfo = nodeHashMap.get(prevNodeId);
+			NodeInfo nodeInfo = nodeHashMap.get(nodeId);
+			int dirIndex = Geometry.getDirectionIndex(prevNodeInfo.getLocation(), nodeInfo.getLocation());
+			// initial prev
+			if(prevHierarchy == -1) {
+				prevHierarchy = hierarchy;
+				prevDirIndex = dirIndex;
+				prevName = name;
+			}
+			if(prevHierarchy > 1 && hierarchy == 1) {	// from arterial to highway
+				if(firstRoute) {
+					// first route message
+					turnByTurnText = getFirstRouteText(prevDirIndex, prevName, name) + OSMParam.LINEEND;
+					firstRoute = false;
+				}
+				// distance message
+				turnByTurnText += getDistanceText(distance) + OSMParam.LINEEND;
+				turnByTurnText += getRampText(name) + OSMParam.LINEEND;
+				distance = 0;
+			}
+			else if(prevHierarchy == 1 && hierarchy > 1) {	// from highway to arterial
+				if(firstRoute) {
+					// first route message
+					turnByTurnText = getFirstRouteText(prevDirIndex, prevName, name) + OSMParam.LINEEND;
+					firstRoute = false;
+				}
+				// distance message
+				turnByTurnText += getDistanceText(distance) + OSMParam.LINEEND;
+				turnByTurnText += getExitText(name) + OSMParam.LINEEND;
+				distance = 0;
+			}
+			else if(prevHierarchy == 1 && hierarchy == 1) {	// on the highway
+				if(!prevName.equals(name)) {	// change highway
+					if(firstRoute) {
+						// first route message
+						turnByTurnText = getFirstRouteText(prevDirIndex, prevName, name) + OSMParam.LINEEND;
+						firstRoute = false;
+					}
+					// distance message
+					turnByTurnText += getDistanceText(distance) + OSMParam.LINEEND;
+					turnByTurnText += getExitText(name) + OSMParam.LINEEND;
+					distance = 0;
+				}
+			}
+			else {	// on the arterial
+				// change direction or road happen
+				if(!Geometry.isSameDirection(dirIndex, prevDirIndex) || !prevName.equals(name)) {
+					if(firstRoute) {
+						// first route message
+						turnByTurnText = getFirstRouteText(prevDirIndex, prevName, name) + OSMParam.LINEEND;
+						firstRoute = false;
+					}
+					// distance message
+					turnByTurnText += getDistanceText(distance) + OSMParam.LINEEND;
+					if(!Geometry.isSameDirection(dirIndex, prevDirIndex)) {	// change direction
+						turnByTurnText += getTurnText(prevDirIndex, dirIndex, prevName, name) + OSMParam.LINEEND;
+					}
+					else {	// change road
+						turnByTurnText += getMergeText(name) + OSMParam.LINEEND;
+					}
+					distance = 0;
+				}
+			}
+			prevNodeId = nodeId;
+			prevHierarchy = hierarchy;
+			prevDirIndex = dirIndex;
+			prevName = name;
+			distance += edge.getDistance();
 		}
+		// distance message
+		turnByTurnText += getDistanceText(distance) + OSMParam.LINEEND;
+		turnByTurnText += getArriveText() + OSMParam.LINEEND;
 		return turnByTurnText;
+	}
+	
+	public static String getArriveText() {
+		return "Arrive destination";
+	}
+	
+	public static String getExitText(String name) {
+		return "Take the exit onto " + name;
+	}
+	
+	public static String getRampText(String name) {
+		return "Take the ramp onto " + name;
+	}
+	
+	public static String getTurnText(int prevIndex, int index, String prevName, String name) {
+		int turn = Geometry.getTurn(prevIndex, index);
+		if(!prevName.equals(name)) {	// also change the road
+			return getDirectionText(turn) + "onto " + name;
+		}
+		else {
+			return getDirectionText(turn) + "to stay on " + name;
+		}
+	}
+	
+	public static String getDirectionText(int turn) {
+		String dirText = "";
+		switch(turn) {
+			case Geometry.LEFT: 
+				dirText = "Turn left ";
+				break;
+			case Geometry.RIGHT:
+				dirText = "Turn right ";
+				break;
+			case Geometry.SLIGHTLEFT:
+				dirText = "Take slight left ";
+				break;
+			case Geometry.SLIGHTRIGHT:
+				dirText = "Take slight right ";
+				break;
+			case Geometry.SHARPLEFT:
+				dirText = "Take sharp  left ";
+				break;
+			case Geometry.SHARPRIGHT:
+				dirText = "Take sharp right ";
+				break;
+			case Geometry.UTURN:
+				dirText = "Take u-turn ";
+				break;
+		}
+		return dirText;
+	}
+	
+	public static String getMergeText(String name) {
+		return "Merge onto " + name;
+	}
+	
+	public static String getFirstRouteText(int prevDirIndex, String prevName, String name) {
+		return "Head " + Geometry.getDirectionStr(prevDirIndex) + " on " + prevName + " toward " + name;
+	}
+	
+	public static String getDistanceText(long distance) {
+		DecimalFormat df = new DecimalFormat("#0.0");
+		if(distance >= (OSMParam.FEET_PER_MILE / 10)) {
+			return df.format((double)distance / OSMParam.FEET_PER_MILE) + " miles";
+		}
+		else {
+			return distance + " feets";
+		}
 	}
 	
 	public static void initialHierarchy(HashMap<String, Integer> hierarchyHashMap) {
