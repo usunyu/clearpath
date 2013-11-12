@@ -250,17 +250,17 @@ public class Osm2Wkt {
 								vAttr = attribute.getValue();
 						}
 						// any kind of streets can be eliminated should be added here 
-//						if(kAttr.equals(XML_K_HIGHWAY)) {
-//							if(vAttr.equals(XML_V_FOOTWAY) || vAttr.equals(XML_V_STEPS) || vAttr.equals(XML_V_PEDESTRIAN) ||
-//									vAttr.equals(XML_V_PATH) || vAttr.equals(vAttr.equals(XML_V_BRIDLEWAY))) {
-//								eliminate = true;
-//							}
-//							// we eliminate all the service type first for simple
-//							if(vAttr.equals(XML_V_SERVICE)) {
-//								eliminate = true;
-//							}
-//							hasHighway = true;
-//						}
+						if(kAttr.equals(XML_K_HIGHWAY)) {
+							if(vAttr.equals(XML_V_FOOTWAY) || vAttr.equals(XML_V_STEPS) || vAttr.equals(XML_V_PEDESTRIAN) ||
+									vAttr.equals(XML_V_PATH) || vAttr.equals(vAttr.equals(XML_V_BRIDLEWAY))) {
+								eliminate = true;
+							}
+							// we eliminate all the service type first for simple
+							if(vAttr.equals(XML_V_SERVICE)) {
+								eliminate = true;
+							}
+							hasHighway = true;
+						}
 						if(kAttr.equals(XML_K_BUILDING)) {
 							if(vAttr.equals(XML_V_YES)) {
 								eliminate = true;
