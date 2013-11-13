@@ -28,6 +28,7 @@ public class OSMParam {
 	public static String transversalNodeKMLFile;
 	public static String startEndNodeKMLFile;
 	public static String locationsWithLatLongsFile;
+	public static String analyzeReportFile;
 	// deprecated
 	public static String extraNodeFile;
 	/**
@@ -117,6 +118,7 @@ public class OSMParam {
 		transversalNodeKMLFile				= name + "_transversal_node.kml";
 		startEndNodeKMLFile					= name + "_start_end_node.kml";
 		locationsWithLatLongsFile			= "Locations_with_latlongs.csv";
+		analyzeReportFile					= name + "_analyze_report.csv";
 		// deprecated
 		extraNodeFile						= name + "_way_extra.csv";
 	}

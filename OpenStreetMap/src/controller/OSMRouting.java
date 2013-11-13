@@ -126,6 +126,7 @@ public class OSMRouting {
 		OSMInput.readEdgeFile(OSMData.edgeHashMap, OSMData.nodesToEdgeHashMap);
 		OSMInput.readAdjList(OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
 		OSMInput.readNodeLocationGrid(OSMData.nodeHashMap, OSMData.nodeLocationGridMap);
+		OSMProcess.addOnEdgeToNode(OSMData.nodeHashMap, OSMData.edgeHashMap);
 		// test
 		//OSMOutput.generateHighwayKML(edgeHashMap, nodeHashMap);
 		
@@ -846,7 +847,7 @@ public class OSMRouting {
 			
 			initialStartSet(startNode, endNode, nodeHashMap, openSet, nodeHelperCache);
 			HashSet<Long> endSet = getEndSet(endNode, nodeHashMap);
-			NodeInfoHelper current;
+			NodeInfoHelper current = null;
 			
 			while(!openSet.isEmpty()) {
 				// remove current from openset
@@ -914,7 +915,7 @@ public class OSMRouting {
 			}
 			// TODO : count the to end cost
 			if(totalCost != -1) {
-				current = nodeHelperCache.get(endNode);
+				//current = nodeHelperCache.get(endNode);
 				long traceNodeId = current.getNodeId();
 				while(traceNodeId != 0) {
 					pathNodeList.add(traceNodeId);	// add end node

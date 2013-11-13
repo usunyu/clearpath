@@ -1,7 +1,6 @@
 package test;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.*;
 import java.util.*;
 
 import global.*;
