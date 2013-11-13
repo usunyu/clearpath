@@ -104,8 +104,8 @@ public class OSMRouting {
 	/**
 	 * @param param
 	 */
-	static long START_NODE 		= 188324333;
-	static long END_NODE 		= 186409912;
+	static long START_NODE 		= 673482861;
+	static long END_NODE 		= 292697402;
 	static int START_TIME 		= 10;
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
@@ -125,6 +125,7 @@ public class OSMRouting {
 		OSMInput.readNodeFile(OSMData.nodeHashMap);
 		OSMInput.readEdgeFile(OSMData.edgeHashMap, OSMData.nodesToEdgeHashMap);
 		OSMInput.readAdjList(OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
+		OSMInput.readNodeLocationGrid(OSMData.nodeHashMap, OSMData.nodeLocationGridMap);
 		// test
 		//OSMOutput.generateHighwayKML(edgeHashMap, nodeHashMap);
 		
