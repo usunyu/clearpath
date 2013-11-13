@@ -104,8 +104,8 @@ public class OSMRouting {
 	/**
 	 * @param param
 	 */
-	static long START_NODE 		= 673482861;
-	static long END_NODE 		= 292697402;
+	static long START_NODE 		= 122595039;
+	static long END_NODE 		= 358850034;
 	static int START_TIME 		= 10;
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
