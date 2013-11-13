@@ -15,19 +15,9 @@ public class OSMDivideWayToEdge {
 	
 	public static void main(String[] args) {
 		divideWayToEdge(OSMData.wayHashMap, OSMData.nodeHashMap, OSMData.edgeHashMap);
-		addOnEdgeToNode(OSMData.nodeHashMap, OSMData.edgeHashMap);
+		OSMProcess.addOnEdgeToNode(OSMData.nodeHashMap, OSMData.edgeHashMap);
 		OSMParam.paramConfig(args[0]);
 		OSMOutput.writeEdgeFile(OSMData.edgeHashMap);
-	}
-	
-	public static void addOnEdgeToNode(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, EdgeInfo> edgeHashMap) {
-		for(EdgeInfo edge : edgeHashMap.values()) {
-			LinkedList<Long> nodeList = edge.getNodeList();
-			for(long nodeId : nodeList) {
-				NodeInfo node = nodeHashMap.get(nodeId);
-				node.addOnEdge(edge);
-			}
-		}
 	}
 	
 	public static boolean checkNodeInWay(ArrayList<Long> nodesInWay, LinkedList<Long> nodeCheckList) {

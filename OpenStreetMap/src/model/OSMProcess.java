@@ -24,13 +24,66 @@ public class OSMProcess {
 		// get the nearest node
 		double minDis = Double.MAX_VALUE;
 		NodeInfo nearestNode = null;
-		for(NodeInfo nearNode : nodeList) {
-			double dis = Geometry.calculateDistance(location, nearNode.getLocation());
-			if(dis < minDis) {
-				minDis = dis;
-				nearestNode = nearNode;
+		if(nodeList == null) {	// need to expand
+			Stack<String> latLonIdStack = new Stack<String>();
+			// case 1
+			double newLat = lat - 0.1;
+			double newLon = lon - 0.1;
+			latLonId = df.format(newLat) + OSMParam.COMMA + df.format(newLon);
+			latLonIdStack.push(latLonId);
+			// case 2
+			newLat = lat + 0.1;
+			newLon = lon - 0.1;
+			latLonId = df.format(newLat) + OSMParam.COMMA + df.format(newLon);
+			latLonIdStack.push(latLonId);
+			// case 3
+			newLat = lat + 0.1;
+			newLon = lon + 0.1;
+			latLonId = df.format(newLat) + OSMParam.COMMA + df.format(newLon);
+			latLonIdStack.push(latLonId);
+			// case 4
+			newLat = lat - 0.1;
+			newLon = lon + 0.1;
+			latLonId = df.format(newLat) + OSMParam.COMMA + df.format(newLon);
+			latLonIdStack.push(latLonId);
+			// calculate
+			while(latLonIdStack.isEmpty()) {
+				latLonId = latLonIdStack.pop();
+				nodeList = nodeLocationGridMap.get(latLonId);
+				if(nodeList == null) continue;
+				for(NodeInfo nearNode : nodeList) {
+					double dis = Geometry.calculateDistance(location, nearNode.getLocation());
+					if(dis < minDis) {
+						minDis = dis;
+						nearestNode = nearNode;
+					}
+				}
+			}
+		}
+		else {
+			for(NodeInfo nearNode : nodeList) {
+				double dis = Geometry.calculateDistance(location, nearNode.getLocation());
+				if(dis < minDis) {
+					minDis = dis;
+					nearestNode = nearNode;
+				}
 			}
 		}
 		return nearestNode;
+	}
+	
+	/**
+	 * we can find edge by node
+	 * @param nodeHashMap
+	 * @param edgeHashMap
+	 */
+	public static void addOnEdgeToNode(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, EdgeInfo> edgeHashMap) {
+		for(EdgeInfo edge : edgeHashMap.values()) {
+			LinkedList<Long> nodeList = edge.getNodeList();
+			for(long nodeId : nodeList) {
+				NodeInfo node = nodeHashMap.get(nodeId);
+				node.addOnEdge(edge);
+			}
+		}
 	}
 }
