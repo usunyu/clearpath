@@ -163,29 +163,25 @@ public class OSMDivideWayToEdge {
 			String highway = way.getHighway();
 			ArrayList<Long> localNodeArrayList = way.getNodeArrayList();
 			int edgeId = 0;
-			long preNodeId = -1;
 			LinkedList<Long> currentList = new LinkedList<Long>();
 			for(long nodeId : localNodeArrayList) {
-				if(preNodeId == -1) {
-					// start
-					preNodeId = nodeId;
+				if(currentList.size() == 0) {
+					currentList.add(nodeId);
+					continue;
+				}
+				LinkedList<Long> adjList = adjListMap.get(nodeId);
+				currentList.add(nodeId);
+				// has intersect with other way
+				if(!checkNodeInWay(localNodeArrayList, adjList)) {
+					edgeId = addEdgeToEdgeHashMap(wayId, edgeId, name, highway, isOneway, currentList, duplicateEndEdgeMap, nodeHashMap, wayHashMap, edgeHashMap);
+					// prepare for next
+					currentList = new LinkedList<Long>();
 					currentList.add(nodeId);
 				}
-				else {
-					LinkedList<Long> adjList = adjListMap.get(nodeId);
-					// all connect nodes are in the way
-					if(checkNodeInWay(localNodeArrayList, adjList)) {
-						currentList.add(nodeId);
-					}
-					else {
-						currentList.add(nodeId);
-						edgeId = addEdgeToEdgeHashMap(wayId, edgeId, name, highway, isOneway, currentList, duplicateEndEdgeMap, nodeHashMap, wayHashMap, edgeHashMap);
-						// prepare for next
-						currentList = new LinkedList<Long>();
-						currentList.add(nodeId);
-					}
-					preNodeId = nodeId;
-				}
+			}
+			// check the dead end
+			if(currentList.size() > 1) {
+				edgeId = addEdgeToEdgeHashMap(wayId, edgeId, name, highway, isOneway, currentList, duplicateEndEdgeMap, nodeHashMap, wayHashMap, edgeHashMap);
 			}
 		}
 		System.out.println("divide way to edge finish!");
