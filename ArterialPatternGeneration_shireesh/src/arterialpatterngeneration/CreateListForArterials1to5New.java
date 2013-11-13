@@ -63,7 +63,7 @@ public class CreateListForArterials1to5New {
 	private static String FILE_LINK = root + "/Edges.csv";
 	// "H:\\clearp\\links_all.csv";
 	// private static String [] days = {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
-	private static String[] days = { "All" };
+	private static String[] days = { "Monday" };
 	static HashMap<String, String> links_funcAndspeedcat = new HashMap<String, String>();
 	static HashMap<Integer, Double> speedcat = new HashMap<Integer, Double>();
 
