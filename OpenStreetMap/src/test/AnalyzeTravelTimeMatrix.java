@@ -43,8 +43,9 @@ public class AnalyzeTravelTimeMatrix {
 				debug++;
 				String[] nodes = strLine.split("\t");
 				int size = nodes.length;
-				double lat = Double.parseDouble(nodes[size - 2]);
-				double lon = Double.parseDouble(nodes[size - 1]);
+				String[] latLon = nodes[size - 1].split(", ");
+				double lat = Double.parseDouble(latLon[0]);
+				double lon = Double.parseDouble(latLon[1]);
 				LocationInfo loc = new LocationInfo(lat, lon);
 				NodeInfo node = OSMProcess.searchNodeByLocation(OSMData.nodeHashMap, OSMData.nodeLocationGridMap, loc);
 				nodeAnalyzeList.add(node);
