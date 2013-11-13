@@ -10,6 +10,7 @@ public class OSMData {
 	 */
 	public static ArrayList<NodeInfo> nodeArrayList = new ArrayList<NodeInfo>();
 	public static HashMap<Long, NodeInfo> nodeHashMap = new HashMap<Long, NodeInfo>();
+	public static HashMap<String, LinkedList<NodeInfo>> nodeLocationGridMap = new HashMap<String, LinkedList<NodeInfo>>();
 	/**
 	 * @param way
 	 */

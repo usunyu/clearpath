@@ -1,5 +1,6 @@
 package model;
 
+import java.text.*;
 import java.util.*;
 
 import java.io.*;
@@ -15,6 +16,30 @@ import javax.xml.stream.*;
 import javax.xml.stream.events.*;
 
 public class OSMInput {
+	
+	/**
+	 * cache for from lot and lon to node
+	 * @param nodeHashMap
+	 * @param nodeLocationGridMap
+	 */
+	public static void readNodeLocationGrid(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, LinkedList<NodeInfo>> nodeLocationGridMap) {
+		for(NodeInfo node : nodeHashMap.values()) {
+			LocationInfo location = node.getLocation();
+			double lat = location.getLatitude();
+			double lon = location.getLongitude();
+			DecimalFormat df=new DecimalFormat("0.0");
+			String latLonId = df.format(lat) + OSMParam.COMMA + df.format(lon);
+			LinkedList<NodeInfo> nodeList;
+			if(nodeLocationGridMap.containsKey(latLonId)) {
+				nodeList = nodeLocationGridMap.get(latLonId);
+			}
+			else {
+				nodeList = new LinkedList<NodeInfo>();
+				nodeLocationGridMap.put(latLonId, nodeList);
+			}
+			nodeList.add(node);
+		}
+	}
 	
 	/**
 	 * check whether file exist

@@ -17,6 +17,7 @@ public class OSMOutputFileGeneration {
 		OSMInput.readWayFile(OSMData.wayHashMap);
 		OSMInput.readWayInfo(OSMData.wayHashMap);
 		OSMInput.readWktsFile(OSMData.wayHashMap, OSMData.nodeHashMap);
+		OSMInput.readNodeLocationGrid(OSMData.nodeHashMap, OSMData.nodeLocationGridMap);
 		
 		// over write the cvs file
 		OSMOutput.writeNodeFile(OSMData.nodeHashMap);
