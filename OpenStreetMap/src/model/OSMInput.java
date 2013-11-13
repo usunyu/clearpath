@@ -629,7 +629,7 @@ public class OSMInput {
 			// TODO: handle exception
 			e.printStackTrace();
 			e.printStackTrace();
-			System.err.println("readNodeFile: debug code: " + debug);
+			System.err.println("readExtraFile: debug code: " + debug);
 		}
 		System.out.println("read extra file finish!");
 	}
