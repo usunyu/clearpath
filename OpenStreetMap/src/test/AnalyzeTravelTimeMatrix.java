@@ -46,19 +46,22 @@ public class AnalyzeTravelTimeMatrix {
 		
 		ArrayList<AnalyzeReport> reportList = new ArrayList<AnalyzeReport>();
 		
-		for(int i = 0; i < nodeAnalyzeList.size(); i++) {
-			for(int j = 0; j < nodeAnalyzeList.size(); j++) {
-				if(j == i) continue;
-				for(int t = 0; t < 60; t++) {
-					double cost = OSMRouting.routingAStar(nodeAnalyzeList.get(i), nodeAnalyzeList.get(j), t, OSMData.nodeHashMap, OSMData.adjListHashMap);
-					AnalyzeReport ar = new AnalyzeReport(i, j, t, (int)cost);
-					reportList.add(ar);
-				}
-			}
-		}
 		int debug = 0;
 		// write report
 		try {
+		
+			for(int i = 0; i < nodeAnalyzeList.size(); i++) {
+				for(int j = 0; j < nodeAnalyzeList.size(); j++) {
+					if(j == i) continue;
+					for(int t = 0; t < 60; t++) {
+						debug++;
+						double cost = OSMRouting.routingAStar(nodeAnalyzeList.get(i), nodeAnalyzeList.get(j), t, OSMData.nodeHashMap, OSMData.adjListHashMap);
+						AnalyzeReport ar = new AnalyzeReport(i, j, t, (int)cost);
+						reportList.add(ar);
+					}
+				}
+			}
+		
 			FileWriter fstream = new FileWriter(OSMParam.root + OSMParam.SEGMENT + OSMParam.analyzeReportFile);
 			BufferedWriter out = new BufferedWriter(fstream);
 			out.write("Soruce:\tDestination:\tDeparture_Time:\tTotal_Travel_Time(seconds):" + OSMParam.LINEEND);
@@ -72,7 +75,7 @@ public class AnalyzeTravelTimeMatrix {
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			System.err.println("main: debug code: " + debug);
+			System.err.println("AnalyzeTravelTimeMatrix: debug code: " + debug);
 		}
 	}
 	
