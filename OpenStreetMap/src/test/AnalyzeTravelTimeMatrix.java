@@ -10,7 +10,7 @@ import java.io.*;
 
 public class AnalyzeTravelTimeMatrix {
 	
-	public static LinkedList<NodeInfo> nodeAnalyzeList = new LinkedList<NodeInfo>();
+	public static ArrayList<NodeInfo> nodeAnalyzeList = new ArrayList<NodeInfo>();
 
 	/**
 	 * @param args

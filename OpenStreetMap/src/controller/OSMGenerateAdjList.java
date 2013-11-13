@@ -18,11 +18,10 @@ public class OSMGenerateAdjList {
 		OSMParam.paramConfig(args[0]);
 		OSMOutput.writeAdjList(OSMData.nodeHashMap, OSMData.adjListHashMap);
 	}
-	
-	public static int getTravelTime(EdgeInfo edgeInfo) {
+
+	public static double getTravelSpeed(EdgeInfo edgeInfo) {
 		// initial
 		double speed  = (double) 5 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);	// feet/second
-		int travelTime = 1;	// second
 		// define all kinds of highway type link's speed
 		if (edgeInfo.getHighway().equals(OSMParam.MOTORWAY) || edgeInfo.getHighway().equals(OSMParam.TRUNK)) {
 			speed = (double) 60 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
@@ -58,13 +57,18 @@ public class OSMGenerateAdjList {
 		if (edgeInfo.getHighway().equals(OSMParam.PRIMARY_LINK)) {
 			speed = (double) 30 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
 		}
-		
+		return speed;
+	}
+	
+	public static int getTravelTime(EdgeInfo edgeInfo) {
+		// initial
+		double speed  = getTravelSpeed(edgeInfo);
+		int travelTime = 1;	// second
 		travelTime = (int) Math.round(edgeInfo.getDistance() / speed * OSMParam.MILLI_PER_SECOND);
 		// travelTime cannot be zero
 		if (travelTime <= 0) {
 			travelTime = 1;
 		}
-		
 		return travelTime;
 	}
 	

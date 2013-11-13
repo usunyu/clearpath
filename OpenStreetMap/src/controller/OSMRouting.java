@@ -719,6 +719,93 @@ public class OSMRouting {
 		return distance / HEURISTIC_SPEED * OSMParam.SECOND_PER_HOUR;
 	}
 	
+	public static int getStartDistance(long middle, LinkedList<Long> nodeList, HashMap<Long, NodeInfo> nodeHashMap) {
+		long preNodeId = -1;
+		double distance = 0;
+		for(long nodeId : nodeList) {
+			if(preNodeId != -1) {
+				NodeInfo node1 = nodeHashMap.get(preNodeId);
+				NodeInfo node2 = nodeHashMap.get(nodeId);
+				distance += Geometry.calculateDistance(node1.getLocation(), node2.getLocation()) * OSMParam.FEET_PER_MILE;
+			}
+			preNodeId = nodeId;
+			if(nodeId == middle) break;
+		}
+		return (int)Math.round(distance);
+	}
+	
+	public static int getEndDistance(long middle, LinkedList<Long> nodeList, HashMap<Long, NodeInfo> nodeHashMap) {
+		long preNodeId = -1;
+		double distance = 0;
+		boolean start = false;
+		for(long nodeId : nodeList) {
+			if(nodeId == middle) {
+				start = true;
+			}
+			if(!start) {
+				continue;
+			}
+			if(preNodeId != -1) {
+				NodeInfo node1 = nodeHashMap.get(preNodeId);
+				NodeInfo node2 = nodeHashMap.get(nodeId);
+				distance += Geometry.calculateDistance(node1.getLocation(), node2.getLocation()) * OSMParam.FEET_PER_MILE;
+			}
+			preNodeId = nodeId;
+		}
+		return (int)Math.round(distance);
+	}
+	
+	public static void initialStartSet(long startNode, long endNode, HashMap<Long, NodeInfo> nodeHashMap,
+			PriorityQueue<NodeInfoHelper> openSet, HashMap<Long, NodeInfoHelper> nodeHelperCache) {
+		NodeInfo start = nodeHashMap.get(startNode);
+		NodeInfoHelper current;
+		// initial start end set
+		if(start.isIntersect()) {
+			// initial
+			current = new NodeInfoHelper(startNode);
+			current.setCost(0);
+			current.setHeuristic(estimateHeuristic(startNode, endNode, nodeHashMap));
+			openSet.offer(current);	// push the start node
+			nodeHelperCache.put(current.getNodeId(), current);	// add cache
+		}
+		else {
+			EdgeInfo edge = start.getOnEdgeList().getFirst();
+			LinkedList<Long> nodeList = edge.getNodeList();
+			int startDis = getStartDistance(startNode, nodeList, nodeHashMap);
+			int endDis = getEndDistance(startNode, nodeList, nodeHashMap);
+			double speed  = OSMGenerateAdjList.getTravelSpeed(edge);
+			int travelTime = 1;	// second
+			// for to end 1
+			travelTime = (int) Math.round(startDis / speed * OSMParam.MILLI_PER_SECOND);
+			current = new NodeInfoHelper(edge.getStartNode());
+			current.setCost(travelTime);
+			current.setHeuristic(estimateHeuristic(edge.getStartNode(), endNode, nodeHashMap));
+			openSet.offer(current);	// push the start node
+			nodeHelperCache.put(current.getNodeId(), current);	// add cache
+			// for to end 2
+			travelTime = (int) Math.round(endDis / speed * OSMParam.MILLI_PER_SECOND);
+			current = new NodeInfoHelper(edge.getEndNode());
+			current.setCost(travelTime);
+			current.setHeuristic(estimateHeuristic(edge.getEndNode(), endNode, nodeHashMap));
+			openSet.offer(current);	// push the start node
+			nodeHelperCache.put(current.getNodeId(), current);	// add cache
+		}
+	}
+	
+	public static HashSet<Long> getEndSet(long nodeId, HashMap<Long, NodeInfo> nodeHashMap) {
+		HashSet<Long> endSet = new HashSet<Long>();
+		NodeInfo end = nodeHashMap.get(nodeId);
+		// initial start end set
+		if(end.isIntersect()) {
+			endSet.add(nodeId);
+		}
+		else {
+			endSet.add(end.getOnEdgeList().getFirst().getStartNode());
+			endSet.add(end.getOnEdgeList().getFirst().getEndNode());
+		}
+		return endSet;
+	}
+	
 	/**
 	 * routing using A* algorithm
 	 * http://en.wikipedia.org/wiki/A*_search_algorithm
@@ -756,12 +843,9 @@ public class OSMRouting {
 			HashSet<Long> closedSet = new HashSet<Long>();
 			HashMap<Long, NodeInfoHelper> nodeHelperCache = new HashMap<Long, NodeInfoHelper>();
 			
-			// initial
-			NodeInfoHelper current = new NodeInfoHelper(startNode);
-			current.setCost(0);
-			current.setHeuristic(estimateHeuristic(startNode, endNode, nodeHashMap));
-			openSet.offer(current);	// push the start node
-			nodeHelperCache.put(current.getNodeId(), current);	// add cache
+			initialStartSet(startNode, endNode, nodeHashMap, openSet, nodeHelperCache);
+			HashSet<Long> endSet = getEndSet(endNode, nodeHashMap);
+			NodeInfoHelper current;
 			
 			while(!openSet.isEmpty()) {
 				// remove current from openset
@@ -773,7 +857,7 @@ public class OSMRouting {
 				long nodeId = current.getNodeId();
 				// add current to closedset
 				closedSet.add(nodeId);
-				if(nodeId == endNode) {	// find the destination
+				if(endSet.contains(nodeId)) {	// find the destination
 					totalCost = current.getCost();
 					break;
 				}
@@ -827,7 +911,7 @@ public class OSMRouting {
 					}
 				}
 			}
-			
+			// TODO : count the to end cost
 			if(totalCost != -1) {
 				current = nodeHelperCache.get(endNode);
 				long traceNodeId = current.getNodeId();

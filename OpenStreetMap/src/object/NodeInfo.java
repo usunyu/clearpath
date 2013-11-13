@@ -13,6 +13,15 @@ public class NodeInfo {
 		this.onEdgeList = new LinkedList<EdgeInfo>();
 	}
 
+	public boolean isIntersect() {
+		if(onEdgeList.size() >= 2) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
 	public long getNodeId() {
 		return nodeId;
 	}
