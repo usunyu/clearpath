@@ -7,6 +7,14 @@ import global.*;
 import object.*;
 
 public class OSMProcess {
+	
+	/**
+	 * search the nearest node based on lot and lon
+	 * @param nodeHashMap
+	 * @param nodeLocationGridMap
+	 * @param location
+	 * @return
+	 */
 	public static NodeInfo searchNodeByLocation(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, LinkedList<NodeInfo>> nodeLocationGridMap, LocationInfo location) {
 		double lat = location.getLatitude();
 		double lon = location.getLongitude();
