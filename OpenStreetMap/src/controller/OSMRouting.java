@@ -932,7 +932,7 @@ public class OSMRouting {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			System.err.println("tdsp: debug code " + debug);
+			System.err.println("tdsp: debug code " + debug + ", start node " + startNode + ", end node " + endNode);
 		}
 		return totalCost;
 	}
