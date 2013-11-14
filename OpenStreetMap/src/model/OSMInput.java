@@ -24,9 +24,6 @@ public class OSMInput {
 	 */
 	public static void readNodeLocationGrid(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, LinkedList<NodeInfo>> nodeLocationGridMap) {
 		for(NodeInfo node : nodeHashMap.values()) {
-			if(node.getNodeId() == 358850034) {
-				System.out.println();
-			}
 			LocationInfo location = node.getLocation();
 			double lat = location.getLatitude();
 			double lon = location.getLongitude();
