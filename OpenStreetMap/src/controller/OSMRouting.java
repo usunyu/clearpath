@@ -973,8 +973,10 @@ public class OSMRouting {
 			}
 			if(totalCost != -1) {
 				long traceNodeId = current.getNodeId();
+				pathNodeList.add(traceNodeId);	// add end node
+				traceNodeId = current.getParentId();
 				while(traceNodeId != 0) {
-					pathNodeList.add(traceNodeId);	// add end node
+					pathNodeList.add(traceNodeId);	// add node
 					current = nodeHelperCache.get(traceNodeId);
 					traceNodeId = current.getParentId();
 				}
