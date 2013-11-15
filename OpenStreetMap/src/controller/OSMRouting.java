@@ -8,6 +8,7 @@ import global.*;
 import object.*;
 import main.*;
 import model.*;
+import library.*;
 
 /**
  * @data structure used in queue
@@ -974,6 +975,181 @@ public class OSMRouting {
 				while(traceNodeId != 0) {
 					pathNodeList.add(traceNodeId);	// add end node
 					current = nodeHelperCache.get(traceNodeId);
+					traceNodeId = current.getParentId();
+				}
+				Collections.reverse(pathNodeList);	// reverse the path list
+				System.out.println("find the path successful!");
+			}
+			else {
+				System.out.println("can not find the path!");
+			}
+			//OSMOutput.generateTransversalNodeKML(transversalSet, nodeHashMap);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			System.err.println("tdsp: debug code " + debug + ", start node " + startNode + ", end node " + endNode);
+		}
+		return totalCost;
+	}
+	
+	public static void initialStartSet(long startNode, long endNode, HashMap<Long, NodeInfo> nodeHashMap,
+			FibonacciHeap<NodeInfoHelper> openSet, HashMap<Long, FibonacciHeapNode<NodeInfoHelper>> nodeHelperCache) {
+		NodeInfo start = nodeHashMap.get(startNode);
+		NodeInfoHelper initial;
+		FibonacciHeapNode<NodeInfoHelper> fInitial;
+		// initial start end set
+		if(start.isIntersect()) {
+			// initial
+			initial = new NodeInfoHelper(startNode);
+			initial.setCost(0);
+			initial.setHeuristic(estimateHeuristic(startNode, endNode, nodeHashMap));
+			fInitial = new FibonacciHeapNode<NodeInfoHelper>(initial);
+			openSet.insert(fInitial, initial.getTotalCost());	// push the start node
+			nodeHelperCache.put(initial.getNodeId(), fInitial);	// add cache
+		}
+		else {
+			EdgeInfo edge = start.getOnEdgeList().getFirst();
+			LinkedList<Long> nodeList = edge.getNodeList();
+			double speed  = OSMGenerateAdjList.getTravelSpeed(edge);
+			int travelTime = 1;	// second
+			int distance;
+			if(!edge.isOneway()) {
+				// distance from start to middle
+				distance = getStartDistance(startNode, nodeList, nodeHashMap);
+				travelTime = (int) Math.round(distance / speed * OSMParam.MILLI_PER_SECOND);
+				initial = new NodeInfoHelper(edge.getStartNode());
+				initial.setCost(travelTime);
+				initial.setHeuristic(estimateHeuristic(edge.getStartNode(), endNode, nodeHashMap));
+				fInitial = new FibonacciHeapNode<NodeInfoHelper>(initial);
+				openSet.insert(fInitial, initial.getTotalCost());	// push the start node
+				nodeHelperCache.put(initial.getNodeId(), fInitial);	// add cache
+			}
+			distance = getEndDistance(startNode, nodeList, nodeHashMap);
+			travelTime = (int) Math.round(distance / speed * OSMParam.MILLI_PER_SECOND);
+			initial = new NodeInfoHelper(edge.getEndNode());
+			initial.setCost(travelTime);
+			initial.setHeuristic(estimateHeuristic(edge.getEndNode(), endNode, nodeHashMap));
+			fInitial = new FibonacciHeapNode<NodeInfoHelper>(initial);
+			openSet.insert(fInitial, initial.getTotalCost());	// push the start node
+			nodeHelperCache.put(initial.getNodeId(), fInitial);	// add cache
+		}
+	}
+	
+	/**
+	 * routing using A* algorithm with fibonacci heap
+	 * @param startNode
+	 * @param endNode
+	 * @param startTime
+	 * @param nodeHashMap
+	 * @param adjListHashMap
+	 * @return
+	 */
+	public static double routingAStarFibonacci(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap,
+			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap) {
+		System.out.println("start finding the path...");
+		int debug = 0;
+		double totalCost = -1;
+		try {
+			// test store transversal nodes
+			//HashSet<Long> transversalSet = new HashSet<Long>();
+			
+			if(!nodeHashMap.containsKey(startNode) || !nodeHashMap.containsKey(endNode)) {
+				System.err.println("cannot find start or end node!");
+				return -1;
+			}
+			
+			if (startNode == endNode) {
+				System.out.println("start node is the same as end node.");
+				return 0;
+			}
+			
+			FibonacciHeap<NodeInfoHelper> openSet = new FibonacciHeap<NodeInfoHelper>();
+			
+			HashSet<Long> closedSet = new HashSet<Long>();
+			HashMap<Long, FibonacciHeapNode<NodeInfoHelper>> nodeHelperCache = new HashMap<Long, FibonacciHeapNode<NodeInfoHelper>>();
+			
+			initialStartSet(startNode, endNode, nodeHashMap, openSet, nodeHelperCache);
+			HashSet<Long> endSet = getEndSet(endNode, nodeHashMap);
+			NodeInfoHelper current = null;
+			FibonacciHeapNode<NodeInfoHelper> fCurrent = null;
+			
+			while(!openSet.isEmpty()) {
+				// remove current from openset
+				fCurrent = openSet.min();
+				current = fCurrent.getData();
+				
+				//if(!transversalSet.contains(current.getNodeId()))
+				//	transversalSet.add(current.getNodeId());
+				
+				long nodeId = current.getNodeId();
+				// add current to closedset
+				closedSet.add(nodeId);
+				if(endSet.contains(nodeId)) {	// find the destination
+					current = getEndNodeHelper(current, endNode, nodeHashMap);
+					totalCost = current.getCost();
+					break;
+				}
+				// for time dependent routing
+				int timeIndex = startTime + (int)(current.getCost() / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL);
+				if (timeIndex > TIME_RANGE - 1)	// time [6am - 9 pm], we regard times after 9pm as constant edge weights
+					timeIndex = TIME_RANGE - 1;
+				LinkedList<ToNodeInfo> adjNodeList = adjListHashMap.get(nodeId);
+				if(adjNodeList == null) continue;	// this node cannot go anywhere
+				double arriveTime = current.getCost();
+				// for each neighbor in neighbor_nodes(current)
+				for(ToNodeInfo toNode : adjNodeList) {
+					debug++;
+					long toNodeId = toNode.getNodeId();
+					int travelTime;
+					if(toNode.isFix())	// fix time
+						travelTime = toNode.getTravelTime();
+					else	// fetch from time array
+						travelTime = toNode.getTravelTimeArray()[timeIndex];
+					// tentative_g_score := g_score[current] + dist_between(current,neighbor)
+					double costTime = arriveTime + (double)travelTime / OSMParam.MILLI_PER_SECOND;
+					// tentative_f_score := tentative_g_score + heuristic_cost_estimate(neighbor, goal)
+					double heuristicTime =  estimateHeuristic(toNodeId, endNode, nodeHashMap);
+					double totalCostTime = costTime + heuristicTime;
+					// if neighbor in closedset and tentative_f_score >= f_score[neighbor]
+					if(closedSet.contains(toNodeId) && nodeHelperCache.get(toNodeId).getData().getTotalCost() <= totalCostTime) {
+						continue;
+					}
+					NodeInfoHelper node = null;
+					FibonacciHeapNode<NodeInfoHelper> fNode = null;
+					// if neighbor not in openset or tentative_f_score < f_score[neighbor]
+					if(!nodeHelperCache.containsKey(toNodeId)) {	// neighbor not in openset
+						// create new one
+						node = new NodeInfoHelper(toNodeId);
+						node.setCost(costTime);
+						node.setHeuristic(heuristicTime);
+						node.setParentId(nodeId);
+						fNode = new FibonacciHeapNode<NodeInfoHelper>(node);
+						openSet.insert(fNode, node.getTotalCost());
+						nodeHelperCache.put(node.getNodeId(), fNode);
+					}
+					else if (nodeHelperCache.get(toNodeId).getData().getTotalCost() > totalCostTime) {	// neighbor in openset
+						fNode = nodeHelperCache.get(toNodeId);
+						node = fNode.getData();
+						// update information
+						node.setCost(costTime);
+						node.setHeuristic(heuristicTime);
+						node.setParentId(nodeId);
+						if(closedSet.contains(toNodeId)) {	// neighbor in closeset
+							closedSet.remove(toNodeId);	// remove neighbor form colseset
+							openSet.insert(fNode, node.getTotalCost());
+						}
+						else {	// neighbor in openset, decreaseKey
+							openSet.decreaseKey(fNode, node.getTotalCost());
+						}
+					}
+				}
+			}
+			if(totalCost != -1) {
+				long traceNodeId = current.getNodeId();
+				while(traceNodeId != 0) {
+					pathNodeList.add(traceNodeId);	// add end node
+					fCurrent = nodeHelperCache.get(traceNodeId);
+					current = fCurrent.getData();
 					traceNodeId = current.getParentId();
 				}
 				Collections.reverse(pathNodeList);	// reverse the path list
