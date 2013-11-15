@@ -107,6 +107,10 @@ public class OSMRouting {
 	 */
 	static long START_NODE 		= 1729829387;
 	static long END_NODE 		= 2079510866;
+	static double START_LAT		= 34.021433;
+	static double START_LON		= -118.404699;
+	static double END_LAT		= 34.053781;
+	static double END_LON		= -118.375032;
 	static int START_TIME 		= 10;
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
@@ -133,7 +137,7 @@ public class OSMRouting {
 		
 		// initial hierarchy level
 		initialHierarchy(hierarchyHashMap);
-		routing(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
+		routing(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap, OSMData.nodeLocationGridMap);
 		
 		// output
 		OSMOutput.generatePathKML(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, pathNodeList);
@@ -141,17 +145,30 @@ public class OSMRouting {
 	}
 	
 	public static void routing(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap,
-			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
+			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap,
+			HashMap<String, LinkedList<NodeInfo>> nodeLocationGridMap) {
 		// test start end node
 		//OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
 		// test count time
 		long begintime = System.currentTimeMillis();
+		
+		LocationInfo startLoc = new LocationInfo(START_LAT, START_LON);
+		LocationInfo endLoc = new LocationInfo(END_LAT, END_LON);
+		NodeInfo start = OSMProcess.searchNodeByLocation(nodeHashMap, nodeLocationGridMap, startLoc);
+		NodeInfo end = OSMProcess.searchNodeByLocation(nodeHashMap, nodeLocationGridMap, endLoc);
+		START_NODE = start.getNodeId();
+		END_NODE = end.getNodeId();
+		
 		//routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		
 		routingAStarFibonacci(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		
 		//routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
+		
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
 		System.out.println("routing cost: " + costTime + " ms");
+		
 		String turnByTurn = turnByTurn(nodeHashMap, nodesToEdgeHashMap);
 		System.out.println(turnByTurn);
 	}
@@ -1040,6 +1057,7 @@ public class OSMRouting {
 	
 	/**
 	 * routing using A* algorithm with fibonacci heap
+	 * basically same as routingAStar function
 	 * @param startNode
 	 * @param endNode
 	 * @param startTime
