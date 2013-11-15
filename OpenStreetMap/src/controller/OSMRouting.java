@@ -105,8 +105,8 @@ public class OSMRouting {
 	/**
 	 * @param param
 	 */
-	static long START_NODE 		= 122595039;
-	static long END_NODE 		= 358850034;
+	static long START_NODE 		= 1729829387;
+	static long END_NODE 		= 2079510866;
 	static int START_TIME 		= 10;
 	static int TIME_INTERVAL 	= 15;
 	static int TIME_RANGE 		= 60;
@@ -146,8 +146,8 @@ public class OSMRouting {
 		//OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
 		// test count time
 		long begintime = System.currentTimeMillis();
-		routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
-		//routingAStarFibonacci(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		//routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		routingAStarFibonacci(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
 		//routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
@@ -1077,6 +1077,7 @@ public class OSMRouting {
 			while(!openSet.isEmpty()) {
 				// remove current from openset
 				fCurrent = openSet.min();
+				openSet.removeMin();
 				current = fCurrent.getData();
 				
 				//if(!transversalSet.contains(current.getNodeId()))
