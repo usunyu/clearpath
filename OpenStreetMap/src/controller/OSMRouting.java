@@ -147,6 +147,7 @@ public class OSMRouting {
 		// test count time
 		long begintime = System.currentTimeMillis();
 		routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		//routingAStarFibonacci(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
 		//routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
 		long endtime = System.currentTimeMillis();
 		long costTime = (endtime - begintime);
