@@ -243,7 +243,7 @@ public class OSMInput {
 	}
 
 	/**
-	 * read edge file
+	 * @deprecated read edge file, we not use nodesToEdge any more
 	 * @param edgeHashMap
 	 */
 	public static void readEdgeFile(HashMap<Long, EdgeInfo> edgeHashMap, HashMap<String, EdgeInfo> nodesToEdge) {

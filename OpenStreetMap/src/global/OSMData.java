@@ -25,8 +25,4 @@ public class OSMData {
 	 */
 	public static HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap = new HashMap<Long, LinkedList<ToNodeInfo>>();
 	public static HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap = new HashMap<Long, LinkedList<ToNodeInfo>>();
-	/**
-	 * connect
-	 */
-	public static HashMap<String, EdgeInfo> nodesToEdgeHashMap = new HashMap<String, EdgeInfo>();
 }

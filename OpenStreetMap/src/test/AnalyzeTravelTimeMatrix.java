@@ -37,7 +37,7 @@ public class AnalyzeTravelTimeMatrix {
 		OSMParam.paramConfig(OSMMain.osm);
 		// input
 		OSMInput.readNodeFile(OSMData.nodeHashMap);
-		OSMInput.readEdgeFile(OSMData.edgeHashMap, OSMData.nodesToEdgeHashMap);
+		OSMInput.readEdgeFile(OSMData.edgeHashMap);
 		OSMInput.readAdjList(OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
 		OSMInput.readNodeLocationGrid(OSMData.nodeHashMap, OSMData.nodeLocationGridMap);
 		OSMProcess.addOnEdgeToNode(OSMData.nodeHashMap, OSMData.edgeHashMap);

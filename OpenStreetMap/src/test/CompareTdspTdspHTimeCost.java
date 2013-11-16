@@ -34,7 +34,7 @@ public class CompareTdspTdspHTimeCost {
 		OSMParam.paramConfig(OSMMain.osm);
 		// input
 		OSMInput.readNodeFile(OSMData.nodeHashMap);
-		OSMInput.readEdgeFile(OSMData.edgeHashMap, OSMData.nodesToEdgeHashMap);
+		OSMInput.readEdgeFile(OSMData.edgeHashMap);
 		OSMInput.readAdjList(OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
 		OSMRouting.initialHierarchy(OSMRouting.hierarchyHashMap);
 		// for now, just use node exist in adjlist
@@ -62,7 +62,7 @@ public class CompareTdspTdspHTimeCost {
 			endtime = System.currentTimeMillis();
 			costtime = endtime - begintime;
 			begintime = System.currentTimeMillis();
-			double costH = OSMRouting.routingHierarchy(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap, OSMData.nodesToEdgeHashMap);
+			double costH = OSMRouting.routingHierarchy(startNode, endNode, startTime, OSMData.nodeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
 			endtime = System.currentTimeMillis();
 			costtimeH = endtime - begintime;
 			

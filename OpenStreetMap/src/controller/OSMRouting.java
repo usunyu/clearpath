@@ -128,7 +128,7 @@ public class OSMRouting {
 		OSMParam.paramConfig(OSMMain.osm);
 		// input
 		OSMInput.readNodeFile(OSMData.nodeHashMap);
-		OSMInput.readEdgeFile(OSMData.edgeHashMap, OSMData.nodesToEdgeHashMap);
+		OSMInput.readEdgeFile(OSMData.edgeHashMap);
 		OSMInput.readAdjList(OSMData.adjListHashMap, OSMData.adjReverseListHashMap);
 		OSMInput.readNodeLocationGrid(OSMData.nodeHashMap, OSMData.nodeLocationGridMap);
 		OSMProcess.addOnEdgeToNode(OSMData.nodeHashMap, OSMData.edgeHashMap);
@@ -137,16 +137,15 @@ public class OSMRouting {
 		
 		// initial hierarchy level
 		initialHierarchy(hierarchyHashMap);
-		routing(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap, OSMData.nodeLocationGridMap);
+		routing(OSMData.nodeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap, OSMData.nodeLocationGridMap);
 		
 		// output
 		OSMOutput.generatePathKML(OSMData.nodeHashMap, pathNodeList);
 		// OSMOutput.generatePathNodeKML(OSMData.nodeHashMap, pathNodeList);
 	}
 	
-	public static void routing(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap,
-			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap,
-			HashMap<String, LinkedList<NodeInfo>> nodeLocationGridMap) {
+	public static void routing(HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long,
+			LinkedList<ToNodeInfo>> adjReverseListHashMap, HashMap<String, LinkedList<NodeInfo>> nodeLocationGridMap) {
 		// test start end node
 		//OSMOutput.generateStartEndlNodeKML(START_NODE, END_NODE, nodeHashMap);
 		// test count time
@@ -164,7 +163,7 @@ public class OSMRouting {
 		
 		//cost = routingAStarFibonacci(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
 		
-		//cost = routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
+		cost = routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap);
 		
 		long endtime = System.currentTimeMillis();
 		long response = (endtime - begintime);
@@ -376,8 +375,7 @@ public class OSMRouting {
 	 * @return
 	 */
 	public static HashMap<Long, HighwayEntrance> searchHighwayEntrance(long startNode, long endNode, int startTime, 
-			HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap, 
-			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, boolean exit) {
+			HashMap<Long, NodeInfo> nodeHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, boolean exit) {
 		PriorityQueue<NodeInfoHelper> openSet = new PriorityQueue<NodeInfoHelper>( 500, new Comparator<NodeInfoHelper>() {
 			public int compare(NodeInfoHelper n1, NodeInfoHelper n2) {
 				return (int)(n1.getTotalCost() - n2.getTotalCost());
@@ -422,14 +420,12 @@ public class OSMRouting {
 			// for each neighbor in neighbor_nodes(current)
 			for(ToNodeInfo toNode : adjNodeList) {
 				long toNodeId = toNode.getNodeId();
-				String nodeIdKey = null;
-				if(!exit) { 
-					nodeIdKey = nodeId + OSMParam.COMMA + toNodeId; 
-				}
-				else { 
-					nodeIdKey = toNodeId + OSMParam.COMMA + nodeId;
-				}
-				EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdKey);
+				
+				NodeInfo nodeInfo = nodeHashMap.get(nodeId);
+				NodeInfo toNodeInfo = nodeHashMap.get(toNodeId);
+				
+				EdgeInfo edge = OSMProcess.getEdgeFromNodes(nodeInfo, toNodeInfo);
+
 				String highway = edge.getHighway();
 				int hierarchy = 6;
 				if(hierarchyHashMap.containsKey(highway)) {
@@ -510,8 +506,7 @@ public class OSMRouting {
 	 * @return
 	 */
 	public static double routingHierarchy(long startNode, long endNode, int startTime, HashMap<Long, NodeInfo> nodeHashMap, 
-			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap,
-			HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
+			HashMap<Long, LinkedList<ToNodeInfo>> adjListHashMap, HashMap<Long, LinkedList<ToNodeInfo>> adjReverseListHashMap) {
 		System.out.println("start finding the path...");
 		int debug = 0;
 		double totalCost = Double.MAX_VALUE;
@@ -525,9 +520,9 @@ public class OSMRouting {
 				System.out.println("start node is the same as end node.");
 				return 0;
 			}
-			HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, endNode, startTime, nodeHashMap, nodesToEdgeHashMap, adjListHashMap, false);
+			HashMap<Long, HighwayEntrance> entranceMap = searchHighwayEntrance(startNode, endNode, startTime, nodeHashMap, adjListHashMap, false);
 			int estimateArriveTime = startTime + (int)(estimateHeuristic(startNode, endNode, nodeHashMap) / OSMParam.SECOND_PER_MINUTE / TIME_INTERVAL);
-			HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode, startNode, estimateArriveTime, nodeHashMap, nodesToEdgeHashMap, adjReverseListHashMap, true);
+			HashMap<Long, HighwayEntrance> exitMap	= searchHighwayEntrance(endNode, startNode, estimateArriveTime, nodeHashMap, adjReverseListHashMap, true);
 			
 			if(entranceMap == null || exitMap == null) {	// we should use normal tdsp in this situation
 				return routingAStar(startNode, endNode, startTime, nodeHashMap, adjListHashMap);
@@ -583,8 +578,12 @@ public class OSMRouting {
 					// for each neighbor in neighbor_nodes(current)
 					for(ToNodeInfo toNode : adjNodeList) {
 						long toNodeId = toNode.getNodeId();
-						String nodeIdKey = nodeId + OSMParam.COMMA + toNodeId;
-						EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdKey);
+						
+						NodeInfo nodeInfo = nodeHashMap.get(nodeId);
+						NodeInfo toNodeInfo = nodeHashMap.get(toNodeId);
+						
+						EdgeInfo edge = OSMProcess.getEdgeFromNodes(nodeInfo, toNodeInfo);
+						
 						String highway = edge.getHighway();
 						int hierarchy = 6;
 						if(hierarchyHashMap.containsKey(highway)) {
