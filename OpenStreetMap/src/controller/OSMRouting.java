@@ -140,7 +140,8 @@ public class OSMRouting {
 		routing(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap, OSMData.nodeLocationGridMap);
 		
 		// output
-		OSMOutput.generatePathKML(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, pathNodeList);
+		// TODO : need fix middle node edge
+		//OSMOutput.generatePathKML(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, pathNodeList);
 		// OSMOutput.generatePathNodeKML(OSMData.nodeHashMap, pathNodeList);
 	}
 	
@@ -818,13 +819,13 @@ public class OSMRouting {
 		else {
 			EdgeInfo edge = start.getOnEdgeList().getFirst();
 			LinkedList<Long> nodeList = edge.getNodeList();
-			double speed  = OSMGenerateAdjList.getTravelSpeed(edge);
+			double speed  = OSMGenerateAdjList.getTravelSpeed(edge);	// feet/second
 			int travelTime = 1;	// second
 			int distance;
 			if(!edge.isOneway()) {
 				// distance from start to middle
 				distance = getStartDistance(startNode, nodeList, nodeHashMap);
-				travelTime = (int) Math.round(distance / speed * OSMParam.MILLI_PER_SECOND);
+				travelTime = (int) Math.round(distance / speed);
 				current = new NodeInfoHelper(edge.getStartNode());
 				current.setCost(travelTime);
 				current.setHeuristic(estimateHeuristic(edge.getStartNode(), endNode, nodeHashMap));
@@ -832,7 +833,7 @@ public class OSMRouting {
 				nodeHelperCache.put(current.getNodeId(), current);	// add cache
 			}
 			distance = getEndDistance(startNode, nodeList, nodeHashMap);
-			travelTime = (int) Math.round(distance / speed * OSMParam.MILLI_PER_SECOND);
+			travelTime = (int) Math.round(distance / speed);
 			current = new NodeInfoHelper(edge.getEndNode());
 			current.setCost(travelTime);
 			current.setHeuristic(estimateHeuristic(edge.getEndNode(), endNode, nodeHashMap));
