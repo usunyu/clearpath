@@ -159,15 +159,16 @@ public class OSMRouting {
 		START_NODE = start.getNodeId();
 		END_NODE = end.getNodeId();
 		
-		//routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		double cost;
+		//cost = routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
 		
-		routingAStarFibonacci(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		cost = routingAStarFibonacci(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
 		
-		//routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
+		//cost = routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
 		
 		long endtime = System.currentTimeMillis();
-		long costTime = (endtime - begintime);
-		System.out.println("routing cost: " + costTime + " ms");
+		long response = (endtime - begintime);
+		System.out.println("routing cost: " + cost + " s, response time: " + response);
 		
 		String turnByTurn = turnByTurn(nodeHashMap, nodesToEdgeHashMap);
 		System.out.println(turnByTurn);
