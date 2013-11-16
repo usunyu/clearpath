@@ -817,7 +817,7 @@ public class OSMRouting {
 		else {
 			EdgeInfo edge = start.getOnEdgeList().getFirst();
 			LinkedList<Long> nodeList = edge.getNodeList();
-			double speed  = OSMGenerateAdjList.getTravelSpeed(edge);	// feet/second
+			double speed  = OSMProcess.getTravelSpeed(edge);	// feet/second
 			int travelTime = 1;	// second
 			int distance;
 			if(!edge.isOneway()) {
@@ -874,7 +874,7 @@ public class OSMRouting {
 			else {	// from end to middle
 				distance = getEndDistance(endNode, nodeList, nodeHashMap);
 			}
-			double speed  = OSMGenerateAdjList.getTravelSpeed(edge);
+			double speed  = OSMProcess.getTravelSpeed(edge);
 			int travelTime = 1;	// second
 			travelTime = (int) Math.round(distance / speed);
 			endNodeHelper.setCost(current.getCost() + travelTime);
@@ -1031,7 +1031,7 @@ public class OSMRouting {
 		else {
 			EdgeInfo edge = start.getOnEdgeList().getFirst();
 			LinkedList<Long> nodeList = edge.getNodeList();
-			double speed  = OSMGenerateAdjList.getTravelSpeed(edge);
+			double speed  = OSMProcess.getTravelSpeed(edge);
 			int travelTime = 1;	// second
 			int distance;
 			if(!edge.isOneway()) {

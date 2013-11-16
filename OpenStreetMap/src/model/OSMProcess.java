@@ -7,6 +7,94 @@ import global.*;
 import object.*;
 
 public class OSMProcess {
+
+	/**
+	 * get speed by edge info
+	 * @param edgeInfo
+	 * @return
+	 */
+	public static double getTravelSpeed(EdgeInfo edgeInfo) {
+		// initial
+		double speed  = (double) 10 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);	// feet/second
+		// define all kinds of highway type link's speed
+		if (edgeInfo.getHighway().equals(OSMParam.MOTORWAY)) {
+			speed = (double) 60 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if(edgeInfo.getHighway().equals(OSMParam.TRUNK)) {
+			speed = (double) 50 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if (edgeInfo.getHighway().equals(OSMParam.MOTORWAY_LINK)) {
+			speed = (double) 30 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if(edgeInfo.getHighway().equals(OSMParam.TRUNK_LINK)) {
+			speed = (double) 25 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if (edgeInfo.getHighway().equals(OSMParam.CYCLEWAY) || edgeInfo.getHighway().equals(OSMParam.TURNING_CIRCLE) ||
+				edgeInfo.getHighway().equals(OSMParam.TRACK) || edgeInfo.getHighway().equals(OSMParam.PROPOSED) ||
+				edgeInfo.getHighway().equals(OSMParam.ROAD) || edgeInfo.getHighway().equals(OSMParam.SCALE)) {
+			speed = (double) 10 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if (edgeInfo.getHighway().equals(OSMParam.UNKNOWN_HIGHWAY) || edgeInfo.getHighway().equals(OSMParam.CONSTRUCTION) || 
+				edgeInfo.getHighway().equals(OSMParam.ABANDONED)) {
+			speed = (double) 5 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if(edgeInfo.getHighway().equals(OSMParam.RESIDENTIAL)) {
+			speed = (double) 20 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if(edgeInfo.getHighway().equals(OSMParam.UNCLASSIFIED)) {
+			speed = (double) 25 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if (edgeInfo.getHighway().equals(OSMParam.TERTIARY)) {
+			speed = (double) 35 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if (edgeInfo.getHighway().equals(OSMParam.TERTIARY_LINK)) {
+			speed = (double) 30 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if (edgeInfo.getHighway().equals(OSMParam.SECONDARY)) {
+			speed = (double) 40 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if (edgeInfo.getHighway().equals(OSMParam.SECONDARY_LINK)) {
+			speed = (double) 35 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if (edgeInfo.getHighway().equals(OSMParam.PRIMARY)) {
+			speed = (double) 45 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		if (edgeInfo.getHighway().equals(OSMParam.PRIMARY_LINK)) {
+			speed = (double) 40 * OSMParam.FEET_PER_MILE / (OSMParam.SECOND_PER_HOUR);
+		}
+		return speed;
+	}
+	
+	/**
+	 * get travel time by edge info
+	 * @param edgeInfo
+	 * @return
+	 */
+	public static int getTravelTime(EdgeInfo edgeInfo) {
+		// initial
+		double speed  = getTravelSpeed(edgeInfo);
+		int travelTime = 1;	// second
+		travelTime = (int) Math.round(edgeInfo.getDistance() / speed * OSMParam.MILLI_PER_SECOND);
+		// travelTime cannot be zero
+		if (travelTime <= 0) {
+			travelTime = 1;
+		}
+		return travelTime;
+	}
+	
+	/**
+	 * whether the edge is fix by edge info
+	 * @param edgeInfo
+	 * @return
+	 */
+	public static boolean isFixEdge(EdgeInfo edgeInfo) {
+		boolean isFix = true;
+		if (edgeInfo.getHighway().equals(OSMParam.MOTORWAY) || edgeInfo.getHighway().equals(OSMParam.TRUNK) ||
+				edgeInfo.getHighway().equals(OSMParam.MOTORWAY_LINK) || edgeInfo.getHighway().equals(OSMParam.TRUNK_LINK)) {
+			isFix = false;
+		}
+		return isFix;
+	}
 	
 	/**
 	 * get the node1's edge, node2 for additional infomation
