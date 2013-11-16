@@ -160,18 +160,19 @@ public class OSMRouting {
 		END_NODE = end.getNodeId();
 		
 		double cost;
-		//cost = routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		cost = routingAStar(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
 		
-		cost = routingAStarFibonacci(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
+		//cost = routingAStarFibonacci(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
 		
 		//cost = routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap, nodesToEdgeHashMap);
 		
 		long endtime = System.currentTimeMillis();
 		long response = (endtime - begintime);
-		System.out.println("routing cost: " + cost + " s, response time: " + response);
+		System.out.println("routing cost: " + cost + " s, response time: " + response + " ms");
 		
-		String turnByTurn = turnByTurn(nodeHashMap, nodesToEdgeHashMap);
-		System.out.println(turnByTurn);
+		// TODO : need fix middle node edge
+		//String turnByTurn = turnByTurn(nodeHashMap, nodesToEdgeHashMap);
+		//System.out.println(turnByTurn);
 	}
 	
 	public static String turnByTurn(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
