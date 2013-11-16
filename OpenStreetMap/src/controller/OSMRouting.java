@@ -163,7 +163,7 @@ public class OSMRouting {
 		
 		//cost = routingAStarFibonacci(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap);
 		
-		cost = routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap);
+		//cost = routingHierarchy(START_NODE, END_NODE, START_TIME, nodeHashMap, adjListHashMap, adjReverseListHashMap);
 		
 		long endtime = System.currentTimeMillis();
 		long response = (endtime - begintime);
