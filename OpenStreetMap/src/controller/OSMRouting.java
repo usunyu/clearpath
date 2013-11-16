@@ -171,35 +171,50 @@ public class OSMRouting {
 		long response = (endtime - begintime);
 		System.out.println("routing cost: " + cost + " s, response time: " + response + " ms");
 		
-		// TODO : need fix middle node edge
-		//String turnByTurn = turnByTurn(nodeHashMap, nodesToEdgeHashMap);
-		//System.out.println(turnByTurn);
+		String turnByTurn = turnByTurn(nodeHashMap);
+		System.out.println(turnByTurn);
 	}
 	
-	public static String turnByTurn(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap) {
+	public static String turnByTurn(HashMap<Long, NodeInfo> nodeHashMap) {
 		String turnByTurnText = "";
-		long prevNodeId = -1;
 		int prevHierarchy = -1;
 		int prevDirIndex = -1;
 		String prevName = "";
 		long distance = 0;
 		boolean firstRoute = true;
+		NodeInfo prevNodeInfo = null;
 		
 		for(long nodeId : pathNodeList) {
-			if(prevNodeId == -1) {
-				prevNodeId = nodeId;
+			if(prevNodeInfo == null) {
+				prevNodeInfo = nodeHashMap.get(nodeId);
 				continue;
 			}
-			String nodeIdStr = prevNodeId + OSMParam.COMMA + nodeId;
-			EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdStr);
+			
+			NodeInfo nodeInfo = nodeHashMap.get(nodeId);
+			EdgeInfo edge = null;
+			if(!nodeInfo.isIntersect()) {
+				edge = nodeInfo.getOnEdgeList().getFirst();
+			}
+			else {
+				// get the common edge
+				for(EdgeInfo e1 : nodeInfo.getOnEdgeList()) {
+					for(EdgeInfo e2 : prevNodeInfo.getOnEdgeList()) {
+						if(e1.getId() == e2.getId()) {
+							edge = e1;
+							break;
+						}
+					}
+					if(edge != null) break;
+				}
+			}
+			
 			String highway = edge.getHighway();
 			String name = edge.getName();
 			int hierarchy = 6;
 			if(hierarchyHashMap.containsKey(highway)) {
 				hierarchy = hierarchyHashMap.get(highway);
 			}
-			NodeInfo prevNodeInfo = nodeHashMap.get(prevNodeId);
-			NodeInfo nodeInfo = nodeHashMap.get(nodeId);
+
 			int dirIndex = Geometry.getDirectionIndex(prevNodeInfo.getLocation(), nodeInfo.getLocation());
 			// initial prev
 			if(prevHierarchy == -1) {
@@ -261,7 +276,7 @@ public class OSMRouting {
 					distance = 0;
 				}
 			}
-			prevNodeId = nodeId;
+			prevNodeInfo = nodeInfo;
 			prevHierarchy = hierarchy;
 			prevDirIndex = dirIndex;
 			prevName = name;
@@ -500,7 +515,7 @@ public class OSMRouting {
 	}
 	
 	/**
-	 * hierarchy routing with A* algorithm 
+	 * hierarchy routing with A* algorithm
 	 * @param startNode
 	 * @param endNode
 	 * @param startTime
