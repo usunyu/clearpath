@@ -878,7 +878,7 @@ public class OSMRouting {
 			}
 			double speed  = OSMGenerateAdjList.getTravelSpeed(edge);
 			int travelTime = 1;	// second
-			travelTime = (int) Math.round(distance / speed * OSMParam.MILLI_PER_SECOND);
+			travelTime = (int) Math.round(distance / speed);
 			endNodeHelper.setCost(current.getCost() + travelTime);
 			endNodeHelper.setParentId(current.getNodeId());
 		}
