@@ -51,7 +51,7 @@ public class OSMOutput {
 	 * @param nodeHashMap
 	 * @param pathNodeList
 	 */
-	public static void generatePathKML(HashMap<Long, NodeInfo> nodeHashMap, HashMap<String, EdgeInfo> nodesToEdgeHashMap, ArrayList<Long> pathNodeList) {
+	public static void generatePathKML(HashMap<Long, NodeInfo> nodeHashMap, ArrayList<Long> pathNodeList) {
 		System.out.println("generate path kml...");
 		
 		int debug = 0;
@@ -71,9 +71,10 @@ public class OSMOutput {
 				
 				long nodeId = pathNodeList.get(i);
 				
-				String nodeIdStr = lastNodeId + OSMParam.COMMA + nodeId;
+				NodeInfo nodeInfo = nodeHashMap.get(nodeId);
+				NodeInfo prevNodeInfo = nodeHashMap.get(lastNodeId);
 				
-				EdgeInfo edge = nodesToEdgeHashMap.get(nodeIdStr);
+				EdgeInfo edge = OSMProcess.getEdgeFromNodes(nodeInfo, prevNodeInfo);
 				
 				String kmlStr = "<Placemark>";
 				kmlStr += "<name>Edge:" + edge.getId() + "</name>";

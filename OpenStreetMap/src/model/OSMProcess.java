@@ -9,6 +9,32 @@ import object.*;
 public class OSMProcess {
 	
 	/**
+	 * get the node1's edge, node2 for additional infomation
+	 * @param node1
+	 * @param node2
+	 * @return
+	 */
+	public static EdgeInfo getEdgeFromNodes(NodeInfo node1, NodeInfo node2) {
+		EdgeInfo edge = null;
+		if(!node1.isIntersect()) {
+			edge = node1.getOnEdgeList().getFirst();
+		}
+		else {
+			// get the common edge
+			for(EdgeInfo e1 : node1.getOnEdgeList()) {
+				for(EdgeInfo e2 : node2.getOnEdgeList()) {
+					if(e1.getId() == e2.getId()) {
+						edge = e1;
+						break;
+					}
+				}
+				if(edge != null) break;
+			}
+		}
+		return edge;
+	}
+	
+	/**
 	 * search the nearest node based on lot and lon
 	 * @param nodeHashMap
 	 * @param nodeLocationGridMap

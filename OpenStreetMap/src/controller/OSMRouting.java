@@ -140,8 +140,7 @@ public class OSMRouting {
 		routing(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, OSMData.adjListHashMap, OSMData.adjReverseListHashMap, OSMData.nodeLocationGridMap);
 		
 		// output
-		// TODO : need fix middle node edge
-		//OSMOutput.generatePathKML(OSMData.nodeHashMap, OSMData.nodesToEdgeHashMap, pathNodeList);
+		OSMOutput.generatePathKML(OSMData.nodeHashMap, pathNodeList);
 		// OSMOutput.generatePathNodeKML(OSMData.nodeHashMap, pathNodeList);
 	}
 	
@@ -191,22 +190,7 @@ public class OSMRouting {
 			}
 			
 			NodeInfo nodeInfo = nodeHashMap.get(nodeId);
-			EdgeInfo edge = null;
-			if(!nodeInfo.isIntersect()) {
-				edge = nodeInfo.getOnEdgeList().getFirst();
-			}
-			else {
-				// get the common edge
-				for(EdgeInfo e1 : nodeInfo.getOnEdgeList()) {
-					for(EdgeInfo e2 : prevNodeInfo.getOnEdgeList()) {
-						if(e1.getId() == e2.getId()) {
-							edge = e1;
-							break;
-						}
-					}
-					if(edge != null) break;
-				}
-			}
+			EdgeInfo edge = OSMProcess.getEdgeFromNodes(nodeInfo, prevNodeInfo);
 			
 			String highway = edge.getHighway();
 			String name = edge.getName();
