@@ -169,6 +169,7 @@ public class OSMOutput {
 	
 	/**
 	 * write edge csv file
+	 * using two edges to represent bidirectional edge
 	 * @param edgeHashMap
 	 */
 	public static void writeEdgeFile(HashMap<Long, EdgeInfo> edgeHashMap) {
