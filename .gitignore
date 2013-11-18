@@ -3,7 +3,7 @@
 *.txt
 *.csv
 *.zip
-*.class
 *.osm
 *.wkt
 *.wkts
+*.class
