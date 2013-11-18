@@ -2,33 +2,6 @@
 
 == Manual
 
-Open Street Map Process:
-
-please make sure osm2wkt and OpenStreetMap project in the same folder.
-
-In osm2wkt Project:
-
-1) put your "map.osm" in the osm2wkt/file folder
-
-2) osm2wkt /Osm2wkt, this step will get rid of the none-routable path, and please press No when it asked for fixCompleteness.
-
-In OpenStreetMap Project:
-
-3) put your "map.osm" in the OpenStreetMap/file
-
-4) input/OSMInputFileGeneration
-
-5) output/OSMOutputFileGeneration
-
-6) (Optional) kml/OSMGenerateKMLMap and kml/OSMGenerateKMLNode to generate kml
-
-7) output/OSMDivideWayToEdge
-
-8) adjlist/OSMGenerateAdjList
-
-9) path/OSMRouting for path routing
-
-
 CA GNDEMO Process:
 
 In PatternGeneration Project:
