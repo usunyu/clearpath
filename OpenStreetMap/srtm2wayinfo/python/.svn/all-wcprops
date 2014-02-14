@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/21521/applications/utils/import/srtm2wayinfo/python
+END
+test.py
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/15195/applications/utils/import/srtm2wayinfo/python/test.py
+END
+srtm.py
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/21521/applications/utils/import/srtm2wayinfo/python/srtm.py
+END
+srtm_profile.py
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/15195/applications/utils/import/srtm2wayinfo/python/srtm_profile.py
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/15195/applications/utils/import/srtm2wayinfo/python/README
+END
+osm-parse.py
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/15195/applications/utils/import/srtm2wayinfo/python/osm-parse.py
+END

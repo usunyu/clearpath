@@ -1,0 +1,19 @@
+digraph G
+{
+  bgcolor="transparent";
+  edge [fontname="FreeSans",fontsize="10",labelfontname="FreeSans",labelfontsize="10"];
+  node [fontname="FreeSans",fontsize="10",shape=record];
+  Node1 [label="osm-parse.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node2 [label="main.cpp",height=0.2,width=0.4,color="black",URL="$main_8cpp.html",tooltip="Main function."];
+  Node1 -> Node3 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node3 [label="relations.h",height=0.2,width=0.4,color="black",URL="$relations_8h.html",tooltip="Create altitude relations from an OSMData object."];
+  Node3 -> Node2 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node3 -> Node4 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node4 [label="relations.cpp",height=0.2,width=0.4,color="black",URL="$relations_8cpp.html",tooltip="Create altitude relations from an OSMData object."];
+  Node1 -> Node5 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node5 [label="osm-parse-old.cpp",height=0.2,width=0.4,color="black",URL="$osm-parse-old_8cpp.html",tooltip="Minimalistic OSM parser (old and slow)."];
+  Node1 -> Node6 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+  Node6 [label="osm-parse.cpp",height=0.2,width=0.4,color="black",URL="$osm-parse_8cpp.html",tooltip="Minimalistic OSM parser."];
+  Node1 -> Node4 [dir=back,color="midnightblue",fontsize="10",style="solid",fontname="FreeSans"];
+}
