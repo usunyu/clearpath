@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="jquery/development-bundle/themes/base/jquery.ui.all.css">
+	<script src="jquery/js/jquery-1.7.1.min.js"></script>
+	<script src="jquery/development-bundle/ui/jquery.ui.core.js"></script>
+	<script src="jquery/development-bundle/ui/jquery.ui.widget.js"></script>
+	<script src="jquery/development-bundle/ui/jquery.ui.mouse.js"></script>
+	<script src="jquery/development-bundle/ui/jquery.ui.slider.js"></script>
+	<link rel="stylesheet" href="jquery/development-bundle/demos/demos.css">
+	<style>
+	#demo-frame > div.demo { padding: 10px !important; };
+	</style>
+	<style type="text/css">
+   .sl { width:600px; }
+	</style>
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map_canvas { height: 100% }
+    </style>
+    <script>
+	$(function() {
+		$( "#slider" ).slider({
+			value:0,
+			min: 360,
+			max: 1200,
+			step: 15,
+			slide: function( event, ui ) {
+			var hours = Math.floor(ui.value / 60);
+            var minutes = ui.value - (hours * 60);
+
+            if(hours<10) 
+			hours = '0' + hours;
+            if(minutes== 0) 
+			minutes = '00';
+			
+			$( "#time_select" ).val( hours+':'+minutes );
+			}
+		});
+		$( "#time_select" ).val( "06:00" );
+	});
+	</script>
+    <script type="text/javascript"
+      src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBOiIXn23pwlpvSxWFN6kS64m5Oo8YsquU&sensor=true">
+    </script>
+    <script type="text/javascript">
+    var directionsDisplay;
+    var directionsService = new google.maps.DirectionsService();
+	var los_angeles = new google.maps.LatLng(34,-118.3);
+	var map;
+	var markers = new Array();
+	var count=0;
+	var req;
+	var output;
+	var lati= new Array();
+	var longi= new Array();
+	var turn;
+	var nodesinfo;
+	
+	var polyOptions = {
+		    strokeColor: '#31B404',
+		    strokeOpacity: 1.0,
+		    strokeWeight: 4
+		  }
+		  
+	function getturnInfo(){
+       //alert("123");
+	   //document.getElementById('map_canvas').style.display = "none";
+	   document.getElementById('btn2').style.display = "none";
+	   document.getElementById('btn').style.display = "none";
+	   document.getElementById('slider').style.visibility="hidden";
+	 
+	 
+	 // var a = "c<br>";
+	  //a = a+"b";
+	  var nodes = turn.split(",");
+	  var count_t = 0;
+	  var out="";
+	  var row = 0;
+	  for(var i=0;i<nodes.length;i++){
+	        if(count_t == 0)
+			  out = out + "<font size=3>"+ ++row +"</font>. ";
+			
+	        count_t++;
+			out = out + "<font size=3>"+nodes[i]+"</font>";
+			if((count_t>=0&&count_t<=4))
+			  out = out +"<font size=3>,</font> ";
+			if(count_t == 5){
+			   out = out + "<br>";
+			   count_t = 0;
+			}
+		}
+	  
+	  document.getElementById('content').innerHTML=(nodesinfo+"<br>"+out);
+	  document.getElementById('turninfo').style.display = "block";
+	 
+	   
+	 
+	}	
+	
+	function getPath(){
+		//alert("Get Path Called");
+		directionsDisplay.setMap(null);
+		directionsDisplay = new google.maps.DirectionsRenderer();
+		directionsDisplay.setMap(map);
+		poly.getPath().clear();
+		poly = new google.maps.Polyline(polyOptions);
+		poly.setMap(map);
+		document.getElementById('tt').style.visibility="hidden";
+		document.getElementById('tt2').style.visibility="hidden";
+		lati= new Array();
+		longi= new Array();
+		var time = document.getElementById('time_select').value;
+		var hrs = parseInt(time.substring(0,2),10);
+		var mins = parseInt(time.substring(3,5),10);
+		
+		var index = ((hrs-6)*4)+(mins/15);
+		//alert(time+" "+hrs+" "+mins+" "+index);
+		
+		var lat1= markers[0].getPosition().lat();9
+		var long1= markers[0].getPosition().lng()
+		var lat2= markers[1].getPosition().lat();
+		var long2= markers[1].getPosition().lng()
+		var day = document.getElementById('day').value;
+		//alert(lat1+","+long1+":"+lat2+","+long2);
+		//var url="http://localhost:8080/TDSP_Servlet/TDSPQueryListNewFibo1234?start="+lat1+","+long1+"&end="+lat2+","+long2+"&time="+index+"&update=False&day="+day;
+		//var url="http://geodb.usc.edu:8080/TDSP_Servlet/TDSPQueryListNewFibo1234?start="+lat1+","+long1+"&end="+lat2+","+long2+"&time="+index+"&update=False&day="+day;
+                var url="http://128.125.163.86/TDSP_Servlet/TDSPQuerySuper6?start="+lat1+","+long1+"&end="+lat2+","+long2+"&time="+index+"&update=False1&day="+day;
+		getPathNodes(url);
+	}
+	
+	function getPathNodes(url) { 
+		//alert("Get Path Nodes Called");
+		document.getElementById('btn').style.visibility="hidden";
+		document.getElementById('slider').style.visibility="hidden";
+		document.getElementById('loading').style.visibility="visible";
+		
+		req = new XMLHttpRequest();  
+		req.open("GET",url,true);
+		req.onreadystatechange = pushPath;
+		req.setRequestHeader("Connection", "Close");
+		req.setRequestHeader("Method", "GET" + url + "HTTP/1.1");
+		req.send(null);
+	} 
+
+	function pushPath(){
+		//alert("Push Path Called");
+		//var output=document.getElementById('nodes');
+				
+		 if (req.readyState == 4) {
+		 
+		 try{
+		    output = req.responseText;
+			//output.innerHTML = req.responseText;				
+			}
+		 catch (exception){
+			output.innerHTML = exception;
+			}
+		 processOutput();
+		}
+		 document.getElementById('btn').style.visibility="visible";
+		 document.getElementById('loading').style.visibility="hidden";
+		 document.getElementById('slider').style.visibility="visible";
+		 }
+	
+	function processOutput(){
+		//alert("Process Output Called");
+		var nodes = output.split("@")[0].split(";");
+		nodesinfo = output.split("@")[0];
+		turn = output.split("@")[1];
+		//alert(nodes.length);
+		for(var i=0;i<nodes.length-1;i++){
+			lati[i] = nodes[i].split(",")[0];
+			longi[i] = nodes[i].split(",")[1];
+		}
+		tt = nodes[nodes.length-1].split("-")[0];
+		drawPoints();
+		//alert(Math.floor(parseFloat(tt)));
+		document.getElementById('tt').innerHTML=("<font size=4>ClearPath Travel Time="+Math.floor(parseFloat(tt))+" Minutes</font>");
+		document.getElementById('tt').style.visibility="visible";
+		document.getElementById('btn2').style.visibility = "visible";
+		
+	}
+	
+	
+	function drawPoints(){
+		//alert("Draw Points Called");
+		
+		var path = poly.getPath();
+		for(var i=0;i<lati.length;i++){
+			path.push(new google.maps.LatLng(lati[i],longi[i]));
+		}
+		markers[0].setPosition(new google.maps.LatLng(lati[0],longi[0]));
+		markers[1].setPosition(new google.maps.LatLng(lati[lati.length-1],longi[lati.length-1]));
+		calcRoute();
+	}
+	
+	
+	function HomeControl(controlDiv, map) {
+
+	controlDiv.style.padding = '5px';
+
+  // Set CSS for the control border.
+  var controlUI = document.createElement('DIV');
+  controlUI.style.backgroundColor = 'white';
+  controlUI.style.borderStyle = 'solid';
+  controlUI.style.borderWidth = '2px';
+  controlUI.style.cursor = 'pointer';
+  controlUI.style.textAlign = 'center';
+  controlUI.title = 'Click to reset the map';
+  controlDiv.appendChild(controlUI);
+
+  // Set CSS for the control interior.
+  var controlText = document.createElement('DIV');
+  controlText.style.fontFamily = 'Arial,sans-serif';
+  controlText.style.fontSize = '12px';
+  controlText.style.paddingLeft = '4px';
+  controlText.style.paddingRight = '4px';
+  controlText.innerHTML = 'Reset';
+  controlUI.appendChild(controlText);
+  google.maps.event.addDomListener(controlUI, 'click', function() {
+    map.setCenter(los_angeles);
+    map.setZoom(10);
+	directionsDisplay.setMap(null);
+	directionsDisplay = new google.maps.DirectionsRenderer();
+	directionsDisplay.setMap(map);
+	poly.getPath().clear();
+	poly = new google.maps.Polyline(polyOptions);
+	poly.setMap(map);
+	clearOverlays();
+	document.getElementById('slider').disabled=true;
+	markers = new Array();
+	lati= new Array();
+	longi= new Array();
+	count=0;
+	document.getElementById('tt').style.visibility="hidden";
+	document.getElementById('tt2').style.visibility="hidden";
+	document.getElementById('btn2').style.visibility = "hidden";
+  });
+  
+}
+	
+	function clearOverlays() {
+
+      for (var i=0;i<count;i++) {
+      markers[i].setMap(null);
+    }
+
+  }
+
+	
+      function initialize() {
+		 directionsDisplay = new google.maps.DirectionsRenderer();
+		 document.getElementById('turninfo').style.display = "none";
+		 document.getElementById('loading').style.visibility="hidden";
+		 document.getElementById('tt').style.visibility="hidden";
+		 document.getElementById('tt2').style.visibility="hidden";
+		 document.getElementById('btn2').style.visibility = "hidden";
+        var myOptions = {
+          center: new google.maps.LatLng(34,-118.3),
+          zoom: 10,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        map = new google.maps.Map(document.getElementById("map_canvas"),
+            myOptions);
+        directionsDisplay.setMap(map);
+		google.maps.event.addListener(map, 'click', addLatLng);
+		var homeControlDiv = document.createElement('DIV');
+		var homeControl = new HomeControl(homeControlDiv, map);
+		homeControlDiv.index = 1;
+		map.controls[google.maps.ControlPosition.TOP_RIGHT].push(homeControlDiv);
+		poly = new google.maps.Polyline(polyOptions);
+		poly.setMap(map);
+		
+		
+		 
+      }
+      
+      function calcRoute() {
+		
+    	  var start = markers[0].getPosition();
+    	  var end = markers[1].getPosition();
+    	  var request = {
+    	    origin:start,
+    	    destination:end,
+    	    travelMode: google.maps.TravelMode.DRIVING
+    	  };
+    	  directionsService.route(request, function(result, status) {
+    	    if (status == google.maps.DirectionsStatus.OK) {
+    	      directionsDisplay.setDirections(result);
+    	      var time = result.routes[0].legs[0].duration.value/60;
+    	      document.getElementById('tt2').innerHTML = "<font size=4>Google Travel Time="+ Math.floor(time) + " Minutes</font>";
+    		  document.getElementById('tt2').style.visibility="visible";
+    			
+    	    }
+    	  });
+    	}
+      
+      
+	  
+	  function addLatLng(event) {
+		 
+	if(count<2)
+	{
+	markers[count++] = new google.maps.Marker({
+    position: event.latLng,
+    map: map
+  });
+
+  }
+  if(count==2)
+  {
+				document.getElementById('slider').disabled=false;
+  }
+}
+	  
+    </script>
+  </head>
+  <body onload="initialize()" bgcolor="#CCCCCC">
+    <div id="map_canvas" style="width:100%; height:75%"></div>
+	<div id="turninfo"><p id ="content">asdasd</p></div>
+    <p>
+	<label for="time_select">Time of Departure:</label><input type="text" id="time_select" style="border:0; font-weight:bold;" />
+	<label>Day of Departure:</label><select id="day">
+	<option>Monday<option>Tuesday<option>Wednesday
+	<option>Thursday<option>Friday<option>Saturday<option>Sunday<option>All
+	</select>
+	<table>
+	<tr>
+	<td>
+	<div id="tt"></div>
+	</td>
+	<td>
+	<p id="loading" align="right">Loading Route Please Wait</p>
+	</td></tr>
+	<tr>
+	<td>
+	<div id="tt2"></div>
+	</td>
+	</tr>
+	<tr>
+	  <td><input type="button" width="200px" id="btn2" value="turnByturn" onClick="getturnInfo()"/></td>
+	</tr>
+	</table>
+	<center>
+	<div id="slider" class="sl"></div>
+	</center>
+	</p>
+	<center><input type="button" width="200px" id="btn" value="Get Path" onClick="getPath()"/></center>	
+	</body>
+</html>
