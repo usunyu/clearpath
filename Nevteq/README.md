@@ -13,11 +13,11 @@ ClearPath Navteq Manual
 * input/InputFileGeneration
 
 
-     writeAverageCube
-     readAverageCube(i, 0);
-     changeInterval();
-     writeAverage15Cube(i, 0);
-     renameAverageFile(i, 0);
+          writeAverageCube
+          readAverageCube(i, 0);
+          changeInterval();
+          writeAverage15Cube(i, 0);
+          renameAverageFile(i, 0);
 
      
 * process/DataClean
