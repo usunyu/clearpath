@@ -24,7 +24,7 @@ And I cleaned all the shape, building, barrier,etc which cannot be used for rout
 Chose two long distance nodes in Los Angeles and perform A* routing, Bidirectional Hierarchy routing and compare.
 <table>
     <tr>
-        <td><b>Algorithm</b></td><td><b>Response Time</b></td><td>Search Space</td><td>Travel Cost</td>
+        <td><b>Algorithm</b></td><td><b>Response Time</b></td><td><b>Search Space</b></td><td><b>Travel Cost</b></td>
     </tr>
     <tr>
         <td>A*</td><td>1485 ms</td><td>291777 nodes</td><td>150 min</td>
