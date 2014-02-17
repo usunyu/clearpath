@@ -1,15 +1,25 @@
-ClearPath Navteq Manual
+ClearPath Navteq 
 ======================
+### Demo
+![Pattern](images/pattern.png)
 
-### 1) CA GNDEMO Process:
-#### In PatternGeneration Project:
+This is the pattern I created from the data of sensors I matched, I filled the missing data from near related sensor or history data. 
+
+* Blue:		speed < 10
+* Red:		speed >= 10 && speed < 25
+* Yellow:	speed >= 25 && speed < 50
+* Green:	speed >= 50
+
+### Manual
+#### 1) CA GNDEMO Process:
+##### In PatternGeneration Project:
 * input/CAInputFileGeneration
 * (Optional) output/CAOutputKMLGeneration to generate kml
 * pattern/CAAdjListPattern
 
 
-### 2) Clean Data Process:
-#### In PatternGeneration Project:
+#### 2) Clean Data Process:
+##### In PatternGeneration Project:
 * input/InputFileGeneration
 
 
@@ -23,9 +33,8 @@ ClearPath Navteq Manual
 * process/DataClean
 * output/OutputDatabaseGeneration
 
-
-### 3) AdjList Create Process:
-#### In ArterialPatternGeneration_shireesh Project:
+#### 3) AdjList Create Process:
+##### In ArterialPatternGeneration_shireesh Project:
 * GetAverageSpeedForArterials1to5New
 * GetAverageSpeedForHighways
 * CreateListForArterials1to5New
