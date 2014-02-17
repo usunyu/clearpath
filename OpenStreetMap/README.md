@@ -27,10 +27,10 @@ Chose two long distance nodes in Los Angeles and perform A* routing, Bidirection
         <td><b>Algorithm</b></td><td><b>Response Time</b></td><td>Search Space</td><td>Travel Cost</td>
     </tr>
     <tr>
-        <td><b>A*</b></td><td><b>1485 ms</b></td><td>291777 nodes</td><td>150 min</td>
+        <td>A*</td><td>1485 ms</td><td>291777 nodes</td><td>150 min</td>
     </tr>
     <tr>
-        <td><b>BH</b></td><td><b>225 ms</b></td><td>15204 nodes</td><td>150 min</td>
+        <td>BH</td><td>225 ms</td><td>15204 nodes</td><td>150 min</td>
     </tr>
 </table>
 
