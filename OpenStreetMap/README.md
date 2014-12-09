@@ -5,7 +5,7 @@ OpenStreetMap
 
 ### Demo
 
-![OSM](images/OSM.png)
+![OSM](images/OSM.jpg)
 
 This is map near our campus I fetched from OSM Project and converted it to our project's format. 
 And I cleaned all the shape, building, barrier,etc which cannot be used for routing.
@@ -34,9 +34,9 @@ Chose two long distance nodes in Los Angeles and perform A* routing, Bidirection
     </tr>
 </table>
 
-![A*](images/astar.png)
-![BH](images/bh.png)
-![Not always optimal](images/not.png)
+![A*](images/astar.jpg)
+![BH](images/bh.jpg)
+![Not always optimal](images/not.jpg)
 
 #### Reference
 * [1] Sebastian Knopp, Peter Sanders, Dominik Schultes and Frank SchulzFast. Computation of Distance Tables using Highway Hierarchies, 2006.

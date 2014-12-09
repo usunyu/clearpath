@@ -1,7 +1,7 @@
 ClearPath Navteq 
-======================
+================
 ### Demo
-![Pattern](images/pattern.png)
+![Pattern](images/pattern.jpg)
 
 This is the pattern I created from the data of sensors I matched, I filled the missing data from near related sensor or history data. 
 
