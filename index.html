@@ -38,6 +38,217 @@
 <p>Clearpath is a spin-off company from University of Southern California. The technology behind ClearPath is a result of more than 10 years of research and protected by 3 patents.</p>
 
 <p>Experimental results show that Clearpath yields 18% travel-time savings over Google Map's paths, and travel - time accuracy is 92%. ClearPath received more than $2 million research funding in the last 3 years from variety of industry and federal agencies.</p>
+
+<h3>
+<a id="navteq" class="anchor" href="#navteq" aria-hidden="true"><span class="octicon octicon-link"></span></a>Navteq</h3>
+
+<h4>
+<a id="demo" class="anchor" href="#demo" aria-hidden="true"><span class="octicon octicon-link"></span></a>Demo:</h4>
+
+<p><img src="/images/pattern.jpg" alt="Pattern"></p>
+
+<p>This is the pattern I created from the data of sensors I matched, I filled the missing data from near related sensor or history data. </p>
+
+<ul>
+<li>Blue:     speed &lt; 10</li>
+<li>Red:      speed &gt;= 10 &amp;&amp; speed &lt; 25</li>
+<li>Yellow:   speed &gt;= 25 &amp;&amp; speed &lt; 50</li>
+<li>Green:    speed &gt;= 50</li>
+</ul>
+
+<h4>
+<a id="manual" class="anchor" href="#manual" aria-hidden="true"><span class="octicon octicon-link"></span></a>Manual:</h4>
+
+<h5>
+<a id="1-ca-gndemo-process" class="anchor" href="#1-ca-gndemo-process" aria-hidden="true"><span class="octicon octicon-link"></span></a>1) CA GNDEMO Process:</h5>
+
+<h6>
+<a id="in-patterngeneration-project" class="anchor" href="#in-patterngeneration-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>In PatternGeneration Project:</h6>
+
+<ul>
+<li>input/CAInputFileGeneration</li>
+<li>(Optional) output/CAOutputKMLGeneration to generate kml</li>
+<li>pattern/CAAdjListPattern</li>
+</ul>
+
+<h5>
+<a id="2-clean-data-process" class="anchor" href="#2-clean-data-process" aria-hidden="true"><span class="octicon octicon-link"></span></a>2) Clean Data Process:</h5>
+
+<h6>
+<a id="in-patterngeneration-project-1" class="anchor" href="#in-patterngeneration-project-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>In PatternGeneration Project:</h6>
+
+<ul>
+<li>
+<p>input/InputFileGeneration</p>
+
+<pre><code>  writeAverageCube
+  readAverageCube(i, 0);
+  changeInterval();
+  writeAverage15Cube(i, 0);
+  renameAverageFile(i, 0);
+</code></pre>
+</li>
+<li><p>process/DataClean</p></li>
+<li>output/OutputDatabaseGeneration</li>
+</ul>
+
+<h5>
+<a id="3-adjlist-create-process" class="anchor" href="#3-adjlist-create-process" aria-hidden="true"><span class="octicon octicon-link"></span></a>3) AdjList Create Process:</h5>
+
+<h6>
+<a id="in-arterialpatterngeneration_shireesh-project" class="anchor" href="#in-arterialpatterngeneration_shireesh-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>In ArterialPatternGeneration_shireesh Project:</h6>
+
+<ul>
+<li>GetAverageSpeedForArterials1to5New</li>
+<li>GetAverageSpeedForHighways</li>
+<li>CreateListForArterials1to5New</li>
+<li>CreateListForHighways1to5New</li>
+<li>CreateAdjList1to5New</li>
+</ul>
+
+<h3>
+<a id="openstreetmap" class="anchor" href="#openstreetmap" aria-hidden="true"><span class="octicon octicon-link"></span></a>OpenStreetMap</h3>
+
+<h4>
+<a id="demo-1" class="anchor" href="#demo-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Demo:</h4>
+
+<p><img src="/images/osm.jpg" alt="OSM"></p>
+
+<p>This is map near our campus I fetched from OSM Project and converted it to our project's format. 
+And I cleaned all the shape, building, barrier,etc which cannot be used for routing.</p>
+
+<h4>
+<a id="bidirectional-hierarchy-searching" class="anchor" href="#bidirectional-hierarchy-searching" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bidirectional Hierarchy Searching:</h4>
+
+<h5>
+<a id="1-introduction" class="anchor" href="#1-introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>1) Introduction:</h5>
+
+<ol>
+<li>From source and destination to perform forward searching and reverse searching simultaneously.</li>
+<li>Forward searching is based on time dependent A* searching, but when it enter the highway, it will keep on highway.</li>
+<li>Reverse searching is based on lower bound A* searching, it will also keep on highway when it hit the highway entrance.</li>
+<li>When forward searching and reverse searching encounter on the highway, we will find a path.</li>
+<li>The mechanism of hierarchy(keep on highway) will reduce the searching space and lead to less response time.</li>
+<li>By the mechanism of bidirectional search, we do not worry about finding highway entrance and highway exit.</li>
+</ol>
+
+<h5>
+<a id="2-a-searching-vs-bh-searching" class="anchor" href="#2-a-searching-vs-bh-searching" aria-hidden="true"><span class="octicon octicon-link"></span></a>2) A* searching vs BH searching</h5>
+
+<p>Chose two long distance nodes in Los Angeles and perform A* routing, Bidirectional Hierarchy routing and compare.</p>
+
+<table>
+    <tr>
+        <td><b>Algorithm</b></td>
+<td><b>Response Time</b></td>
+<td><b>Search Space</b></td>
+<td><b>Travel Cost</b></td>
+    </tr>
+    <tr>
+        <td>A*</td>
+<td>1485 ms</td>
+<td>291777 nodes</td>
+<td>150 min</td>
+    </tr>
+    <tr>
+        <td>BH</td>
+<td>225 ms</td>
+<td>15204 nodes</td>
+<td>150 min</td>
+    </tr>
+</table>
+
+<p><img src="/images/astar.jpg" alt="A*">
+<img src="/images/bh.jpg" alt="BH">
+<img src="/images/not.jpg" alt="Not always optimal"></p>
+
+<h5>
+<a id="3-reference" class="anchor" href="#3-reference" aria-hidden="true"><span class="octicon octicon-link"></span></a>3) Reference</h5>
+
+<ul>
+<li>[1] Sebastian Knopp, Peter Sanders, Dominik Schultes and Frank SchulzFast. Computation of Distance Tables using Highway Hierarchies, 2006.</li>
+</ul>
+
+<h4>
+<a id="manual-1" class="anchor" href="#manual-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Manual:</h4>
+
+<h5>
+<a id="1-put-your-maposm-in-the-file-folder-of-the-project" class="anchor" href="#1-put-your-maposm-in-the-file-folder-of-the-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>1) put your "map.osm" in the "file" folder of the project</h5>
+
+<h5>
+<a id="2-osm2wktosm2wkt" class="anchor" href="#2-osm2wktosm2wkt" aria-hidden="true"><span class="octicon octicon-link"></span></a>2) osm2wkt/Osm2wkt</h5>
+
+<p>this step will get rid of the none-routable path, and please press "N" when it asked for fixCompleteness.</p>
+
+<ul>
+<li>read the data from OSM file</li>
+<li>get rid of unroutable data</li>
+<li>generate xxx.wkts file</li>
+</ul>
+
+<h5>
+<a id="3-controllerosminputfilegeneration" class="anchor" href="#3-controllerosminputfilegeneration" aria-hidden="true"><span class="octicon octicon-link"></span></a>3) controller/OSMInputFileGeneration</h5>
+
+<ul>
+<li>read the data from OSM file</li>
+<li>generate xxx_node.csv and xxx_way.csv from data</li>
+</ul>
+
+<h5>
+<a id="4-controllerosmoutputfilegeneration" class="anchor" href="#4-controllerosmoutputfilegeneration" aria-hidden="true"><span class="octicon octicon-link"></span></a>4) controller/OSMOutputFileGeneration</h5>
+
+<ul>
+<li>read the data from xxx_node.csv and xxx_way.csv</li>
+<li>according xxx.wkts, overwrite xxx_node.csv and xxx_way.csv</li>
+</ul>
+
+<h5>
+<a id="5-controllerosmdividewaytoedge" class="anchor" href="#5-controllerosmdividewaytoedge" aria-hidden="true"><span class="octicon octicon-link"></span></a>5) controller/OSMDivideWayToEdge</h5>
+
+<ul>
+<li>divide the long way to seperate edges based on intersect</li>
+</ul>
+
+<h5>
+<a id="6-controllerosmgeneratekmloptional" class="anchor" href="#6-controllerosmgeneratekmloptional" aria-hidden="true"><span class="octicon octicon-link"></span></a>6) controller/OSMGenerateKML(Optional)</h5>
+
+<ul>
+<li>generate edge kml</li>
+<li>generate node kml</li>
+</ul>
+
+<h5>
+<a id="7-controllerosmgenerateadjlist" class="anchor" href="#7-controllerosmgenerateadjlist" aria-hidden="true"><span class="octicon octicon-link"></span></a>7) controller/OSMGenerateAdjList</h5>
+
+<ul>
+<li>generate xxx_adjlist.csv file</li>
+</ul>
+
+<p>All the preprocessing steps (1~7) can be done in the controller/OSMGenerateAll.</p>
+
+<h5>
+<a id="8-controllerosmrouting" class="anchor" href="#8-controllerosmrouting" aria-hidden="true"><span class="octicon octicon-link"></span></a>8) controller/OSMRouting</h5>
+
+<ul>
+<li>using A* algorithm for path routing</li>
+<li>using A* algorithm with fibonacci heap for path routing</li>
+<li>using bidirectional hierarchy routing algorithm for path routing</li>
+<li>show turn by turn information</li>
+</ul>
+
+<h5>
+<a id="9-testcomparetdsptdsphtimecost" class="anchor" href="#9-testcomparetdsptdsphtimecost" aria-hidden="true"><span class="octicon octicon-link"></span></a>9) test/CompareTdspTdspHTimeCost</h5>
+
+<ul>
+<li>compare the response time and cost time between A* algorithm and hierarchy routing algorithm</li>
+</ul>
+
+<h5>
+<a id="10-testanalyzetraveltimematrix" class="anchor" href="#10-testanalyzetraveltimematrix" aria-hidden="true"><span class="octicon octicon-link"></span></a>10) test/AnalyzeTravelTimeMatrix</h5>
+
+<ul>
+<li>calculate the travel time based on matrix data</li>
+</ul>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/usunyu">usunyu</a></p>
