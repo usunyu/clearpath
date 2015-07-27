@@ -5,7 +5,7 @@ OpenStreetMap
 
 ### Demo
 
-![OSM](images/OSM.jpg)
+![OSM](images/osm.jpg)
 
 This is map near our campus I fetched from OSM Project and converted it to our project's format. 
 And I cleaned all the shape, building, barrier,etc which cannot be used for routing.
