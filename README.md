@@ -1,5 +1,5 @@
-ClearPath
-=========
+[ClearPath](http://myfastestpath.com/)
+=====================================
 
 A new smart phone app helps navigate driving with an accurate travel time estimation.
 
